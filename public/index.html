@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitec Japan Product Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #e8192c;
+  --black: #0a0a0a;
+  --gray-700: #444;
+  --gray-400: #999;
+  --gray-200: #e8e8e8;
+  --gray-100: #f5f5f5;
+  --white: #fff;
+}
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans JP', 'Barlow', sans-serif;
+  background: var(--white);
+  color: var(--black);
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADER */
+.header {
+  flex-shrink: 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 clamp(16px, 4vw, 40px);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.header-logo { height: 32px; width: auto; max-width: 180px; object-fit: contain; display: block; }
+.header-divider { width: 1px; height: 16px; background: var(--gray-200); }
+.header-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+}
+.reset-btn {
+  background: none;
+  border: 1px solid var(--gray-200);
+  padding: 5px 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: all 0.15s;
+  display: none;
+}
+.reset-btn:hover { border-color: var(--black); color: var(--black); }
+.reset-btn.visible { display: block; }
+.lang-btn {
+  background: none; border: none;
+  padding: 5px 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer; color: var(--gray-400);
+  transition: all 0.15s;
+}
+.lang-btn.active { background: var(--black); color: var(--white); }
+
+/* CHAT */
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 40px) 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* MESSAGES */
+.msg { display: flex; gap: 12px; animation: fadeUp 0.25s ease; }
+.msg.user { flex-direction: row-reverse; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.msg-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.msg.bot .msg-avatar {
+  background: var(--black);
+}
+.msg.bot .msg-avatar svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.msg.user .msg-avatar {
+  background: var(--gray-200);
+}
+.msg.user .msg-avatar svg { width: 16px; height: 16px; fill: none; stroke: var(--gray-700); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.msg-bubble { max-width: 75%; padding: 12px 16px; font-size: 14px; line-height: 1.7; }
+.msg.bot .msg-bubble { background: var(--gray-100); border-radius: 0 12px 12px 12px; color: var(--black); }
+.msg.user .msg-bubble { background: var(--black); border-radius: 12px 0 12px 12px; color: var(--white); }
+
+/* PRODUCT CARDS */
+.products-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%; }
+.product-intro { font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
+
+.product-card {
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+.product-card:hover { border-color: var(--black); }
+
+.product-card-header { display: flex; align-items: center; }
+
+.product-card-info { flex: 1; padding: 14px 16px; }
+.product-card-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 2px;
+}
+.product-card-name { font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 500; color: var(--black); line-height: 1.3; }
+.product-card-sku { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 0.08em; color: var(--gray-400); text-transform: uppercase; margin-top: 2px; }
+.product-card-price { font-size: 12px; color: var(--gray-700); margin-top: 2px; }
+
+.product-card-chevron {
+  width: 40px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-400); font-size: 11px; flex-shrink: 0;
+  border-left: 1px solid var(--gray-200);
+  transition: transform 0.2s;
+}
+.product-card.open .product-card-chevron { transform: rotate(180deg); }
+
+.product-card-body { display: none; padding: 14px 16px; border-top: 1px solid var(--gray-200); background: var(--gray-100); }
+.product-card.open .product-card-body { display: block; }
+
+.product-reason { font-size: 13px; color: var(--gray-700); line-height: 1.7; margin-bottom: 14px; }
+
+.store-links { display: flex; flex-direction: column; gap: 6px; }
+.store-link {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px;
+  background: var(--white); border: 1px solid var(--gray-200);
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+.store-link:hover { border-color: var(--black); background: var(--gray-100); }
+.store-link-left { display: flex; align-items: center; gap: 10px; }
+.store-icon {
+  width: 22px; height: 22px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--white); flex-shrink: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.store-icon.bic { background: #e30017; }
+.store-icon.yodo { background: #e60012; }
+.store-icon.amazon { background: #ff9900; color: var(--black); }
+.store-name { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); }
+.store-arrow { font-size: 12px; color: var(--gray-400); }
+
+/* TYPING */
+.typing-indicator { display: flex; align-items: center; gap: 4px; padding: 12px 16px; background: var(--gray-100); border-radius: 0 12px 12px 12px; width: fit-content; }
+.typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-400); animation: typing 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
+
+/* OPTIONS BAR */
+.options-bar {
+  position: fixed;
+  bottom: 68px; left: 0; right: 0;
+  padding: 8px clamp(16px, 4vw, 40px);
+  display: none;
+  z-index: 49;
+  background: linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0));
+}
+.options-bar.visible { display: block; }
+.options-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.option-chip {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  padding: 7px 16px;
+  font-family: 'Barlow', 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--gray-700);
+  transition: all 0.12s;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.option-chip:hover { border-color: var(--black); color: var(--black); background: var(--gray-100); }
+
+/* INPUT BAR */
+.input-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--white); border-top: 1px solid var(--gray-200);
+  padding: 12px clamp(16px, 4vw, 40px); z-index: 50;
+}
+.input-inner { max-width: 800px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; }
+.input-field {
+  flex: 1; border: 1px solid var(--gray-200); background: var(--gray-100);
+  padding: 10px 16px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--black);
+  outline: none; resize: none; min-height: 44px; max-height: 120px; line-height: 1.5;
+  transition: border-color 0.15s; border-radius: 22px;
+}
+.input-field:focus { border-color: var(--black); background: var(--white); }
+.input-field::placeholder { color: var(--gray-400); }
+
+.icon-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s;
+}
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.mic-btn { background: var(--gray-100); border: 1px solid var(--gray-200); color: var(--gray-400); }
+.mic-btn:hover { border-color: var(--black); color: var(--black); }
+.mic-btn.recording { background: var(--red); border-color: var(--red); color: var(--white); animation: mic-pulse 1s ease-in-out infinite; }
+@keyframes mic-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,25,44,.4)} 50%{box-shadow:0 0 0 8px rgba(232,25,44,0)} }
+
+.send-btn { background: var(--red); color: var(--white); }
+.send-btn:hover { background: #c8111f; }
+.send-btn:active { transform: scale(0.95); }
+.send-btn:disabled { background: var(--gray-200); cursor: not-allowed; }
+
+/* WELCOME */
+.welcome {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 48px 24px; flex: 1; min-height: 60vh;
+}
+.welcome-logo { height: 32px; width: auto; margin: 0 auto 24px; display: block; }
+.welcome-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(26px, 4vw, 40px); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--black); margin-bottom: 10px; line-height: 1.1;
+}
+.welcome-sub { font-size: 14px; color: var(--gray-400); max-width: 400px; line-height: 1.7; margin-bottom: 28px; }
+.welcome-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 520px; }
+.welcome-chip {
+  background: var(--gray-100); border: 1px solid var(--gray-200);
+  padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--gray-700);
+  transition: all 0.12s; border-radius: 20px;
+}
+.welcome-chip:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+
+@media (max-width: 560px) {
+  .msg-bubble { max-width: 85%; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <img class="header-logo" src="/images/manfrotto-logo.jpg" alt="Manfrotto">
+    <div class="header-divider"></div>
+    <span class="header-title">Product Advisor</span>
+  </div>
+  <div class="header-right" style="display:flex;align-items:center;gap:10px">
+    <button class="reset-btn" id="reset-btn" onclick="resetChat()">← やり直す</button>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('ja')">日本語</button>
+      <button class="lang-btn" onclick="setLang('en')">English</button>
+    </div>
+  </div>
+</header>
+
+<div class="chat-container" id="chat">
+  <div class="welcome" id="welcome">
+    <div class="welcome-title" id="welcome-title">Find Your<br>Perfect Gear</div>
+    <div class="welcome-sub" id="welcome-sub">気になる製品カテゴリーや用途を教えてください。<br>最適なManfrotto製品をご提案します。</div>
+    <div class="welcome-chips" id="welcome-chips"></div>
+  </div>
+</div>
+
+<div class="options-bar" id="options-bar">
+  <div class="options-inner" id="options-inner"></div>
+</div>
+
+<div class="input-bar">
+  <div class="input-inner">
+    <textarea class="input-field" id="input-field" rows="1"
+      placeholder="メッセージを入力 / Type your message..."
+      onkeydown="handleKey(event)"
+      oninput="autoResize(this)"></textarea>
+    <button class="icon-btn mic-btn" id="mic-btn" onclick="toggleVoice()">
+      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    </button>
+    <button class="icon-btn send-btn" id="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+let lang = 'ja';
+let history = [];
+let isLoading = false;
+let recognition = null;
+let isRecording = false;
+
+const i18n = {
+  ja: {
+    welcomeTitle: 'Find Your\nPerfect Gear',
+    welcomeSub: '気になる製品カテゴリーや用途を教えてください。\n最適なManfrotto製品をご提案します。',
+    placeholder: 'メッセージを入力...',
+    userAvatar: 'あ',
+    introText: (n) => `ご条件に合う製品を${n}点ご提案します。各製品をタップすると購入リンクが表示されます。`,
+    errorText: 'エラーが発生しました。もう一度お試しください。',
+    listening: '🎤 話しかけてください...',
+    noSpeech: 'このブラウザは音声入力に対応していません。Chrome または Edge をご利用ください。',
+    bic: 'ビックカメラ',
+    yodo: 'ヨドバシカメラ',
+    amazon: 'Amazon Japan',
+    chips: [
+      '三脚を探したい',
+      'カメラバッグを探したい',
+      '雲台を探したい',
+      '一脚を探したい',
+      '照明スタンドを探したい'
+    ]
+  },
+  en: {
+    welcomeTitle: 'Find Your\nPerfect Gear',
+    welcomeSub: "Tell me what you're looking for and I'll help you find the perfect Manfrotto product.",
+    placeholder: 'Type your message...',
+    userAvatar: 'U',
+    introText: (n) => `Here are ${n} products that match your needs. Tap each to see purchase links.`,
+    errorText: 'An error occurred. Please try again.',
+    listening: '🎤 Listening...',
+    noSpeech: 'Voice input is not supported in this browser. Please use Chrome or Edge.',
+    bic: 'Bic Camera',
+    yodo: 'Yodobashi Camera',
+    amazon: 'Amazon Japan',
+    chips: [
+      "I'm looking for a tripod",
+      "I need a camera bag",
+      "I'm looking for a ball head",
+      "I need a monopod",
+      "I'm looking for a lighting stand"
+    ]
+  }
+};
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${l}')"]`).classList.add('active');
+  const t = i18n[l];
+  const wt = document.getElementById('welcome-title');
+  const ws = document.getElementById('welcome-sub');
+  if (wt) wt.innerHTML = t.welcomeTitle.replace('\n', '<br>');
+  if (ws) ws.innerHTML = t.welcomeSub.replace('\n', '<br>');
+  document.getElementById('input-field').placeholder = t.placeholder;
+
+  // Update quick reply chips
+  const chipsWrap = document.querySelector('.welcome-chips');
+  if (chipsWrap) {
+    chipsWrap.innerHTML = t.chips.map(c =>
+      `<span class="welcome-chip" onclick="sendQuick(this.textContent)">${c}</span>`
+    ).join('');
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function sendQuick(text) {
+  document.getElementById('input-field').value = text;
+  sendMessage();
+}
+
+function showOptions(options) {
+  const bar = document.getElementById('options-bar');
+  const inner = document.getElementById('options-inner');
+  inner.innerHTML = '';
+  if (!options || options.length === 0) {
+    bar.classList.remove('visible');
+    return;
+  }
+  options.forEach(opt => {
+    const chip = document.createElement('button');
+    chip.className = 'option-chip';
+    chip.textContent = opt;
+    chip.onclick = () => {
+      showOptions([]); // Clear options when one is selected
+      document.getElementById('input-field').value = opt;
+      sendMessage();
+    };
+    inner.appendChild(chip);
+  });
+  bar.classList.add('visible');
+}
+
+function resetChat() {
+  history = [];
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('reset-btn').classList.remove('visible');
+  showOptions([]);
+  const chat = document.getElementById('chat');
+  chat.innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="welcome-title" id="welcome-title"></div>
+      <div class="welcome-sub" id="welcome-sub"></div>
+      <div class="welcome-chips" id="welcome-chips"></div>
+    </div>`;
+  setLang(lang);
+}
+
+function hideWelcome() {
+  const w = document.getElementById('welcome');
+  if (w) {
+    w.remove();
+    document.getElementById('reset-btn').classList.add('visible');
+  }
+}
+
+function appendMsg(role, content) {
+  hideWelcome();
+  const chat = document.getElementById('chat');
+  const t = i18n[lang];
+
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  if (role === 'bot') {
+    // Robot / AI icon
+    avatar.innerHTML = `<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="13" rx="2"></rect><path d="M12 8V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="8.5" cy="13" r="1.5" fill="white" stroke="none"></circle><circle cx="15.5" cy="13" r="1.5" fill="white" stroke="none"></circle><path d="M8 17h8"></path></svg>`;
+  } else {
+    // User icon
+    avatar.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+
+  if (role === 'bot' && typeof content === 'object' && content.type === 'products') {
+    const intro = document.createElement('div');
+    intro.className = 'product-intro';
+    intro.textContent = t.introText(content.items.length);
+    bubble.appendChild(intro);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'products-wrap';
+
+    content.items.forEach((p, i) => {
+      const sku = (p.sku || '').toString().trim();
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="product-card-header" onclick="toggleCard(this.parentElement)">
+          <div class="product-card-info">
+            <div class="product-card-num">0${i + 1}</div>
+            <div class="product-card-name">${p.name}</div>
+            <div class="product-card-sku">${sku}</div>
+            ${p.price && !isNaN(Number(p.price)) ? `<div class="product-card-price">¥${Math.floor(Number(p.price)).toLocaleString()}</div>` : ''}
+          </div>
+          <div class="product-card-chevron">▼</div>
+        </div>
+        <div class="product-card-body">
+          <div class="product-reason">${p.reason}</div>
+          <div class="store-links">
+            <a class="store-link" href="https://www.biccamera.com/bc/category/?q=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+              <div class="store-link-left"><div class="store-icon bic">B</div><span class="store-name">${t.bic}</span></div>
+              <span class="store-arrow">→</span>
+            </a>
+            <a class="store-link" href="https://www.yodobashi.com/?word=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+              <div class="store-link-left"><div class="store-icon yodo">Y</div><span class="store-name">${t.yodo}</span></div>
+              <span class="store-arrow">→</span>
+            </a>
+            <a class="store-link" href="https://www.amazon.co.jp/s?k=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+              <div class="store-link-left"><div class="store-icon amazon">A</div><span class="store-name">${t.amazon}</span></div>
+              <span class="store-arrow">→</span>
+            </a>
+          </div>
+        </div>`;
+      wrap.appendChild(card);
+    });
+    bubble.appendChild(wrap);
+  } else {
+    bubble.innerHTML = (typeof content === 'string' ? content : '').replace(/\n/g, '<br>');
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function toggleCard(card) { card.classList.toggle('open'); }
+
+function showTyping() {
+  hideWelcome();
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-msg';
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.style.background = '#0a0a0a';
+  avatar.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"></rect><path d="M12 8V5"></path><circle cx="12" cy="4" r="1"></circle><circle cx="8.5" cy="13" r="1.5" fill="white" stroke="none"></circle><circle cx="15.5" cy="13" r="1.5" fill="white" stroke="none"></circle><path d="M8 17h8"></path></svg>`;
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  div.appendChild(avatar);
+  div.appendChild(indicator);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-msg');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const field = document.getElementById('input-field');
+  const text = field.value.trim();
+  if (!text) return;
+
+  field.value = '';
+  field.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+
+  appendMsg('user', text);
+  history.push({ role: 'user', content: text });
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history, lang: lang })
+    });
+
+    const data = await res.json();
+    removeTyping();
+    if (!res.ok) throw new Error(data.error || 'Error');
+
+    const reply = data.reply;
+
+    // Product recommendation
+    if (reply && reply.type === 'products') {
+      history.push({ role: 'assistant', content: JSON.stringify(reply) });
+      appendMsg('bot', reply);
+      showOptions([]);
+    }
+    // Normal message with options
+    else if (reply && reply.message) {
+      history.push({ role: 'assistant', content: reply.message });
+      appendMsg('bot', reply.message);
+      showOptions(reply.options || []);
+    }
+    // Fallback
+    else {
+      const text = typeof reply === 'string' ? reply : '';
+      history.push({ role: 'assistant', content: text });
+      appendMsg('bot', text);
+      showOptions([]);
+    }
+  } catch (e) {
+    removeTyping();
+    appendMsg('bot', i18n[lang].errorText);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('input-field').focus();
+}
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert(i18n[lang].noSpeech); return;
+  }
+  if (isRecording) { recognition.stop(); return; }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = lang === 'ja' ? 'ja-JP' : 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('mic-btn').classList.add('recording');
+    document.getElementById('input-field').placeholder = i18n[lang].listening;
+  };
+  recognition.onresult = (e) => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('input-field').value = t;
+    autoResize(document.getElementById('input-field'));
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('recording');
+    document.getElementById('input-field').placeholder = i18n[lang].placeholder;
+    const t = document.getElementById('input-field').value.trim();
+    if (t) sendMessage();
+  };
+  recognition.onerror = () => {
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('recording');
+    document.getElementById('input-field').placeholder = i18n[lang].placeholder;
+  };
+  recognition.start();
+}
+
+// Initialize chips on load
+setLang('ja');
+</script>
+</body>
+</html>
