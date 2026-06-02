@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
-// ────────────────────────────────────────────────
-// クライアント初期化
-// ────────────────────────────────────────────────
 const openai   = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -11,200 +8,246 @@ const supabase = createClient(
 );
 
 // ────────────────────────────────────────────────
-// カテゴリ検出（既存ロジックを維持）
+// カテゴリ検出
+// フロントから brand / category が渡される場合はそちらを優先
 // ────────────────────────────────────────────────
-function detectCategory(messages) {
-  const firstUserMsg = messages.find(m => m.role === 'user')?.content?.toLowerCase() || '';
+function detectCategory(messages, categoryHint) {
+  if (categoryHint) return categoryHint;
+
   const allText = messages.map(m => m.content).join(' ').toLowerCase();
-
-  if (/三脚|tripod|さんきゃく|ビデオ三脚/.test(firstUserMsg)) return '三脚';
-  if (/バッグ|bag|かばん|鞄|ケース|backpack|pouch|ウエスト/.test(firstUserMsg)) return 'バッグ';
-  if (/雲台|ball head|fluid head|うんだい/.test(firstUserMsg)) return '雲台';
-  if (/一脚|monopod|いっきゃく/.test(firstUserMsg)) return '一脚';
-  if (/照明|ライト|lighting|スタンド/.test(firstUserMsg)) return 'ライティング';
-
-  if (/三脚|tripod/.test(allText)) return '三脚';
-  if (/バッグ|bag|backpack/.test(allText)) return 'バッグ';
-  if (/一脚|monopod/.test(allText)) return '一脚';
-  if (/雲台|ball head|fluid head/.test(allText)) return '雲台';
-  if (/照明|ライト|lighting/.test(allText)) return 'ライティング';
-
+  if (/三脚|tripod|さんきゃく|ビデオ三脚|photo tripod|video tripod/.test(allText)) return '三脚';
+  if (/バッグ|bag|かばん|鞄|ケース|backpack|pouch|ショルダー|shoulder/.test(allText)) return 'バッグ';
+  if (/雲台|ball head|fluid head|うんだい|head/.test(allText)) return '雲台';
+  if (/一脚|monopod|いっきゃく/.test(allText)) return '一脚';
+  if (/照明|ライト|lighting|スタンド|stand/.test(allText)) return 'ライティング';
   return null;
 }
 
 // ────────────────────────────────────────────────
-// RAG検索：Supabaseから関連製品を取得
+// RAG検索
 // ────────────────────────────────────────────────
-async function searchProducts(query, category, maxPrice = null, limit = 6) {
-  // クエリをEmbedding化
+async function searchProducts(query, brandFilter = null, limit = 8) {
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: query
   });
   const embedding = embeddingRes.data[0].embedding;
 
-  // Supabaseでベクトル検索
-  const { data, error } = await supabase.rpc('search_products', {
+  const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embedding,
     match_count: limit,
-    filter_brand: null,
-    filter_max_price: maxPrice
+    filter_brand: brandFilter,   // 'Manfrotto' / 'Gitzo' / 'Lowepro' / null
+    include_old: false           // priority 1,2 のみ（販売終了・旧製品を除外）
   });
 
   if (error) throw new Error(`Supabase error: ${error.message}`);
-
-  // カテゴリでフィルター（categoryが指定されている場合）
-  let results = data || [];
-  if (category) {
-    const filtered = results.filter(p =>
-      p.category?.includes(category) || p.sub_category?.includes(category)
-    );
-    // フィルター後が少なすぎる場合は元の結果を使う
-    results = filtered.length >= 2 ? filtered : results;
-  }
-
-  return results;
+  return data || [];
 }
 
 // ────────────────────────────────────────────────
-// 質問フロー（既存を維持）
+// 質問フロー定義
 // ────────────────────────────────────────────────
 const FLOWS = {
   ja: {
-    '三脚': `【三脚の質問フロー】この順番で1つずつ質問：
-1. 「三脚のみ」か「雲台セット」かを確認 → options:["三脚のみ","雲台セット"]
-2. 用途を確認 → options:["写真メイン","動画メイン","両方"]
-3. 使用機材を確認 → options:["Sony","Canon","Nikon","Fujifilm","その他"]
-4. 素材を確認 → options:["カーボン","アルミ","こだわらない"]
-5. 撮影シーンを確認 → options:["旅行・登山","街撮り","スタジオ","スポーツ"]`,
+    // Manfrotto
+    'フォト三脚': `【フォト三脚の質問フロー】1つずつ質問：
+1. 三脚のみかセットか確認 → options:["三脚のみ","雲台セット"]
+2. 素材 → options:["カーボン","アルミ","こだわらない"]
+3. 使用カメラ → options:["Sony","Canon","Nikon","Fujifilm","その他"]
+4. 撮影シーン → options:["旅行・登山","街撮り","スタジオ","スポーツ"]
+5. 予算感 → options:["〜3万円","3〜8万円","8万円以上"]`,
 
-    'バッグ': `【カメラバッグの質問フロー】この順番で1つずつ質問：
-1. バッグタイプを確認 → options:["バックパック","ショルダー","ウエスト","ローラー"]
-2. 持ち出し機材を確認 → options:["1台+レンズ1〜2本","1台+レンズ3〜4本","2台以上"]
-3. 最大レンズサイズを確認 → options:["標準ズーム","70-200mm","超望遠","シネレンズ"]
-4. 個人荷物の量を確認 → options:["機材のみ","少し","普段使いも"]
-5. 使用シーンを確認 → options:["旅行・登山","街撮り","プロ撮影","動画"]`,
+    'ビデオ三脚': `【ビデオ三脚の質問フロー】1つずつ質問：
+1. 三脚のみかセットか → options:["三脚のみ","雲台セット"]
+2. 機材の重さ → options:["〜5kg","5〜10kg","10kg以上"]
+3. 使用シーン → options:["YouTube・Vlog","放送・報道","シネマ","スタジオ"]
+4. ツインレッグかシングルか → options:["ツインレッグ","シングルレッグ","わからない"]
+5. 素材 → options:["カーボン","アルミ","こだわらない"]`,
 
-    '雲台': `【雲台の質問フロー】この順番で1つずつ質問：
-1. 雲台タイプを確認 → options:["ボールヘッド","フルードヘッド","3ウェイ","ギア","わからない"]
-2. 用途を確認 → options:["写真メイン","動画メイン","両方"]
-3. 機材重量を確認 → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
-4. 設置スピードを確認 → options:["素早い架設","精密な調整","こだわらない"]
-5. 三脚との組み合わせを確認 → options:["Manfrotto三脚","他社三脚","これから購入"]`,
+    'フォト雲台': `【フォト雲台の質問フロー】1つずつ質問：
+1. 雲台タイプ → options:["ボールヘッド","3ウェイ","ギア","わからない"]
+2. 機材重量 → options:["〜2kg","2〜5kg","5〜10kg"]
+3. クイックリリース → options:["必要","なくてもよい","わからない"]
+4. 三脚との組み合わせ → options:["Manfrotto三脚","他社三脚","これから購入"]
+5. 予算感 → options:["〜2万円","2〜5万円","5万円以上"]`,
 
-    '一脚': `【一脚の質問フロー】この順番で1つずつ質問：
-1. 用途を確認 → options:["スポーツ・報道","動画・走り撮り","登山・旅行","野鳥・望遠"]
-2. 機材重量を確認 → options:["〜1.5kg","〜2.5kg","〜5kg","〜8kg"]
-3. 雲台の必要性を確認 → options:["一脚のみ","雲台セット","既に持っている"]
-4. 自立機能を確認 → options:["必要","不要","あれば嬉しい"]
-5. 素材を確認 → options:["カーボン","アルミ","こだわらない"]`,
+    'ビデオ雲台': `【ビデオ雲台の質問フロー】1つずつ質問：
+1. 耐荷重の目安 → options:["〜4kg","4〜8kg","8〜12kg","12kg以上"]
+2. ボウルサイズ → options:["フラットベース","60mm","75mm","100mm","わからない"]
+3. カウンターバランス → options:["固定でよい","無段階調整したい","わからない"]
+4. 三脚との組み合わせ → options:["Manfrotto三脚","他社三脚","これから購入"]
+5. キットか単体か → options:["雲台のみ","三脚セットで欲しい"]`,
 
-    'ライティング': `【照明スタンドの質問フロー】この順番で1つずつ質問：
-1. 用途を確認 → options:["ポートレート","動画・YouTube","商品撮影","屋外ロケ"]
-2. 光源の種類を確認 → options:["ストロボ","LED","リングライト","大型モノブロック"]
-3. スタンドの必要性を確認 → options:["スタンドも欲しい","既に持っている","アクセサリーのみ"]
-4. 設置場所を確認 → options:["スタジオ固定","自宅・小スペース","屋外","卓上"]
-5. アームの必要性を確認 → options:["必要","不要","わからない"]`
+    '一脚': `【一脚の質問フロー】1つずつ質問：
+1. 用途 → options:["スポーツ・報道","動画・走り撮り","登山・旅行","野鳥・望遠"]
+2. 機材重量 → options:["〜1.5kg","〜2.5kg","〜5kg","〜8kg"]
+3. 雲台 → options:["一脚のみ","雲台セット","既に持っている"]
+4. 素材 → options:["カーボン","アルミ","こだわらない"]`,
+
+    'カメラバッグ': `【カメラバッグの質問フロー】1つずつ質問：
+1. バッグタイプ → options:["バックパック","ショルダー","TLZトップローディング","ローラー"]
+2. 収納機材 → options:["1台+レンズ1〜2本","1台+レンズ3〜4本","2台以上"]
+3. 最大レンズサイズ → options:["標準ズーム","70-200mm","超望遠","シネレンズ"]
+4. 個人荷物 → options:["機材のみ","少し","普段使いも"]
+5. 使用シーン → options:["旅行・登山","街撮り","プロ撮影","動画"]`,
+
+    'ライティング': `【ライティングの質問フロー】1つずつ質問：
+1. 用途 → options:["ポートレート","動画・YouTube","商品撮影","屋外ロケ"]
+2. 光源の種類 → options:["ストロボ","LED","リングライト","大型モノブロック"]
+3. スタンド → options:["スタンドも欲しい","既に持っている","アクセサリーのみ"]
+4. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外","卓上"]
+5. アーム → options:["必要","不要","わからない"]`,
+
+    'アクセサリー': `【アクセサリーの質問フロー】1つずつ質問：
+1. 何に使いたいか → options:["カメラ固定・支持","テザー撮影","ライティング補助","その他"]
+2. 取り付け先 → options:["三脚","ライトスタンド","カメラ本体","壁・天井"]
+3. 具体的に欲しいもの → options:["マジックアーム","クランプ","プレート","ストラップ"]`,
+
+    // Gitzo
+    '三脚':  `【Gitzo三脚の質問フロー】1つずつ質問：
+1. 三脚ファミリー → options:["トラベラー","マウンテニア","システマティック","わからない"]
+2. 段数 → options:["3段","4段","5段","こだわらない"]
+3. 機材重量 → options:["〜3kg","3〜6kg","6〜10kg","10kg以上"]
+4. 素材 → options:["カーボン","アルミ","こだわらない"]
+5. センターポール → options:["必要","なくてもよい","わからない"]`,
+
+    'Gitzo一脚': `【Gitzo一脚の質問フロー】1つずつ質問：
+1. 用途 → options:["風景・旅行","スポーツ・望遠","動画"]
+2. 機材重量 → options:["〜3kg","3〜6kg","6kg以上"]
+3. 段数 → options:["4段","5段","6段","こだわらない"]`,
+
+    '雲台': `【Gitzo雲台の質問フロー】1つずつ質問：
+1. 雲台タイプ → options:["センターボール","フルード","パノラマ","わからない"]
+2. 機材重量 → options:["〜5kg","5〜10kg","10〜25kg"]
+3. 三脚との組み合わせ → options:["Gitzo三脚","他社三脚","これから購入"]`,
+
+    'バッグ・アクセサリー': `【Gitzoバッグの質問フロー】1つずつ質問：
+1. 何を収納したいか → options:["三脚バッグ","カメラバッグ","アクセサリー"]
+2. 対応三脚サイズ → options:["トラベラー","マウンテニア","大型システマティック"]`,
+
+    // Lowepro
+    'バックパック': `【Loweproバックパックの質問フロー】1つずつ質問：
+1. シリーズ感 → options:["プロタクティック","フリップサイド","プロトレッカー","べーシック"]
+2. 収納機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材+アクセサリー"]
+3. PC収納 → options:["13インチ以下","15インチ","不要"]
+4. 使用シーン → options:["旅行・登山","街撮り","プロ撮影","ドローン運搬"]
+5. レインカバー → options:["必要","あれば嬉しい","不要"]`,
+
+    'ショルダーバッグ': `【Loweproショルダーの質問フロー】1つずつ質問：
+1. 機材の量 → options:["カメラ1台+レンズ1本","カメラ1台+レンズ複数","コンパクトのみ"]
+2. バッグスタイル → options:["斜めがけ","スリング","トップローディング"]
+3. 使用シーン → options:["日常・街撮り","旅行","スポーツ・アウトドア"]`,
+
+    'TLZ・トップローディング': `【Lowepro TLZの質問フロー】1つずつ質問：
+1. 収納したいレンズ → options:["〜24-70mm","〜70-200mm","300mm以上"]
+2. 取り出しやすさ → options:["素早く取り出したい","しっかり保護したい","両方"]
+3. 別バッグに入れる → options:["単独で使う","他のバッグのインサートとして"]`,
+
+    'レンズ・ハードケース': `【Loweproケースの質問フロー】1つずつ質問：
+1. 何を収納したいか → options:["交換レンズ","カメラ+アクセサリー","バッテリー・小物"]
+2. 収納するレンズサイズ → options:["〜8cm径","〜11cm径","〜13cm径"]
+3. 使い方 → options:["バッグのインサート","単独で携帯","スタジオ保管"]`,
+
+    'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つずつ質問：
+1. 何を収納したいか → options:["ケーブル・バッテリー","カメラ本体","レンズ","メモリーカード"]
+2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`
   },
+
   en: {
-    '三脚': `[Tripod Flow] Ask ONE question at a time:
+    'Photo Tripod': `[Photo Tripod Flow] Ask ONE at a time:
 1. Tripod only or with head → options:["Tripod only","With head set"]
-2. Main use → options:["Mainly photo","Mainly video","Both"]
+2. Material → options:["Carbon","Aluminum","No preference"]
 3. Camera brand → options:["Sony","Canon","Nikon","Fujifilm","Other"]
-4. Material → options:["Carbon","Aluminum","No preference"]
-5. Scene → options:["Travel/hiking","Street","Studio","Sports"]`,
+4. Scene → options:["Travel/hiking","Street","Studio","Sports"]`,
 
-    'バッグ': `[Camera Bag Flow] Ask ONE question at a time:
-1. Bag type → options:["Backpack","Shoulder bag","Waist bag","Roller bag"]
-2. Gear → options:["1 body + 1-2 lenses","1 body + 3-4 lenses","2+ bodies"]
-3. Largest lens → options:["Standard zoom","70-200mm","Super telephoto","Cine lens"]
-4. Personal items → options:["Gear only","A little","Everyday use too"]
-5. Scene → options:["Travel/hiking","Street","Professional","Video"]`,
+    'Backpack': `[Lowepro Backpack Flow] Ask ONE at a time:
+1. Series → options:["ProTactic","FlipSide","Pro Trekker","Basic"]
+2. Gear → options:["Mirrorless+2-3 lenses","DSLR+3-4 lenses","Large gear+accessories"]
+3. Laptop → options:["Up to 13\"","15\"","Not needed"]
+4. Scene → options:["Travel/hiking","Street","Professional","Drone"]`,
 
-    '雲台': `[Head Flow] Ask ONE question at a time:
-1. Head type → options:["Ball head","Fluid head","3-way","Gear head","Not sure"]
-2. Main use → options:["Mainly photo","Mainly video","Both"]
-3. Equipment weight → options:["~2kg","2-5kg","5-10kg","10kg+"]
-4. Setup speed → options:["Quick setup","Precise adjustment","No preference"]
-5. Tripod combo → options:["Manfrotto tripod","Other brand","Not yet purchased"]`,
-
-    '一脚': `[Monopod Flow] Ask ONE question at a time:
-1. Main use → options:["Sports & news","Video & run","Hiking & travel","Wildlife & tele"]
-2. Equipment weight → options:["~1.5kg","~2.5kg","~5kg","~8kg"]
-3. Head needed → options:["Monopod only","With head","Already have one"]
-4. Self-standing → options:["Yes needed","Not needed","Nice to have"]
-5. Material → options:["Carbon","Aluminum","No preference"]`,
-
-    'ライティング': `[Lighting Flow] Ask ONE question at a time:
-1. Main use → options:["Portrait","Video & YouTube","Product","Outdoor"]
-2. Light source → options:["Strobe","LED","Ring light","Large monoblock"]
-3. Stand needed → options:["Need stand","Already have","Accessories only"]
-4. Location → options:["Studio fixed","Home small space","Outdoor","Desktop"]
-5. Boom arm → options:["Yes needed","Not needed","Not sure"]`
+    'Tripod': `[Gitzo Tripod Flow] Ask ONE at a time:
+1. Family → options:["Traveler","Mountaineer","Systematic","Not sure"]
+2. Sections → options:["3 sections","4 sections","5 sections","No preference"]
+3. Payload → options:["Up to 3kg","3-6kg","6-10kg","10kg+"]`
   }
 };
 
 // ────────────────────────────────────────────────
 // システムプロンプト構築
 // ────────────────────────────────────────────────
-function buildGuidancePrompt(lang, category) {
-  const flow = category && FLOWS[lang]?.[category]
-    ? FLOWS[lang][category]
-    : (lang === 'ja'
-      ? 'まずどのカテゴリーをお探しか確認し、そのカテゴリーに合った質問をしてください。'
-      : 'First confirm what product category they need, then follow the appropriate flow.');
+function buildGuidancePrompt(lang, category, brand) {
+  // カテゴリ名の正規化（英語→日本語フローへのマッピング）
+  const catMap = {
+    'Photo Tripod': 'フォト三脚', 'Video Tripod': 'ビデオ三脚',
+    'Photo Head': 'フォト雲台', 'Video Head': 'ビデオ雲台',
+    'Monopod': '一脚', 'Camera Bag': 'カメラバッグ',
+    'Lighting': 'ライティング', 'Accessories': 'アクセサリー',
+    'Tripod': '三脚', 'Head': '雲台',
+    'Bag & Accessories': 'バッグ・アクセサリー',
+    'Backpack': 'バックパック', 'Shoulder Bag': 'ショルダーバッグ',
+    'TLZ / Top Loading': 'TLZ・トップローディング',
+    'Lens & Hard Case': 'レンズ・ハードケース',
+    'GearUp & Accessories': 'ギアアップ・アクセサリー'
+  };
+
+  const flowKey = catMap[category] || category;
+  const flow = FLOWS[lang]?.[flowKey] || FLOWS['ja']?.[flowKey]
+    || (lang === 'ja'
+      ? `まず${brand ? brand + 'の' : ''}どのような製品をお探しか確認し、用途・機材・予算などを1つずつ質問してください。`
+      : `Ask about what kind of ${brand || 'Vitec'} product they need, then gather details one by one.`);
 
   const langRule = lang === 'ja' ? '必ず日本語で回答してください。' : 'Always respond in English.';
-  const exampleJa = `{"message":"動画撮影がメインですね！使用されるカメラを教えてください。","options":["Sony","Canon","Nikon","Fujifilm","その他"]}`;
-  const exampleEn = `{"message":"Great, mainly for video! Which camera brand do you use?","options":["Sony","Canon","Nikon","Fujifilm","Other"]}`;
+  const brandRule = brand ? `対象ブランド: ${brand}のみ。他ブランドは言及しないこと。` : '対象: Manfrotto / Gitzo / Lowepro / Avenger 全ブランド。';
 
-  return `You are a friendly Vitec Japan product advisor (Manfrotto, Gitzo, Lowepro, Avenger brands).
+  return `You are a friendly Vitec Japan product advisor.
 ${langRule}
+${brandRule}
 
 STYLE:
 - Warmly acknowledge each answer before asking the next question
 - Ask exactly ONE question per response
+- Never recommend specific products yet — keep gathering information
 
 ${flow}
-
-Do NOT recommend products yet — keep gathering information.
 
 RESPONSE FORMAT — output ONLY this JSON, nothing else:
 {"message":"warm acknowledgment + one question","options":["opt1","opt2","opt3"]}
 
-⚠️ MANDATORY RULES:
+⚠️ RULES:
 1. Output MUST be valid JSON only — no markdown, no extra text
-2. "options" array MUST contain 3-5 items — NEVER empty
-3. Each option must be short (under 12 characters)
-
-Example: ${lang === 'ja' ? exampleJa : exampleEn}`;
+2. "options" MUST contain 2-5 items — NEVER empty
+3. Each option must be short (under 15 characters)`;
 }
 
-function buildRecommendPrompt(lang, category, products) {
+function buildRecommendPrompt(lang, brand, products) {
   const langRule = lang === 'ja' ? '必ず日本語で回答してください。' : 'Always respond in English.';
+  const brandRule = brand ? `対象ブランド: ${brand}` : '対象: 全ブランド (Manfrotto / Gitzo / Lowepro / Avenger)';
 
   const productList = products.map(p => ({
-    name: p.name,
-    sku: p.sku,
-    brand: p.brand,
-    category: p.category,
-    price: p.price_sale,
-    notes: p.notes,
+    name:       p.name,
+    sku:        p.sku,
+    brand:      p.brand,
+    category:   p.category,
+    priority:   p.priority,
+    content:    p.content,
     similarity: Math.round(p.similarity * 100) + '%'
   }));
 
   return `You are a Vitec Japan product advisor. Recommend products from the search results below.
 ${langRule}
+${brandRule}
 
-SEARCH RESULTS (retrieved from database based on customer needs):
+SEARCH RESULTS (priority 1=new, 2=current — already filtered):
 ${JSON.stringify(productList, null, 2)}
 
 INSTRUCTIONS:
-- Recommend 3-5 products from the list above ONLY
+- Recommend 3-5 products from the list ONLY
 - Never invent products not in the list
 - Give specific reasons based on the customer's stated needs
-- Include brand name in recommendations (Manfrotto / Gitzo / Lowepro / Avenger)
-- If price is available, mention it
+- Mention brand name in each recommendation
+- Extract price from content field if available (look for "販売価格: ¥" or "メーカ希望小売価格: ¥")
+- Priority 1 products are new/featured — highlight them if relevant
 
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
@@ -222,37 +265,35 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { messages, lang = 'ja' } = req.body;
+  const { messages, lang = 'ja', brand = null, category = null } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'No messages provided' });
   }
 
-  const category = detectCategory(messages);
+  const detectedCategory = detectCategory(messages, category);
   const userMessages = messages.filter(m => m.role === 'user');
-  const lastUserMsg = userMessages[userMessages.length - 1]?.content || '';
+  const lastUserMsg  = userMessages[userMessages.length - 1]?.content || '';
 
-  const recommendSignals = /以上です|おすすめして|推薦して|お願いします|please recommend|show me products|suggest products/i;
-  const shouldRecommend = category &&
-    userMessages.length >= 3 &&
+  // レコメンド判定：3回以上の会話 or 明示的なシグナル
+  const recommendSignals = /以上です|おすすめして|推薦して|お願いします|please recommend|show me|suggest/i;
+  const shouldRecommend  = userMessages.length >= 3 &&
     (userMessages.length >= 5 || recommendSignals.test(lastUserMsg));
 
   const phase = shouldRecommend ? 'RECOMMEND' : 'GUIDE';
-  console.log(`[${phase}] lang:${lang} category:${category} turns:${userMessages.length}`);
+  console.log(`[${phase}] lang:${lang} brand:${brand} category:${detectedCategory} turns:${userMessages.length}`);
 
   try {
     let systemPrompt;
     let ragProducts = [];
 
     if (shouldRecommend) {
-      // RAG検索：会話全体をクエリとして使用
       const query = userMessages.map(m => m.content).join(' ');
-      ragProducts = await searchProducts(query, category);
-      systemPrompt = buildRecommendPrompt(lang, category, ragProducts);
+      ragProducts  = await searchProducts(query, brand);
+      systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
     } else {
-      systemPrompt = buildGuidancePrompt(lang, category);
+      systemPrompt = buildGuidancePrompt(lang, detectedCategory, brand);
     }
 
-    // OpenAI GPT-4o で回答生成
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -268,7 +309,7 @@ export default async function handler(req, res) {
     let parsed;
     try {
       const clean = raw.replace(/```json|```/g, '').trim();
-      const match = clean.match(/\{[\s\S]*\}/);
+      const match  = clean.match(/\{[\s\S]*\}/);
       parsed = match ? JSON.parse(match[0]) : null;
     } catch {
       parsed = null;
@@ -281,7 +322,8 @@ export default async function handler(req, res) {
     res.status(200).json({
       reply: parsed || { message: raw, options: [] },
       phase,
-      category
+      category: detectedCategory,
+      brand
     });
 
   } catch (error) {
