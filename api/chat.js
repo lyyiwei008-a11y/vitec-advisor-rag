@@ -33,24 +33,40 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   });
   const embedding = embeddingRes.data[0].embedding;
 
+  // 通常検索
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embedding,
     match_count: limit,
     filter_brand: brandFilter,
     include_old: false
   });
-
   if (error) throw new Error(`Supabase error: ${error.message}`);
   let results = data || [];
 
-  // カテゴリでフィルター（シート名が一致するもの優先）
+  // カテゴリでフィルター
   if (categoryFilter) {
     const filtered = results.filter(p => p.category === categoryFilter);
-    // フィルター結果が3件以上あればそれを使用、少なければ元の結果を使用
     if (filtered.length >= 3) results = filtered;
   }
 
-  // priority=1（新製品）を上位に並び替え
+  // priority=1（新製品）を別途取得して必ず含める
+  const { data: newData } = await supabase
+    .from('products')
+    .select('id, sku, name, brand, category, priority, content')
+    .eq('priority', 1)
+    .eq(brandFilter ? 'brand' : 'priority', brandFilter || 1)
+    .limit(5);
+
+  if (newData && newData.length > 0) {
+    // 新製品にsimilarity=1.0を付与して先頭に追加（重複除去）
+    const existingIds = new Set(results.map(r => r.id));
+    const newProducts = newData
+      .filter(p => !existingIds.has(p.id))
+      .map(p => ({ ...p, similarity: 1.0 }));
+    results = [...newProducts, ...results];
+  }
+
+  // priority順→similarity順でソート
   results.sort((a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
     return b.similarity - a.similarity;
@@ -256,7 +272,12 @@ INSTRUCTIONS:
 - Give specific reasons based on the customer's stated needs
 - Mention brand name in each recommendation
 - Extract price from content field if available (look for "販売価格: ¥" or "メーカ希望小売価格: ¥")
-- Priority 1 products are new/featured — highlight them if relevant
+- PRIORITY ORDER IS MANDATORY:
+  * priority=1 (新製品): MUST recommend first if relevant to customer needs
+  * priority=2 (現行品): recommend after priority=1 products
+  * NEVER recommend priority=3 or 4 products
+- Always check priority field and sort recommendations: priority=1 first, then priority=2
+- If there are priority=1 products in the list, at least one MUST appear in your recommendations
 
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
@@ -285,8 +306,11 @@ export default async function handler(req, res) {
 
   // レコメンド判定：3回以上の会話 or 明示的なシグナル
   const recommendSignals = /以上です|おすすめして|推薦して|お願いします|please recommend|show me|suggest/i;
-  const shouldRecommend  = userMessages.length >= 3 &&
-    (userMessages.length >= 5 || recommendSignals.test(lastUserMsg));
+  // 最低4回答えた後、または明示的な推薦リクエストがあった場合
+  // ただしカテゴリ別の質問フローが完了している場合は推薦
+  const minTurns = 4;
+  const shouldRecommend = userMessages.length >= minTurns &&
+    (userMessages.length >= 6 || recommendSignals.test(lastUserMsg));
 
   const phase = shouldRecommend ? 'RECOMMEND' : 'GUIDE';
   console.log(`[${phase}] lang:${lang} brand:${brand} category:${detectedCategory} turns:${userMessages.length}`);
