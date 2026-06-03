@@ -35,7 +35,7 @@ body {
 .header {
   flex-shrink: 0;
   background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid #333;
   padding: 0 clamp(16px,4vw,40px);
   height: 56px;
   display: flex; align-items: center; justify-content: space-between;
@@ -43,29 +43,29 @@ body {
 }
 .header-left { display: flex; align-items: center; gap: 14px; }
 .header-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; }
-.header-divider { width: 1px; height: 16px; background: var(--gray-200); }
+.header-divider { width: 1px; height: 16px; background: #333; }
 .header-title {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--gray-400);
+  text-transform: uppercase; color: #888;
 }
 .reset-btn {
-  background: none; border: 1px solid var(--gray-200);
+  background: none; border: 1px solid #444;
   padding: 5px 12px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; cursor: pointer; color: var(--gray-400);
+  text-transform: uppercase; cursor: pointer; color: #888;
   transition: all 0.15s; display: none;
 }
-.reset-btn:hover { border-color: var(--black); color: var(--black); }
+.reset-btn:hover { border-color: var(--white); color: var(--white); }
 .reset-btn.visible { display: block; }
 .lang-btn {
   background: none; border: none; padding: 5px 10px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  cursor: pointer; color: var(--gray-400); transition: all 0.15s;
+  cursor: pointer; color: #888; transition: all 0.15s;
 }
-.lang-btn.active { background: var(--black); color: var(--white); }
+.lang-btn.active { background: var(--white); color: var(--black); }
 
 /* ── CHAT ── */
 .chat-container {
@@ -205,6 +205,7 @@ body {
 }
 .welcome-vitec-logo {
   height: 36px; width: auto; margin: 0 auto 6px; display: block;
+  background: var(--black); padding: 6px 12px;
 }
 .welcome-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -466,7 +467,7 @@ function renderWelcome() {
     <div class="welcome-title">${t.welcomeTitle}</div>
     <p class="welcome-sub">${t.welcomeSub}</p>
     <div class="brand-grid">
-      <div class="brand-card" onclick="selectBrand('Manfrotto')">
+      <div class="brand-card dark-bg" onclick="selectBrand('Manfrotto')">
         <img class="brand-logo manfrotto" src="${LOGOS.manfrotto}" alt="Manfrotto">
       </div>
       <div class="brand-card dark-bg" onclick="selectBrand('Lowepro')">
