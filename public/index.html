@@ -612,8 +612,10 @@ function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault
 function showOptions(options) {
   const bar = document.getElementById('options-bar');
   const inner = document.getElementById('options-inner');
+  // まず必ずクリア・非表示
   inner.innerHTML = '';
-  if (!options || options.length === 0) { bar.classList.remove('visible'); return; }
+  bar.classList.remove('visible');
+  if (!options || options.length === 0) return;
   options.forEach(opt => {
     const chip = document.createElement('button');
     chip.className = 'option-chip';
@@ -746,7 +748,7 @@ async function sendMessage() {
     removeTyping();
     if (!res.ok) throw new Error(data.error || 'Error');
     const reply = data.reply;
-    // 必ず前の選択肢をクリア
+    // 返答受信時に再度クリア（念のため）
     showOptions([]);
 
     if (reply && reply.type === 'products') {
