@@ -319,6 +319,7 @@ export default async function handler(req, res) {
         'TLZ・トップローディング': 'ショルダー・TLZ・スリング',
         'レンズ・ハードケース': 'レンズ・ハードサイドケース',
         'ギアアップ・アクセサリー': 'ギアアップ GearUp',
+
       };
       const categoryFilter = categorySheetMap[detectedCategory];
       ragProducts = await searchProducts(query, brand, categoryFilter);

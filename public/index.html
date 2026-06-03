@@ -479,34 +479,73 @@ function selectBrand(brand) {
   const w = document.getElementById('welcome');
   if (!w) return;
 
-  // 「全ブランド」はそのままチャット開始
+  // 「全ブランド」もカテゴリ選択を表示
   if (brand === 'all') {
-    startChat(null, null);
+    showCategoryScreen(null);
     return;
   }
 
-  // ロゴ設定
-  const logoSrc = LOGOS[brand.toLowerCase()];
-  const logoClass = brand.toLowerCase();
+  showCategoryScreen(brand);
+}
 
-  // カテゴリ一覧
-  const cats = CATEGORIES[lang][brand] || [];
+function showCategoryScreen(brand) {
+  const t = i18n[lang];
+  const w = document.getElementById('welcome');
+  if (!w) return;
+
+  const cats = brand ? (CATEGORIES[lang][brand] || []) : CATEGORIES[lang]['all'];
+  const logoSrc = brand ? LOGOS[brand.toLowerCase()] : LOGOS.vitec;
+  const logoClass = brand ? brand.toLowerCase() : '';
+
   const chips = cats.map(c =>
     `<button class="category-chip" onclick="selectCategory('${c}')">${c}</button>`
   ).join('');
 
   w.innerHTML = `
     <div class="category-header">
-      <img class="selected-brand-logo ${logoClass}" src="${logoSrc}" alt="${brand}">
+      <img class="selected-brand-logo ${logoClass}" src="${logoSrc}" alt="${brand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
       <span class="category-label">${t.selectCategory}</span>
     </div>
     <div class="category-grid">${chips}</div>
     <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
-      onclick="startChat('${brand}', null)">${t.skipCategory}</button>
+      onclick="startChat(${brand ? "'"+brand+"'" : 'null'}, null)">${t.skipCategory}</button>
     <button class="back-link" onclick="renderWelcome()">${t.back}</button>`;
 }
 
 function selectCategory(cat) {
+  // カメラバッグを選んだ場合はさらに細分化
+  if (cat === 'カメラバッグ' || cat === 'Camera Bag') {
+    const t = i18n[lang];
+    const w = document.getElementById('welcome');
+    if (!w) return;
+
+    const bagCats = lang === 'ja'
+      ? ['バックパック','ショルダーバッグ','TLZ・トップローディング','レンズ・ハードケース','ギアアップ・アクセサリー']
+      : ['Backpack','Shoulder Bag','TLZ / Top Loading','Lens & Hard Case','GearUp & Accessories'];
+
+    const chips = bagCats.map(c =>
+      `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
+    ).join('');
+
+    const logoSrc = selectedBrand ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+
+    w.innerHTML = `
+      <div class="category-header">
+        <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
+        <span class="category-label">${lang === 'ja' ? 'バッグの種類を選択' : 'Select bag type'}</span>
+      </div>
+      <div class="category-grid">${chips}</div>
+      <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
+        onclick="startChat(${selectedBrand ? "'"+selectedBrand+"'" : 'null'}, 'カメラバッグ')">${t.skipCategory}</button>
+      <button class="back-link" onclick="showCategoryScreen(${selectedBrand ? "'"+selectedBrand+"'" : 'null'})">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
+    return;
+  }
+
+  selectedCategory = cat;
+  startChat(selectedBrand, cat);
+}
+
+function selectBagCategory(cat) {
   selectedCategory = cat;
   startChat(selectedBrand, cat);
 }
