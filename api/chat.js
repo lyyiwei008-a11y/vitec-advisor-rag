@@ -26,7 +26,7 @@ function detectCategory(messages, categoryHint) {
 // ────────────────────────────────────────────────
 // RAG検索
 // ────────────────────────────────────────────────
-async function searchProducts(query, brandFilter = null, limit = 8) {
+async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 10) {
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: query
@@ -36,12 +36,27 @@ async function searchProducts(query, brandFilter = null, limit = 8) {
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embedding,
     match_count: limit,
-    filter_brand: brandFilter,   // 'Manfrotto' / 'Gitzo' / 'Lowepro' / null
-    include_old: false           // priority 1,2 のみ（販売終了・旧製品を除外）
+    filter_brand: brandFilter,
+    include_old: false
   });
 
   if (error) throw new Error(`Supabase error: ${error.message}`);
-  return data || [];
+  let results = data || [];
+
+  // カテゴリでフィルター（シート名が一致するもの優先）
+  if (categoryFilter) {
+    const filtered = results.filter(p => p.category === categoryFilter);
+    // フィルター結果が3件以上あればそれを使用、少なければ元の結果を使用
+    if (filtered.length >= 3) results = filtered;
+  }
+
+  // priority=1（新製品）を上位に並び替え
+  results.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return b.similarity - a.similarity;
+  });
+
+  return results.slice(0, 8);
 }
 
 // ────────────────────────────────────────────────
@@ -287,8 +302,26 @@ export default async function handler(req, res) {
     let ragProducts = [];
 
     if (shouldRecommend) {
-      const query = userMessages.map(m => m.content).join(' ');
-      ragProducts  = await searchProducts(query, brand);
+      // カテゴリをクエリに含めてRAG検索精度を上げる
+      const categoryQuery = detectedCategory ? detectedCategory + ' ' : '';
+      const brandQuery = brand ? brand + ' ' : '';
+      const userQuery = userMessages.map(m => m.content).join(' ');
+      const query = brandQuery + categoryQuery + userQuery;
+
+      // カテゴリ→シートマッピング（Supabaseのcategory列でフィルター）
+      const categorySheetMap = {
+        'フォト三脚': '01_フォト三脚', 'ビデオ三脚': '08_ビデオ三脚',
+        'フォト雲台': '02_フォト雲台', 'ビデオ雲台': '07_ビデオ雲台',
+        '一脚': '03_フォト一脚', 'カメラバッグ': '10_カメラバッグ',
+        'ライティング': '11_ライティング', 'アクセサリー': '04_三脚雲台Acc',
+        '三脚': null, '雲台': null,
+        'バックパック': 'バックパック', 'ショルダーバッグ': 'ショルダー・TLZ・スリング',
+        'TLZ・トップローディング': 'ショルダー・TLZ・スリング',
+        'レンズ・ハードケース': 'レンズ・ハードサイドケース',
+        'ギアアップ・アクセサリー': 'ギアアップ GearUp',
+      };
+      const categoryFilter = categorySheetMap[detectedCategory];
+      ragProducts = await searchProducts(query, brand, categoryFilter);
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
     } else {
       systemPrompt = buildGuidancePrompt(lang, detectedCategory, brand);
@@ -305,22 +338,55 @@ export default async function handler(req, res) {
     });
 
     const raw = response.choices?.[0]?.message?.content || '';
+    console.log('[RAW RESPONSE]', raw.substring(0, 500));
 
-    let parsed;
+    let parsed = null;
+
+    // 1. まずJSONとして厳密にパース
     try {
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const match  = clean.match(/\{[\s\S]*\}/);
-      parsed = match ? JSON.parse(match[0]) : null;
-    } catch {
-      parsed = null;
+      const clean = raw.replace(/```json\n?|```/g, '').trim();
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) {
+        parsed = JSON.parse(match[0]);
+      }
+    } catch(e) {
+      console.log('[PARSE ERROR]', e.message);
     }
 
-    if (!parsed && raw) {
-      parsed = { message: raw.replace(/\*\*/g, ''), options: [] };
+    // 2. パース失敗時: フォールバック（テキストからoptionsを抽出）
+    if (!parsed) {
+      // options配列をテキストから正規表現で抽出試行
+      const optMatch = raw.match(/"options"\s*:\s*(\[[^\]]+\])/);
+      const msgMatch = raw.match(/"message"\s*:\s*"([^"]+)"/);
+      if (msgMatch) {
+        parsed = {
+          message: msgMatch[1],
+          options: optMatch ? JSON.parse(optMatch[1]) : []
+        };
+      } else {
+        parsed = { message: raw.replace(/\*\*/g, '').trim(), options: [] };
+      }
     }
+
+    // 3. optionsが空またはない場合、カテゴリに応じたデフォルト選択肢を付与
+    if (parsed && (!parsed.options || parsed.options.length === 0) && phase === 'GUIDE') {
+      const defaultOptions = {
+        'フォト三脚':   ['カーボン', 'アルミ', 'こだわらない'],
+        'ビデオ三脚':   ['〜5kg', '5〜10kg', '10kg以上'],
+        'フォト雲台':   ['ボールヘッド', '3ウェイ', 'ギア'],
+        'ビデオ雲台':   ['〜4kg', '4〜8kg', '12kg以上'],
+        '一脚':         ['スポーツ', '旅行・登山', '動画'],
+        'カメラバッグ': ['バックパック', 'ショルダー', 'TLZ'],
+        '三脚':         ['カーボン', 'アルミ', 'こだわらない'],
+        'バックパック': ['プロタクティック', 'フリップサイド', 'ベーシック'],
+      };
+      parsed.options = defaultOptions[detectedCategory] || ['はい', 'いいえ', 'わからない'];
+    }
+
+    console.log('[PARSED]', JSON.stringify(parsed).substring(0, 300));
 
     res.status(200).json({
-      reply: parsed || { message: raw, options: [] },
+      reply: parsed,
       phase,
       category: detectedCategory,
       brand
