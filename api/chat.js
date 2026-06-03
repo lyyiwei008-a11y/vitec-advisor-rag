@@ -220,10 +220,13 @@ ${flow}
 RESPONSE FORMAT — output ONLY this JSON, nothing else:
 {"message":"warm acknowledgment + one question","options":["opt1","opt2","opt3"]}
 
-⚠️ RULES:
-1. Output MUST be valid JSON only — no markdown, no extra text
-2. "options" MUST contain 2-5 items — NEVER empty
-3. Each option must be short (under 15 characters)`;
+⚠️ CRITICAL RULES — NEVER VIOLATE:
+1. Output MUST be valid JSON only — absolutely no markdown, no extra text before or after
+2. "options" array MUST ALWAYS contain 2-5 items — NEVER null, NEVER empty array []
+3. Each option must be short (under 15 characters)
+4. The options MUST match the current question you are asking
+5. If you ask about shooting scene, options must be scenes. If you ask about weight, options must be weights.
+6. NEVER repeat the same options from a previous question`;
 }
 
 function buildRecommendPrompt(lang, brand, products) {

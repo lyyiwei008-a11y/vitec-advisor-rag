@@ -557,24 +557,50 @@ function startChat(brand, category) {
   if (w) w.remove();
   document.getElementById('reset-btn').classList.add('visible');
 
-  // ウェルカムメッセージ生成
-  let intro;
-  if (lang === 'ja') {
-    if (brand && category) intro = `${brand}の${category}についてお探しですね！詳しく教えていただけますか？`;
-    else if (brand) intro = `${brand}製品についてお探しですね！どのような製品をお探しですか？`;
-    else intro = `全ブランドから探しますね。どのような製品をお探しですか？三脚、バッグ、雲台など、お気軽にどうぞ！`;
+  // カテゴリ別の最初の質問と選択肢
+  const firstQ = {
+    ja: {
+      '三脚':                    { msg: `${brand || ''}の三脚をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
+      '雲台':                    { msg: `${brand || ''}の雲台をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
+      '一脚':                    { msg: `${brand || ''}の一脚をお探しですね！主な用途を教えてください。`, opts: ['スポーツ・報道','動画・Vlog','登山・旅行','野鳥・超望遠'] },
+      'カメラバッグ':            { msg: `${brand || ''}のカメラバッグをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
+      'バックパック':            { msg: `Loweproのバックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
+      'ショルダーバッグ':        { msg: `Loweproのショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
+      'TLZ・トップローディング': { msg: `Loweproのトップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
+      'レンズ・ハードケース':    { msg: `Loweproのケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
+      'ギアアップ・アクセサリー':{ msg: `Loweproのギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
+      'ライティング':            { msg: `${brand || ''}のライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品撮影','屋外ロケ'] },
+      'アクセサリー':            { msg: `${brand || ''}のアクセサリーをお探しですね！何に使いたいですか？`, opts: ['カメラ固定・支持','テザー撮影','ライティング補助','その他'] },
+      '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
+      '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
+      '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
+      'バッグ・アクセサリー（Gitzo）': { msg: 'Gitzoのバッグ・アクセサリーをお探しですね！何を収納したいですか？', opts: ['三脚バッグ','カメラバッグ','アクセサリー'] },
+    },
+    en: {
+      '三脚':       { msg: `Looking for a ${brand || ''} tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
+      '雲台':       { msg: `Looking for a ${brand || ''} head! What's the main purpose?`, opts: ['Photography','Video','Both'] },
+      'バックパック':{ msg: `Looking for a Lowepro backpack! What gear do you need to carry?`, opts: ['Mirrorless+2-3 lenses','DSLR+3-4 lenses','Large gear'] },
+    }
+  };
+
+  const catKey = category || '';
+  const q = firstQ[lang]?.[catKey];
+
+  let intro, opts;
+  if (q) {
+    intro = q.msg;
+    opts = q.opts;
+  } else if (lang === 'ja') {
+    intro = brand ? `${brand}製品をお探しですね！どのような製品をお探しですか？` : `全ブランドから探しますね。どのような製品をお探しですか？`;
+    opts = SUGGESTIONS[lang]?.[category] || [];
   } else {
-    if (brand && category) intro = `Looking for ${brand} ${category}! Can you tell me more about what you need?`;
-    else if (brand) intro = `Looking for ${brand} products! What kind of product are you looking for?`;
-    else intro = `Searching all brands! What are you looking for? Tripods, bags, heads — feel free to ask!`;
+    intro = brand ? `Looking for ${brand} products! What are you looking for?` : `Searching all brands! What are you looking for?`;
+    opts = [];
   }
 
   appendMsg('bot', intro);
   history.push({ role: 'assistant', content: intro });
-
-  // サジェスト表示
-  const suggs = SUGGESTIONS[lang]?.[category] || [];
-  if (suggs.length > 0) showOptions(suggs);
+  setTimeout(() => showOptions(opts), 150);
 }
 
 function autoResize(el) {
@@ -720,13 +746,17 @@ async function sendMessage() {
     removeTyping();
     if (!res.ok) throw new Error(data.error || 'Error');
     const reply = data.reply;
+    // 必ず前の選択肢をクリア
+    showOptions([]);
+
     if (reply && reply.type === 'products') {
       history.push({ role: 'assistant', content: JSON.stringify(reply) });
       appendMsg('bot', reply);
     } else if (reply && reply.message) {
       history.push({ role: 'assistant', content: reply.message });
       appendMsg('bot', reply.message);
-      showOptions(reply.options || []);
+      // 少し遅らせて新しい選択肢を表示（スムーズな切り替え）
+      setTimeout(() => showOptions(reply.options || []), 150);
     } else {
       const txt = typeof reply === 'string' ? reply : '';
       history.push({ role: 'assistant', content: txt });
