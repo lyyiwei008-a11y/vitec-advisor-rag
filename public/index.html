@@ -35,37 +35,37 @@ body {
 .header {
   flex-shrink: 0;
   background: var(--white);
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--gray-200);
   padding: 0 clamp(16px,4vw,40px);
   height: 56px;
   display: flex; align-items: center; justify-content: space-between;
   position: sticky; top: 0; z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 14px; }
-.header-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; }
-.header-divider { width: 1px; height: 16px; background: #333; }
+.header-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; filter: invert(1); }
+.header-divider { width: 1px; height: 16px; background: var(--gray-200); }
 .header-title {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: #888;
+  text-transform: uppercase; color: var(--gray-400);
 }
 .reset-btn {
-  background: none; border: 1px solid #444;
+  background: none; border: 1px solid var(--gray-200);
   padding: 5px 12px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; cursor: pointer; color: #888;
+  text-transform: uppercase; cursor: pointer; color: var(--gray-400);
   transition: all 0.15s; display: none;
 }
-.reset-btn:hover { border-color: var(--white); color: var(--white); }
+.reset-btn:hover { border-color: var(--black); color: var(--black); }
 .reset-btn.visible { display: block; }
 .lang-btn {
   background: none; border: none; padding: 5px 10px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-  cursor: pointer; color: #888; transition: all 0.15s;
+  cursor: pointer; color: var(--gray-400); transition: all 0.15s;
 }
-.lang-btn.active { background: var(--white); color: var(--black); }
+.lang-btn.active { background: var(--black); color: var(--white); }
 
 /* ── CHAT ── */
 .chat-container {
@@ -205,7 +205,7 @@ body {
 }
 .welcome-vitec-logo {
   height: 36px; width: auto; margin: 0 auto 6px; display: block;
-  background: var(--black); padding: 6px 12px;
+  filter: invert(1);
 }
 .welcome-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -242,19 +242,10 @@ body {
 }
 .brand-card.dark-bg:hover {
   background: #111;
-  border-color: #666;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-}
-.brand-card.dark-bg {
-  background: #1a1a1a;
-  border-color: #333;
-}
-.brand-card.dark-bg:hover {
-  background: #111;
   border-color: #555;
 }
 .brand-card.all-brands:hover { background: var(--white); }
-.brand-logo { max-height: 32px; max-width: 130px; width: auto; object-fit: contain; }
+.brand-logo { max-height: 32px; max-width: 130px; width: auto; object-fit: contain; filter: invert(1); }
 .brand-logo.gitzo { filter: invert(1); max-height: 22px; }
 .brand-logo.lowepro { max-height: 36px; }
 .brand-logo.manfrotto { max-height: 26px; max-width: 160px; }
@@ -273,7 +264,7 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   margin-bottom: 20px;
 }
-.selected-brand-logo { height: 28px; width: auto; object-fit: contain; }
+.selected-brand-logo { height: 28px; width: auto; object-fit: contain; filter: invert(1); }
 .selected-brand-logo.gitzo { filter: invert(0); max-height: 20px; }
 .selected-brand-logo.manfrotto { }
 .category-label {
@@ -467,13 +458,13 @@ function renderWelcome() {
     <div class="welcome-title">${t.welcomeTitle}</div>
     <p class="welcome-sub">${t.welcomeSub}</p>
     <div class="brand-grid">
-      <div class="brand-card dark-bg" onclick="selectBrand('Manfrotto')">
+      <div class="brand-card" onclick="selectBrand('Manfrotto')">
         <img class="brand-logo manfrotto" src="${LOGOS.manfrotto}" alt="Manfrotto">
       </div>
-      <div class="brand-card dark-bg" onclick="selectBrand('Lowepro')">
+      <div class="brand-card" onclick="selectBrand('Lowepro')">
         <img class="brand-logo lowepro" src="${LOGOS.lowepro}" alt="Lowepro">
       </div>
-      <div class="brand-card dark-bg" onclick="selectBrand('Gitzo')">
+      <div class="brand-card" onclick="selectBrand('Gitzo')">
         <img class="brand-logo gitzo" src="${LOGOS.gitzo}" alt="Gitzo">
       </div>
       <div class="brand-card" onclick="selectBrand('all')">
