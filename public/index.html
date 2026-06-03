@@ -632,7 +632,7 @@ function selectCategory(cat) {
       <div class="category-grid">${chips}</div>
       <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
         onclick="startChat(${selectedBrand ? "'"+selectedBrand+"'" : 'null'}, 'カメラバッグ')">${t.skipCategory}</button>
-      <button class="back-link" onclick="showCategoryScreen(${selectedBrand ? "'"+selectedBrand+"'" : 'null'})">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
+      <button class="back-link" onclick="${selectedBrand === 'Lowepro' ? 'renderWelcome()' : 'showCategoryScreen(' + (selectedBrand ? "\'" + selectedBrand + "\'" : 'null') + ')'}">${lang === 'ja' ? (selectedBrand === 'Lowepro' ? 'ブランド選択に戻る' : 'カテゴリ選択に戻る') : (selectedBrand === 'Lowepro' ? 'Back to brand selection' : 'Back to categories')}</button>`;
     return;
   }
 
