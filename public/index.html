@@ -845,15 +845,62 @@ async function sendMessage() {
     if (reply && reply.type === 'products') {
       history.push({ role: 'assistant', content: JSON.stringify(reply) });
       appendMsg('bot', reply);
-      showOptions([]); // 製品推薦後は選択肢不要
+      showOptions([]);
     } else if (reply && reply.message) {
       history.push({ role: 'assistant', content: reply.message });
       appendMsg('bot', reply.message);
-      // フロント管理の選択肢を表示（AIの返答に依存しない）
       currentStep++;
+
       const flowOpts = FLOW_OPTIONS[lang]?.[selectedCategory];
-      const nextOpts = flowOpts?.[currentStep] || reply.options || [];
-      setTimeout(() => showOptions(nextOpts), 150);
+      const totalSteps = flowOpts ? flowOpts.length : 0;
+
+      if (currentStep >= totalSteps) {
+        // 全ステップ完了 → 推薦フェーズへ（自動でもう一度送信）
+        showOptions([]);
+        const finalMsg = lang === 'ja'
+          ? 'おすすめの製品を探しています...'
+          : 'Finding the best products for you...';
+        appendMsg('bot', finalMsg);
+        history.push({ role: 'assistant', content: finalMsg });
+        // 少し待ってから推薦リクエスト送信
+        setTimeout(async () => {
+          isLoading = true;
+          document.getElementById('send-btn').disabled = true;
+          showTyping();
+          try {
+            const res = await fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messages: history,
+                lang,
+                brand: selectedBrand !== 'all' ? selectedBrand : null,
+                category: selectedCategory,
+                forceRecommend: true
+              })
+            });
+            const data = await res.json();
+            removeTyping();
+            const r = data.reply;
+            if (r && r.type === 'products') {
+              history.push({ role: 'assistant', content: JSON.stringify(r) });
+              appendMsg('bot', r);
+            } else if (r && r.message) {
+              history.push({ role: 'assistant', content: r.message });
+              appendMsg('bot', r.message);
+            }
+          } catch(e) {
+            removeTyping();
+            appendMsg('bot', lang === 'ja' ? 'エラーが発生しました。' : 'An error occurred.');
+          }
+          isLoading = false;
+          document.getElementById('send-btn').disabled = false;
+        }, 800);
+      } else {
+        // 次のステップの選択肢を表示
+        const nextOpts = flowOpts[currentStep];
+        setTimeout(() => showOptions(nextOpts), 150);
+      }
     } else {
       const txt = typeof reply === 'string' ? reply : '';
       history.push({ role: 'assistant', content: txt });
