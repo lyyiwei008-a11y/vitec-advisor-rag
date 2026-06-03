@@ -295,7 +295,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { messages, lang = 'ja', brand = null, category = null } = req.body;
+  const { messages, lang = 'ja', brand = null, category = null, forceRecommend = false } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'No messages provided' });
   }
@@ -309,8 +309,10 @@ export default async function handler(req, res) {
   // 最低4回答えた後、または明示的な推薦リクエストがあった場合
   // ただしカテゴリ別の質問フローが完了している場合は推薦
   const minTurns = 4;
-  const shouldRecommend = userMessages.length >= minTurns &&
-    (userMessages.length >= 6 || recommendSignals.test(lastUserMsg));
+  // forceRecommend=true、またはターン数が5以上、または明示的な推薦リクエスト
+  const shouldRecommend = (forceRecommend === true) || 
+    (userMessages.length >= 5) ||
+    (userMessages.length >= minTurns && recommendSignals.test(lastUserMsg));
 
   const phase = shouldRecommend ? 'RECOMMEND' : 'GUIDE';
   console.log(`[${phase}] lang:${lang} brand:${brand} category:${detectedCategory} turns:${userMessages.length}`);
