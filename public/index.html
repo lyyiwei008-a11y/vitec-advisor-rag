@@ -358,6 +358,96 @@ let isRecording = false;
 let selectedBrand = null;
 let selectedCategory = null;
 
+
+// ── 質問フロー選択肢（全てフロント管理） ──
+const FLOW_OPTIONS = {
+  ja: {
+    '三脚': [
+      ['写真撮影メイン','動画撮影メイン','写真・動画両方'],
+      ['〜2kg','2〜5kg','5〜10kg','10kg以上'],
+      ['旅行・登山','街撮り・日常','スタジオ・室内','スポーツ・野鳥','放送・シネマ'],
+      ['カーボン（軽量優先）','アルミ（コスパ優先）','こだわらない'],
+      ['〜3万円','3〜8万円','8〜15万円','15万円以上'],
+    ],
+    '雲台': [
+      ['写真撮影メイン','動画撮影メイン','写真・動画両方'],
+      ['〜2kg','2〜5kg','5〜10kg','10kg以上'],
+      ['Manfrotto三脚と合わせたい','他社三脚を持っている','三脚もこれから購入'],
+      ['〜2万円','2〜5万円','5〜10万円','10万円以上'],
+    ],
+    '一脚': [
+      ['スポーツ・報道','動画・Vlog','登山・旅行','野鳥・超望遠'],
+      ['〜1.5kg','〜2.5kg','〜5kg','5kg以上'],
+      ['一脚のみでよい','雲台セットが欲しい','既に雲台を持っている'],
+      ['カーボン（軽量優先）','アルミ（コスパ優先）','こだわらない'],
+    ],
+    'カメラバッグ': [
+      ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'],
+      ['標準ズーム程度','70-200mm','超望遠300mm以上'],
+      ['13インチ以下','15インチ','不要'],
+      ['旅行・登山','街撮り・日常','プロ撮影','ドローン運搬'],
+    ],
+    'ライティング': [
+      ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
+      ['ストロボ','LED','リングライト','大型モノブロック'],
+      ['スタンドも欲しい','既に持っている','アクセサリーのみ'],
+      ['スタジオ固定','自宅・小スペース','屋外移動','卓上'],
+    ],
+    'アクセサリー': [
+      ['カメラ固定・支持','テザー撮影','ライティング補助','その他'],
+      ['三脚','ライトスタンド','カメラ本体','壁・天井'],
+      ['マジックアーム','クランプ','プレート','ストラップ'],
+    ],
+    '三脚（Gitzo）': [
+      ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'],
+      ['〜3kg','3〜6kg','6〜10kg','10kg以上'],
+      ['三脚のみ','雲台もセットで欲しい','既に雲台を持っている'],
+      ['できるだけ軽く小さく','安定性重視','バランス重視'],
+    ],
+    '一脚（Gitzo）': [
+      ['スポーツ・野鳥','風景・旅行','動画・Vlog'],
+      ['〜3kg','3〜6kg','6kg以上'],
+      ['コンパクトに畳みたい','剛性重視','こだわらない'],
+    ],
+    '雲台（Gitzo）': [
+      ['写真撮影','動画撮影','パノラマ・360°'],
+      ['〜5kg','5〜10kg','10〜25kg'],
+      ['Gitzo三脚と合わせたい','他社三脚を持っている','三脚もこれから購入'],
+    ],
+    'バッグ・アクセサリー（Gitzo）': [
+      ['三脚バッグ','カメラバッグ','アクセサリー'],
+      ['コンパクト（トラベラー相当）','中型','大型'],
+    ],
+    'バックパック': [
+      ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'],
+      ['標準ズーム程度','70-200mm','超望遠・シネレンズ'],
+      ['13インチ以下','15インチ','不要'],
+      ['旅行・登山','街撮り・日常','プロ撮影','ドローン運搬'],
+    ],
+    'ショルダーバッグ': [
+      ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'],
+      ['斜めがけショルダー','スリング','トップローディング'],
+      ['日常・街撮り','旅行','スポーツ・アウトドア'],
+    ],
+    'TLZ・トップローディング': [
+      ['〜24-70mm','〜70-200mm','300mm以上'],
+      ['素早く取り出したい','しっかり保護したい','両方'],
+      ['単独で使う','他のバッグのインサートとして'],
+    ],
+    'レンズ・ハードケース': [
+      ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'],
+      ['小型（〜8cm径）','中型（〜11cm径）','大型（〜13cm径）'],
+      ['バッグのインサート','単独で携帯','スタジオ保管'],
+    ],
+    'ギアアップ・アクセサリー': [
+      ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'],
+      ['バッグのインサート','単独で使う','整理収納'],
+    ],
+  }
+};
+
+let currentStep = 0; // 現在の質問ステップ
+
 // ── カテゴリ定義 ──
 const CATEGORIES = {
   ja: {
@@ -553,6 +643,7 @@ function selectBagCategory(cat) {
 function startChat(brand, category) {
   selectedBrand = brand;
   selectedCategory = category;
+  currentStep = 0;
   const w = document.getElementById('welcome');
   if (w) w.remove();
   document.getElementById('reset-btn').classList.add('visible');
@@ -627,7 +718,7 @@ function showOptions(options) {
 }
 
 function resetChat() {
-  history = []; isLoading = false; selectedBrand = null; selectedCategory = null;
+  history = []; isLoading = false; selectedBrand = null; selectedCategory = null; currentStep = 0;
   document.getElementById('send-btn').disabled = false;
   document.getElementById('reset-btn').classList.remove('visible');
   showOptions([]);
@@ -754,11 +845,15 @@ async function sendMessage() {
     if (reply && reply.type === 'products') {
       history.push({ role: 'assistant', content: JSON.stringify(reply) });
       appendMsg('bot', reply);
+      showOptions([]); // 製品推薦後は選択肢不要
     } else if (reply && reply.message) {
       history.push({ role: 'assistant', content: reply.message });
       appendMsg('bot', reply.message);
-      // 少し遅らせて新しい選択肢を表示（スムーズな切り替え）
-      setTimeout(() => showOptions(reply.options || []), 150);
+      // フロント管理の選択肢を表示（AIの返答に依存しない）
+      currentStep++;
+      const flowOpts = FLOW_OPTIONS[lang]?.[selectedCategory];
+      const nextOpts = flowOpts?.[currentStep] || reply.options || [];
+      setTimeout(() => showOptions(nextOpts), 150);
     } else {
       const txt = typeof reply === 'string' ? reply : '';
       history.push({ role: 'assistant', content: txt });
