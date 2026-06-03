@@ -42,7 +42,7 @@ body {
   position: sticky; top: 0; z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 14px; }
-.header-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; filter: invert(1); }
+.header-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; }
 .header-divider { width: 1px; height: 16px; background: var(--gray-200); }
 .header-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -205,7 +205,7 @@ body {
 }
 .welcome-vitec-logo {
   height: 36px; width: auto; margin: 0 auto 6px; display: block;
-  filter: invert(1);
+ 
 }
 .welcome-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -245,8 +245,8 @@ body {
   border-color: #555;
 }
 .brand-card.all-brands:hover { background: var(--white); }
-.brand-logo { max-height: 32px; max-width: 130px; width: auto; object-fit: contain; filter: invert(1); }
-.brand-logo.gitzo { filter: invert(1); max-height: 22px; }
+.brand-logo { max-height: 32px; max-width: 130px; width: auto; object-fit: contain; }
+.brand-logo.gitzo { max-height: 22px; }
 .brand-logo.lowepro { max-height: 36px; }
 .brand-logo.manfrotto { max-height: 26px; max-width: 160px; }
 .brand-logo.vitec-small {  max-height: 20px; max-width: 80px; }
@@ -264,8 +264,8 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   margin-bottom: 20px;
 }
-.selected-brand-logo { height: 28px; width: auto; object-fit: contain; filter: invert(1); }
-.selected-brand-logo.gitzo { filter: invert(0); max-height: 20px; }
+.selected-brand-logo { height: 28px; width: auto; object-fit: contain; }
+.selected-brand-logo.gitzo {  max-height: 20px; }
 .selected-brand-logo.manfrotto { }
 .category-label {
   font-family: 'Barlow Condensed', sans-serif;
@@ -306,7 +306,7 @@ body {
 
 <header class="header">
   <div class="header-left">
-    <img class="header-logo" src="/images/logo-vitec.png" alt="Vitec">
+    <img class="header-logo" src="/images/logo-vitec.jpg" alt="Vitec">
     <div class="header-divider"></div>
     <span class="header-title">Product Advisor</span>
   </div>
@@ -344,10 +344,10 @@ body {
 
 <script>
 const LOGOS = {
-  vitec:     '/images/logo-vitec.png',
-  manfrotto: '/images/logo-manfrotto.png',
-  gitzo:     '/images/logo-gitzo.png',
-  lowepro:   '/images/logo-lowepro.png'
+  vitec:     '/images/logo-vitec.jpg',
+  manfrotto: '/images/logo-manfrotto.jpg',
+  gitzo:     '/images/logo-gitzo.jpg',
+  lowepro:   '/images/logo-lowepro.jpg'
 };
 
 let lang = 'ja';
