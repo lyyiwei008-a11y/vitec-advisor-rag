@@ -575,6 +575,11 @@ function selectBrand(brand) {
     return;
   }
 
+  // Loweproはカメラバッグブランドなのでバッグ種類選択へ直接進む
+  if (brand === 'Lowepro') {
+    selectCategory('カメラバッグ');
+    return;
+  }
   showCategoryScreen(brand);
 }
 
