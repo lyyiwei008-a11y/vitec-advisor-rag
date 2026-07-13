@@ -170,24 +170,91 @@ const FLOWS = {
   },
 
   en: {
-    '三脚': `[Tripod Flow] Ask ONE at a time:
+    'Tripod': `[Tripod Flow] Ask ONE question at a time:
 1. Main purpose → options:["Photography","Video","Both photo & video"]
 2. Gear weight (camera + lens) → options:["Up to 2kg","2-5kg","5-10kg","10kg+"]
 3. Shooting scene → options:["Travel/hiking","Street/daily","Studio","Sports/wildlife","Cinema/broadcast"]
+4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
+5. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
+
+    'Head': `[Head Flow] Ask ONE question at a time:
+1. Main purpose → options:["Photography","Video","Both photo & video"]
+2. Head type → options:["Ball head","3-way","Fluid (video)","Geared","Not sure"]
+3. Gear weight → options:["Up to 2kg","2-5kg","5-10kg","10kg+"]
+4. Tripod combination → options:["With Manfrotto tripod","With other brand tripod","Need tripod too"]
+5. Budget → options:["Under ¥20,000","¥20,000-50,000","¥50,000-100,000","¥100,000+"]`,
+
+    'Monopod': `[Monopod Flow] Ask ONE question at a time:
+1. Main use → options:["Sports & news","Video & vlog","Hiking & travel","Wildlife & telephoto"]
+2. Gear weight → options:["Up to 1.5kg","Up to 2.5kg","Up to 5kg","5kg+"]
+3. Head needed? → options:["Monopod only","With head set","Already have a head"]
 4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]`,
 
-    '三脚（Gitzo）': `[Gitzo Tripod Flow] Ask ONE at a time:
-1. Shooting scene → options:["Travel/backpacking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
+    'Camera Bag': `[Camera Bag Flow] Ask ONE question at a time:
+1. Bag style → options:["Backpack","Shoulder bag","Top loading","Any style"]
+2. Gear to carry → options:["Mirrorless + 2-3 lenses","DSLR + 3-4 lenses","Large gear multiple"]
+3. Largest lens → options:["Standard zoom","70-200mm","Super telephoto 300mm+"]
+4. Laptop/tablet → options:["Up to 13\"","15\"","Not needed"]
+5. Main scene → options:["Travel/hiking","Street/daily","Professional","Drone transport"]`,
+
+    'Lighting': `[Lighting Flow] Ask ONE question at a time:
+1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
+2. Light source → options:["Strobe","LED","Ring light","Large monoblock"]
+3. Stand needed? → options:["Need stand too","Already have one","Accessories only"]
+4. Location → options:["Studio fixed","Home/small space","Outdoor mobile","Desktop"]
+5. Arm needed? → options:["Needed","Not needed","Not sure"]`,
+
+    'Accessories': `[Accessories Flow] Ask ONE question at a time:
+1. Main use → options:["Camera support","Tethered shooting","Lighting support","Other"]
+2. Mount point → options:["Tripod","Light stand","Camera body","Wall/ceiling"]
+3. Type needed → options:["Magic arm","Clamp","Plate","Strap"]`,
+
+    'Tripod (Gitzo)': `[Gitzo Tripod Flow] Ask ONE question at a time:
+1. Shooting scene → options:["Travel/hiking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
 2. Gear weight → options:["Up to 3kg","3-6kg","6-10kg","10kg+"]
 3. Head needed? → options:["Tripod only","Need head too","Already have a head"]
-4. Portability → options:["As light as possible","Stability over weight","Balanced"]`,
+4. Portability → options:["As light as possible","Stability over weight","Balanced"]
+5. Budget → options:["Under ¥50,000","¥50,000-100,000","¥100,000-200,000","¥200,000+"]`,
 
-    'バックパック': `[Lowepro Backpack Flow] Ask ONE at a time:
-1. Gear → options:["Mirrorless+2-3 lenses","DSLR+3-4 lenses","Large gear+accessories"]
+    'Monopod (Gitzo)': `[Gitzo Monopod Flow] Ask ONE question at a time:
+1. Shooting scene → options:["Sports/wildlife","Landscape/travel","Video/vlog"]
+2. Gear weight → options:["Up to 3kg","3-6kg","6kg+"]
+3. Section count → options:["Compact folding (more sections)","Rigidity priority (fewer sections)","No preference"]`,
+
+    'Head (Gitzo)': `[Gitzo Head Flow] Ask ONE question at a time:
+1. Main purpose → options:["Photography","Video","Panorama/360°"]
+2. Gear weight → options:["Up to 5kg","5-10kg","10-25kg"]
+3. Tripod combination → options:["With Gitzo tripod","With other brand tripod","Need tripod too"]`,
+
+    'Bag & Accessories': `[Gitzo Bag Flow] Ask ONE question at a time:
+1. What to store → options:["Tripod bag","Camera bag","Accessories"]
+2. Tripod size → options:["Compact (Traveler size)","Medium","Large (Systematic size)"]`,
+
+    'Backpack': `[Lowepro Backpack Flow] Ask ONE question at a time:
+1. Gear to carry → options:["Mirrorless + 2-3 lenses","DSLR + 3-4 lenses","Large gear + accessories"]
 2. Largest lens → options:["Standard zoom","70-200mm","Super telephoto/cine lens"]
 3. Laptop → options:["Up to 13\"","15\"","Not needed"]
-4. Scene → options:["Travel/hiking","Street/daily","Professional","Drone"]
+4. Main scene → options:["Travel/hiking","Street/daily","Professional","Drone transport"]
 5. Rain cover → options:["Essential","Nice to have","Not needed"]`,
+
+    'Shoulder Bag': `[Lowepro Shoulder Bag Flow] Ask ONE question at a time:
+1. Gear to carry → options:["Compact camera only","Camera + 1 lens","Camera + multiple lenses"]
+2. Bag style → options:["Shoulder bag","Sling","Top loading"]
+3. Main scene → options:["Daily/street","Travel","Sports/outdoor"]`,
+
+    'TLZ / Top Loading': `[Lowepro TLZ Flow] Ask ONE question at a time:
+1. Lens size → options:["Up to 24-70mm","Up to 70-200mm","300mm+"]
+2. Priority → options:["Quick access","Solid protection","Both"]
+3. Usage → options:["Standalone use","As bag insert"]`,
+
+    'Lens & Hard Case': `[Lowepro Case Flow] Ask ONE question at a time:
+1. What to store → options:["Interchangeable lens","Camera + accessories","Battery/small items"]
+2. Lens size → options:["Small (~8cm dia.)","Medium (~11cm dia.)","Large (~13cm dia.)"]
+3. Usage → options:["As bag insert","Standalone carry","Studio storage"]`,
+
+    'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONE question at a time:
+1. What to store → options:["Cables/batteries","Camera body","Lens","Memory cards"]
+2. Usage → options:["As bag insert","Standalone use","Organization"]`,
   }
 };
 
