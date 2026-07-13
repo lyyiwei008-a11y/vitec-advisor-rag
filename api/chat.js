@@ -82,18 +82,16 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 // ────────────────────────────────────────────────
 const FLOWS = {
   ja: {
-    // ── Manfrotto ──
     '三脚': `【三脚の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
-2. 使用機材の重さ（カメラ＋レンズ合計） → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
+2. 使用機材の重さ → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
 3. 撮影シーン → options:["旅行・登山","街撮り・日常","スタジオ・室内","スポーツ・野鳥","放送・シネマ"]
 4. 素材のこだわり → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
 5. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
 
     '雲台': `【雲台の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
-2. 写真メインの場合: 雲台タイプ → options:["ボールヘッド","3ウェイ","ギア雲台","わからない"]
-   動画メインの場合: 耐荷重の目安 → options:["〜4kg","4〜8kg","8〜12kg","12kg以上"]
+2. 雲台のタイプ → options:["ボールヘッド","3ウェイ","ビデオ雲台（フルード）","ギア雲台","わからない"]
 3. 使用機材の重さ → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
 4. 三脚との組み合わせ → options:["Manfrotto三脚と合わせたい","他社三脚を持っている","三脚もこれから購入"]
 5. 予算感 → options:["〜2万円","2〜5万円","5〜10万円","10万円以上"]`,
@@ -106,8 +104,8 @@ const FLOWS = {
 
     'カメラバッグ': `【カメラバッグの質問フロー】1つずつ質問：
 1. バッグのスタイル → options:["バックパック","ショルダーバッグ","トップローディング","どれでもよい"]
-2. 収納したい機材 → options:["ミラーレス1台+レンズ1〜2本","一眼+レンズ3〜4本","大型機材複数","動画機材一式"]
-3. 最大レンズサイズ → options:["標準ズーム程度","70-200mm","超望遠300mm以上","シネレンズ"]
+2. 収納したい機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材複数"]
+3. 最大レンズサイズ → options:["標準ズーム程度","70-200mm","超望遠300mm以上"]
 4. PC・タブレット収納 → options:["13インチ以下","15インチ","不要"]
 5. 使用シーン → options:["旅行・登山","街撮り・日常","プロ撮影","ドローン運搬"]`,
 
@@ -123,18 +121,17 @@ const FLOWS = {
 2. 取り付け先 → options:["三脚","ライトスタンド","カメラ本体","壁・天井"]
 3. 具体的に欲しいもの → options:["マジックアーム","クランプ","プレート","ストラップ"]`,
 
-    // ── Gitzo ──
     '三脚（Gitzo）': `【Gitzo三脚の質問フロー】1つずつ質問：
-1. 撮影シーン → options:["旅行・登山・バックパック","風景・長時間露光","野鳥・超望遠","動画・映像制作","スタジオ"]
+1. 撮影シーン → options:["旅行・登山","風景・長時間露光","野鳥・超望遠","動画・映像制作"]
 2. カメラ＋レンズの合計重量 → options:["〜3kg","3〜6kg","6〜10kg","10kg以上"]
 3. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい","既に雲台を持っている"]
-4. 携帯性のこだわり → options:["できるだけ軽く小さく","多少重くても安定性重視","バランス重視"]
+4. 携帯性のこだわり → options:["できるだけ軽く小さく","安定性重視","バランス重視"]
 5. 予算感 → options:["〜5万円","5〜10万円","10〜20万円","20万円以上"]`,
 
     '一脚（Gitzo）': `【Gitzo一脚の質問フロー】1つずつ質問：
 1. 撮影シーン → options:["スポーツ・野鳥","風景・旅行","動画・Vlog"]
 2. 機材の重さ → options:["〜3kg","3〜6kg","6kg以上"]
-3. 段数のこだわり → options:["コンパクトに畳みたい（多段）","剛性重視（少段）","こだわらない"]`,
+3. 段数のこだわり → options:["コンパクトに畳みたい","剛性重視","こだわらない"]`,
 
     '雲台（Gitzo）': `【Gitzo雲台の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影","動画撮影","パノラマ・360°"]
@@ -143,18 +140,17 @@ const FLOWS = {
 
     'バッグ・アクセサリー（Gitzo）': `【Gitzoバッグの質問フロー】1つずつ質問：
 1. 何を収納したいか → options:["三脚バッグ","カメラバッグ","アクセサリー"]
-2. 対応したい三脚サイズ → options:["コンパクト（トラベラー相当）","中型","大型（システマティック相当）"]`,
+2. 対応したい三脚サイズ → options:["コンパクト（トラベラー相当）","中型","大型"]`,
 
-    // ── Lowepro ──
     'バックパック': `【Loweproバックパックの質問フロー】1つずつ質問：
-1. 収納したい機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材+アクセサリー一式"]
+1. 収納したい機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材複数"]
 2. 最大レンズサイズ → options:["標準ズーム程度","70-200mm","超望遠・シネレンズ"]
 3. PC・タブレット収納 → options:["13インチ以下","15インチ","不要"]
 4. 使用シーン → options:["旅行・登山","街撮り・日常","プロ撮影","ドローン運搬"]
 5. 防水・レインカバー → options:["必須","あれば嬉しい","不要"]`,
 
     'ショルダーバッグ': `【Loweproショルダーの質問フロー】1つずつ質問：
-1. 収納したい機材 → options:["コンパクト1台のみ","カメラ1台+レンズ1本","カメラ1台+レンズ複数"]
+1. 収納したい機材 → options:["コンパクト1台のみ","カメラ1台+レンズ1本","カメラ+レンズ複数"]
 2. バッグのスタイル → options:["斜めがけショルダー","スリング","トップローディング"]
 3. 使用シーン → options:["日常・街撮り","旅行","スポーツ・アウトドア"]`,
 
@@ -164,13 +160,13 @@ const FLOWS = {
 3. 使い方 → options:["単独で使う","他のバッグのインサートとして"]`,
 
     'レンズ・ハードケース': `【Loweproケースの質問フロー】1つずつ質問：
-1. 収納したいもの → options:["交換レンズ","カメラ本体+アクセサリー","バッテリー・小物"]
+1. 収納したいもの → options:["交換レンズ","カメラ+アクセサリー","バッテリー・小物"]
 2. レンズサイズ → options:["小型（〜8cm径）","中型（〜11cm径）","大型（〜13cm径）"]
 3. 使い方 → options:["バッグのインサート","単独で携帯","スタジオ保管"]`,
 
     'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つずつ質問：
 1. 収納したいもの → options:["ケーブル・バッテリー","カメラ本体","レンズ","メモリーカード"]
-2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`
+2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`,
   },
 
   en: {
@@ -181,15 +177,17 @@ const FLOWS = {
 4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]`,
 
     '三脚（Gitzo）': `[Gitzo Tripod Flow] Ask ONE at a time:
-1. Shooting scene → options:["Travel/backpacking","Landscape/long exposure","Wildlife/telephoto","Video/cinema","Studio"]
+1. Shooting scene → options:["Travel/backpacking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
 2. Gear weight → options:["Up to 3kg","3-6kg","6-10kg","10kg+"]
 3. Head needed? → options:["Tripod only","Need head too","Already have a head"]
 4. Portability → options:["As light as possible","Stability over weight","Balanced"]`,
 
     'バックパック': `[Lowepro Backpack Flow] Ask ONE at a time:
 1. Gear → options:["Mirrorless+2-3 lenses","DSLR+3-4 lenses","Large gear+accessories"]
-2. Laptop → options:["Up to 13\"","15\"","Not needed"]
-3. Scene → options:["Travel/hiking","Street/daily","Professional","Drone"]`
+2. Largest lens → options:["Standard zoom","70-200mm","Super telephoto/cine lens"]
+3. Laptop → options:["Up to 13\"","15\"","Not needed"]
+4. Scene → options:["Travel/hiking","Street/daily","Professional","Drone"]
+5. Rain cover → options:["Essential","Nice to have","Not needed"]`,
   }
 };
 
