@@ -539,6 +539,24 @@ const FLOW_OPTIONS = {
   }
 }
 
+let currentStep = 0; // 現在の質問ステップ
+
+// ── カテゴリ定義 ──
+const CATEGORIES = {
+  ja: {
+    Manfrotto: ['三脚','雲台','一脚','カメラバッグ','ライティング','アクセサリー'],
+    Gitzo:     ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）'],
+    Lowepro:   ['カメラバッグ'],
+    all:       ['三脚','雲台','一脚','カメラバッグ','ライティング','アクセサリー']
+  },
+  en: {
+    Manfrotto: ['Tripod','Head','Monopod','Camera Bag','Lighting','Accessories'],
+    Gitzo:     ['Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'],
+    Lowepro:   ['Camera Bag'],
+    all:       ['Tripod','Head','Monopod','Camera Bag','Lighting','Accessories']
+  }
+};
+
 // ── サジェスト（カテゴリ別） ──
 const SUGGESTIONS = {
   ja: {
