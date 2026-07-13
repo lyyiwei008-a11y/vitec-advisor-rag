@@ -26,7 +26,7 @@ function detectCategory(messages, categoryHint) {
 // ────────────────────────────────────────────────
 // RAG検索
 // ────────────────────────────────────────────────
-async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 10) {
+async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 15) {
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: query
@@ -73,7 +73,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     return b.similarity - a.similarity;
   });
 
-  return results.slice(0, 8);
+  return results.slice(0, 12);
 }
 
 // ────────────────────────────────────────────────
@@ -283,7 +283,7 @@ INSTRUCTIONS:
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
 
-Recommend 3-5 products. Never return empty items array.`;
+Recommend 5-7 products. Never return empty items array.`;
 }
 
 // ────────────────────────────────────────────────
