@@ -45,7 +45,8 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 
   // カテゴリでフィルター
   if (categoryFilter) {
-    const filtered = results.filter(p => p.category === categoryFilter);
+    const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
+    const filtered = results.filter(p => filters.includes(p.category));
     if (filtered.length >= 3) results = filtered;
   }
 
@@ -311,7 +312,6 @@ export default async function handler(req, res) {
   const minTurns = 4;
   // forceRecommend=true、またはターン数が5以上、または明示的な推薦リクエスト
   const shouldRecommend = (forceRecommend === true) || 
-    (userMessages.length >= 5) ||
     (userMessages.length >= minTurns && recommendSignals.test(lastUserMsg));
 
   const phase = shouldRecommend ? 'RECOMMEND' : 'GUIDE';
@@ -332,7 +332,7 @@ export default async function handler(req, res) {
       const categorySheetMap = {
         // Manfrotto
         '三脚': null,          // 写真・動画両方含むのでシートフィルターなし
-        '雲台': null,          // 写真・動画両方含むのでシートフィルターなし
+        '雲台': ['02_フォト雲台', '07_ビデオ雲台'],  // フォト・ビデオ雲台のみ（キット除外）
         '一脚': '03_フォト一脚',
         'カメラバッグ': '10_カメラバッグ',
         'ライティング': '11_ライティング',
