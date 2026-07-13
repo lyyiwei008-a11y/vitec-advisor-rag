@@ -657,29 +657,31 @@ function startChat(brand, category) {
   const w = document.getElementById('welcome');
   if (w) w.remove();
   document.getElementById('reset-btn').classList.add('visible');
+  // 'all'の場合は表示用ラベルを空にする
+  const brandLabel = (brand && brand !== 'all') ? brand : '';
 
   // カテゴリ別の最初の質問と選択肢
   const firstQ = {
     ja: {
-      '三脚':                    { msg: `${brand || ''}の三脚をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
-      '雲台':                    { msg: `${brand || ''}の雲台をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
-      '一脚':                    { msg: `${brand || ''}の一脚をお探しですね！主な用途を教えてください。`, opts: ['スポーツ・報道','動画・Vlog','登山・旅行','野鳥・超望遠'] },
-      'カメラバッグ':            { msg: `${brand || ''}のカメラバッグをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
-      'バックパック':            { msg: `${brand || 'Lowepro'}のバックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
-      'ショルダーバッグ':        { msg: `${brand || 'Lowepro'}のショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
-      'TLZ・トップローディング': { msg: `${brand || 'Lowepro'}のトップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
-      'レンズ・ハードケース':    { msg: `${brand || 'Lowepro'}のケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
-      'ギアアップ・アクセサリー':{ msg: `${brand || 'Lowepro'}のギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
-      'ライティング':            { msg: `${brand || ''}のライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品撮影','屋外ロケ'] },
-      'アクセサリー':            { msg: `${brand || ''}のアクセサリーをお探しですね！何に使いたいですか？`, opts: ['カメラ固定・支持','テザー撮影','ライティング補助','その他'] },
+      '三脚':                    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
+      '雲台':                    { msg: `${brandLabel ? brandLabel + 'の' : ''}雲台をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
+      '一脚':                    { msg: `${brandLabel ? brandLabel + 'の' : ''}一脚をお探しですね！主な用途を教えてください。`, opts: ['スポーツ・報道','動画・Vlog','登山・旅行','野鳥・超望遠'] },
+      'カメラバッグ':            { msg: `${brandLabel ? brandLabel + 'の' : ''}カメラバッグをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
+      'バックパック':            { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}バックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
+      'ショルダーバッグ':        { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
+      'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
+      'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
+      'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
+      'ライティング':            { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品撮影','屋外ロケ'] },
+      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！何に使いたいですか？`, opts: ['カメラ固定・支持','テザー撮影','ライティング補助','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
       '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
       'バッグ・アクセサリー（Gitzo）': { msg: 'Gitzoのバッグ・アクセサリーをお探しですね！何を収納したいですか？', opts: ['三脚バッグ','カメラバッグ','アクセサリー'] },
     },
     en: {
-      '三脚':       { msg: `Looking for a ${brand || ''} tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
-      '雲台':       { msg: `Looking for a ${brand || ''} head! What's the main purpose?`, opts: ['Photography','Video','Both'] },
+      '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
+      '雲台':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both'] },
       'バックパック':{ msg: `Looking for a Lowepro backpack! What gear do you need to carry?`, opts: ['Mirrorless+2-3 lenses','DSLR+3-4 lenses','Large gear'] },
     }
   };
@@ -692,10 +694,10 @@ function startChat(brand, category) {
     intro = q.msg;
     opts = q.opts;
   } else if (lang === 'ja') {
-    intro = brand ? `${brand}製品をお探しですね！どのような製品をお探しですか？` : `全ブランドから探しますね。どのような製品をお探しですか？`;
+    intro = brandLabel ? `${brandLabel}製品をお探しですね！どのような製品をお探しですか？` : `全ブランドから探しますね。どのような製品をお探しですか？`;
     opts = SUGGESTIONS[lang]?.[category] || [];
   } else {
-    intro = brand ? `Looking for ${brand} products! What are you looking for?` : `Searching all brands! What are you looking for?`;
+    intro = brandLabel ? `Looking for ${brandLabel} products! What are you looking for?` : `Searching all brands! What are you looking for?`;
     opts = [];
   }
 
