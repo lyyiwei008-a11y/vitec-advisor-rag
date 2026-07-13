@@ -47,7 +47,8 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   if (categoryFilter) {
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
     const filtered = results.filter(p => filters.includes(p.category));
-    if (filtered.length >= 3) results = filtered;
+    // カテゴリフィルターがある場合は必ず適用（件数が少なくても）
+    if (filtered.length > 0) results = filtered;
   }
 
   // priority=1（新製品）を別途取得して必ず含める
