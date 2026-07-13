@@ -627,7 +627,7 @@ function selectCategory(cat) {
       `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
     ).join('');
 
-    const logoSrc = selectedBrand ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+    const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
     w.innerHTML = `
       <div class="category-header">
@@ -667,11 +667,11 @@ function startChat(brand, category) {
       '雲台':                    { msg: `${brandLabel ? brandLabel + 'の' : ''}雲台をお探しですね！まず、主な用途を教えてください。`, opts: ['写真撮影メイン','動画撮影メイン','写真・動画両方'] },
       '一脚':                    { msg: `${brandLabel ? brandLabel + 'の' : ''}一脚をお探しですね！主な用途を教えてください。`, opts: ['スポーツ・報道','動画・Vlog','登山・旅行','野鳥・超望遠'] },
       'カメラバッグ':            { msg: `${brandLabel ? brandLabel + 'の' : ''}カメラバッグをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
-      'バックパック':            { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}バックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
-      'ショルダーバッグ':        { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
-      'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
-      'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
-      'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : 'Loweproの'}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
+      'バックパック':            { msg: `${brandLabel ? brandLabel + 'の' : ''}バックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
+      'ショルダーバッグ':        { msg: `${brandLabel ? brandLabel + 'の' : ''}ショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
+      'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
+      'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
+      'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
       'ライティング':            { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品撮影','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！何に使いたいですか？`, opts: ['カメラ固定・支持','テザー撮影','ライティング補助','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
