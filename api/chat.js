@@ -420,9 +420,17 @@ export default async function handler(req, res) {
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
-      // LoweproのカテゴリはブランドがnullでもLoweproに絞る
+      // 全ブランド選択時もカテゴリに応じて適切なブランドに絞る
       const loweproCategories = ['バックパック','ショルダーバッグ','TLZ・トップローディング','レンズ・ハードケース','ギアアップ・アクセサリー','Backpack','Shoulder Bag','TLZ / Top Loading','Lens & Hard Case','GearUp & Accessories'];
-      const effectiveBrand = (!brand && loweproCategories.includes(detectedCategory)) ? 'Lowepro' : brand;
+      const gitzoCategories = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'];
+      const manfrottoOnlyCategories = ['アクセサリー','ライティング','Accessories','Lighting'];
+
+      let effectiveBrand = brand;
+      if (!brand) {
+        if (loweproCategories.includes(detectedCategory)) effectiveBrand = 'Lowepro';
+        else if (gitzoCategories.includes(detectedCategory)) effectiveBrand = 'Gitzo';
+        else if (manfrottoOnlyCategories.includes(detectedCategory)) effectiveBrand = 'Manfrotto';
+      }
 
       ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
