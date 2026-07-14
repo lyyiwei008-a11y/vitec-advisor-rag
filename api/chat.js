@@ -398,25 +398,40 @@ export default async function handler(req, res) {
 
       // カテゴリ→シートマッピング（Supabaseのcategory列でフィルター）
       const categorySheetMap = {
-        // Manfrotto
-        '三脚': null,          // 写真・動画両方含むのでシートフィルターなし
-        '雲台': ['02_フォト雲台', '07_ビデオ雲台'],  // フォト・ビデオ雲台のみ（キット除外）
-        '一脚': '03_フォト一脚',
+        // Manfrotto（Supabaseの実際のcategory列名に合わせる）
+        '三脚':      ['01_フォト三脚', '08_ビデオ三脚'],
+        '雲台':      ['02_フォト雲台', '07_ビデオ雲台'],
+        '一脚':      ['03_フォト一脚', '09_ビデオ一脚'],
         'カメラバッグ': '10_カメラバッグ',
         'ライティング': '11_ライティング',
-        'アクセサリー': '04_三脚雲台Acc',
-        // Gitzo
-        '三脚（Gitzo）': null,
-        '一脚（Gitzo）': null,
-        '雲台（Gitzo）': null,
-        'バッグ・アクセサリー（Gitzo）': null,
-        // Lowepro
-        'バックパック': 'バックパック',
-        'ショルダーバッグ': 'ショルダー・TLZ・スリング',
-        'TLZ・トップローディング': 'ショルダー・TLZ・スリング',
-        'レンズ・ハードケース': 'レンズ・ハードサイドケース',
-        'ギアアップ・アクセサリー': 'ギアアップ GearUp',
-
+        'アクセサリー': ['04_三脚雲台Acc', '05_VR・テザー', '06_アーム_RC'],
+        // Gitzo（実際のSupabaseのcategory列名）
+        '三脚（Gitzo）':             '三脚 Tripods',
+        '一脚（Gitzo）':             '一脚 Monopods',
+        '雲台（Gitzo）':             '雲台 Heads',
+        'バッグ・アクセサリー（Gitzo）': 'バッグ・アクセサリー',
+        // Lowepro（Supabaseの実際のcategory列名）
+        'バックパック':             'バックパック',
+        'ショルダーバッグ':         ['ショルダー・TLZ・スリング', 'フォトスポーツ・その他'],
+        'TLZ・トップローディング':  'ショルダー・TLZ・スリング',
+        'レンズ・ハードケース':     'レンズ・ハードサイドケース',
+        'ギアアップ・アクセサリー': ['ギアアップ GearUp', 'プロタクティック アクセサリー'],
+        // 英語カテゴリ
+        'Tripod':              ['01_フォト三脚', '08_ビデオ三脚'],
+        'Head':                ['02_フォト雲台', '07_ビデオ雲台'],
+        'Monopod':             ['03_フォト一脚', '09_ビデオ一脚'],
+        'Camera Bag':          '10_カメラバッグ',
+        'Lighting':            '11_ライティング',
+        'Accessories':         ['04_三脚雲台Acc', '05_VR・テザー', '06_アーム_RC'],
+        'Backpack':            'バックパック',
+        'Shoulder Bag':        ['ショルダー・TLZ・スリング', 'フォトスポーツ・その他'],
+        'TLZ / Top Loading':   'ショルダー・TLZ・スリング',
+        'Lens & Hard Case':    'レンズ・ハードサイドケース',
+        'GearUp & Accessories':['ギアアップ GearUp', 'プロタクティック アクセサリー'],
+        'Tripod (Gitzo)':      '三脚 Tripods',
+        'Monopod (Gitzo)':     '一脚 Monopods',
+        'Head (Gitzo)':        '雲台 Heads',
+        'Bag & Accessories':   'バッグ・アクセサリー',
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
