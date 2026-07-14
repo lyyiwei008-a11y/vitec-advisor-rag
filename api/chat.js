@@ -308,6 +308,8 @@ RESPONSE FORMAT — output ONLY this JSON, nothing else:
 2. "options" array MUST ALWAYS contain 2-5 items — NEVER null, NEVER empty array []
 3. Each option must be short (under 15 characters)
 4. The options MUST match the current question you are asking
+5. NEVER say "他にお伝えできることはありますか" or "Is there anything else" — just ask the next question in the flow
+6. NEVER deviate from the flow above — ask questions in exact order, one by one
 5. If you ask about shooting scene, options must be scenes. If you ask about weight, options must be weights.
 6. NEVER repeat the same options from a previous question`;
 }
@@ -417,7 +419,12 @@ export default async function handler(req, res) {
 
       };
       const categoryFilter = categorySheetMap[detectedCategory];
-      ragProducts = await searchProducts(query, brand, categoryFilter);
+
+      // LoweproのカテゴリはブランドがnullでもLoweproに絞る
+      const loweproCategories = ['バックパック','ショルダーバッグ','TLZ・トップローディング','レンズ・ハードケース','ギアアップ・アクセサリー','Backpack','Shoulder Bag','TLZ / Top Loading','Lens & Hard Case','GearUp & Accessories'];
+      const effectiveBrand = (!brand && loweproCategories.includes(detectedCategory)) ? 'Lowepro' : brand;
+
+      ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
     } else {
       systemPrompt = buildGuidancePrompt(lang, detectedCategory, brand);
