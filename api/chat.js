@@ -27,10 +27,13 @@ function detectCategory(messages, categoryHint) {
 // RAG検索
 // ────────────────────────────────────────────────
 
-console.log("QUERY=", query);
-console.log("CATEGORY=", categoryFilter);
+
 
 async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 15) {
+
+  console.log("QUERY=", query);
+  console.log("CATEGORY=", categoryFilter);
+
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: query
