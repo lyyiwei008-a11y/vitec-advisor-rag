@@ -40,47 +40,53 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   });
   const embedding = embeddingRes.data[0].embedding;
 
-  // 通常検索
+  // 全ブランド検索の場合は多めに取得してブランドバランスを確保
+  const fetchLimit = brandFilter ? limit : limit * 3;
+
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embedding,
-    match_count: limit,
+    match_count: fetchLimit,
     filter_brand: brandFilter,
     include_old: false
   });
   if (error) throw new Error(`Supabase error: ${error.message}`);
   let results = data || [];
 
-  // カテゴリでフィルター
+  // カテゴリフィルター（必須）
   if (categoryFilter) {
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
     const filtered = results.filter(p => filters.includes(p.category));
-    
-    
-
-    // カテゴリフィルターがある場合は必ず適用（件数が少なくても）
-    results = filtered;
+    if (filtered.length > 0) results = filtered;
   }
 
+  // 全ブランド検索かつ複数ブランドが混在する場合、ブランドごとに均等にバランス
+  if (!brandFilter && results.length > 0) {
+    const brandGroups = {};
+    for (const p of results) {
+      if (!brandGroups[p.brand]) brandGroups[p.brand] = [];
+      brandGroups[p.brand].push(p);
+    }
+    const brands = Object.keys(brandGroups);
 
-
-  /*// priority=1（新製品）を別途取得して必ず含める
-  const { data: newData } = await supabase
-    .from('products')
-    .select('id, sku, name, brand, category, priority, content')
-    .eq('priority', 1)
-    .eq(brandFilter ? 'brand' : 'priority', brandFilter || 1)
-    .limit(5);
-
-  if (newData && newData.length > 0) {
-    // 新製品にsimilarity=1.0を付与して先頭に追加（重複除去）
-    const existingIds = new Set(results.map(r => r.id));
-    const newProducts = newData
-      .filter(p => !existingIds.has(p.id))
-      .map(p => ({ ...p, similarity: 1.0 }));
-    results = [...newProducts, ...results];
-
-);
-  } */
+    if (brands.length > 1) {
+      // 各ブランドからpriority→similarity順で均等に選ぶ
+      const perBrand = Math.max(3, Math.floor(12 / brands.length));
+      let balanced = [];
+      for (const brand of brands) {
+        const sorted = brandGroups[brand].sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return b.similarity - a.similarity;
+        });
+        balanced.push(...sorted.slice(0, perBrand));
+      }
+      // priority→similarity順で最終ソート
+      balanced.sort((a, b) => {
+        if (a.priority !== b.priority) return a.priority - b.priority;
+        return b.similarity - a.similarity;
+      });
+      return balanced.slice(0, 12);
+    }
+  }
 
   // priority順→similarity順でソート
   results.sort((a, b) => {
