@@ -7,6 +7,9 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
+// [DEBUG] デバッグ用: 最後に生成したembeddingForRpc文字列をレスポンスで確認できるように保持
+let __debugLastEmbedding = null;
+
 // ────────────────────────────────────────────────
 // [DEBUG] 環境変数・接続先確認用（デバッグ後に削除すること）
 // ────────────────────────────────────────────────
@@ -107,11 +110,14 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 
   // [DEBUG] 生成された文字列の形式確認（デバッグ後に削除すること）
   console.log('[DEBUG] embeddingForRpc length (chars):', embeddingForRpc.length);
-  console.log('[DEBUG] embeddingForRpc preview:', embeddingForRpc.substring(0, 150));
+  console.log('[DEBUG] embeddingForRpc element count:', embeddingForRpc.split(',').length);
   console.log('[DEBUG] embeddingForRpc has e-notation:', /[0-9]e[+-]/i.test(embeddingForRpc));
-  // 比較用: 単純join版に指数表記が含まれるかも確認
-  const naiveJoin = `[${embedding.join(',')}]`;
-  console.log('[DEBUG] naiveJoin has e-notation:', /[0-9]e[+-]/i.test(naiveJoin));
+  __debugLastEmbedding = embeddingForRpc;
+  // 完全な文字列を2000文字ごとに分割出力（SQL editorでの直接テスト用）
+  const CHUNK = 2000;
+  for (let i = 0; i < embeddingForRpc.length; i += CHUNK) {
+    console.log(`[DEBUG][CHUNK ${i / CHUNK}]`, embeddingForRpc.substring(i, i + CHUNK));
+  }
 
   // [DEBUG] 実embedding + match_count=5（sanity checkと同条件）で切り分け
   try {
@@ -730,7 +736,8 @@ export default async function handler(req, res) {
       reply: parsed,
       phase,
       category: detectedCategory,
-      brand
+      brand,
+      debug_embedding_for_rpc: __debugLastEmbedding // [DEBUG] SQL editorでの直接テスト用。確認後に削除すること
     });
 
   } catch (error) {
