@@ -455,6 +455,7 @@ export default async function handler(req, res) {
       }
 
       ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
+      throw new Error('QUERY=${query}');
 
 
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
