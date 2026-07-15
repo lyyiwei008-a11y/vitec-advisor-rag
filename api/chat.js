@@ -8,6 +8,14 @@ const supabase = createClient(
 );
 
 // ────────────────────────────────────────────────
+// [DEBUG] 環境変数・接続先確認用（デバッグ後に削除すること）
+// ────────────────────────────────────────────────
+console.log('[DEBUG] SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('[DEBUG] SUPABASE_URL length:', process.env.SUPABASE_URL?.length);
+console.log('[DEBUG] SUPABASE_KEY length:', process.env.SUPABASE_KEY?.length);
+console.log('[DEBUG] SUPABASE_KEY prefix:', process.env.SUPABASE_KEY?.substring(0, 12));
+
+// ────────────────────────────────────────────────
 // カテゴリ検出
 // フロントから brand / category が渡される場合はそちらを優先
 // ────────────────────────────────────────────────
@@ -33,6 +41,20 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 
   console.log("QUERY=", query);
   console.log("CATEGORY=", categoryFilter);
+
+  // [DEBUG] 接続先のproductsテーブルの件数を確認（デバッグ後に削除すること）
+  try {
+    const { count, error: countError } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+    if (countError) {
+      console.log('[DEBUG] products count check ERROR:', countError.message);
+    } else {
+      console.log('[DEBUG] products table row count:', count);
+    }
+  } catch (e) {
+    console.log('[DEBUG] products count check EXCEPTION:', e.message);
+  }
 
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
