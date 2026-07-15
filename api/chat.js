@@ -79,6 +79,8 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     if (sampleError) {
       console.log('[DEBUG] sanity check: could not fetch sample row:', sampleError.message);
     } else {
+      console.log('[DEBUG] sampleRow.embedding typeof:', typeof sampleRow.embedding);
+      console.log('[DEBUG] sampleRow.embedding is array:', Array.isArray(sampleRow.embedding));
       const { data: sanityData, error: sanityError } = await supabase.rpc('match_products', {
         query_embedding: sampleRow.embedding,
         match_count: 5,
@@ -98,8 +100,13 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 全ブランド検索の場合は多めに取得してブランドバランスを確保
   const fetchLimit = brandFilter ? limit : limit * 3;
 
+  // ★修正: OpenAIが返す生のJS配列ではなく、pgvectorのテキスト入力形式（"[0.1,0.2,...]"）に
+  // 変換してから渡す。DB由来のembedding文字列と同じ形式に揃えることで、
+  // Supabase RPC経由でのvector型キャストが正しく機能するようにする。
+  const embeddingForRpc = `[${embedding.join(',')}]`;
+
   const { data, error } = await supabase.rpc('match_products', {
-    query_embedding: embedding,
+    query_embedding: embeddingForRpc,
     match_count: fetchLimit,
     filter_brand: brandFilter,
     include_old: false
@@ -147,7 +154,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     if (needsGitzoCategory && !excludeGitzo && !brandGroups['Gitzo']) {
       console.log('[BRAND BALANCE] Gitzo not found, fetching separately...');
       const { data: gitzoData } = await supabase.rpc('match_products', {
-        query_embedding: embedding,
+        query_embedding: embeddingForRpc,
         match_count: 10,
         filter_brand: 'Gitzo',
         include_old: false
