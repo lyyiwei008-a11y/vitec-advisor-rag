@@ -62,6 +62,39 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   });
   const embedding = embeddingRes.data[0].embedding;
 
+  // [DEBUG] embeddingの形式確認（デバッグ後に削除すること）
+  console.log('[DEBUG] embedding is array:', Array.isArray(embedding));
+  console.log('[DEBUG] embedding length:', embedding?.length);
+  console.log('[DEBUG] embedding sample values:', embedding?.slice(0, 3));
+  console.log('[DEBUG] embedding has NaN:', embedding?.some(v => Number.isNaN(v)));
+
+  // [DEBUG] サニティチェック: DB内の実embeddingを取得してmatch_productsを試す
+  // これでVercel環境からのRPC呼び出し自体が悪いのか、OpenAIの新規embeddingが悪いのか切り分ける
+  try {
+    const { data: sampleRow, error: sampleError } = await supabase
+      .from('products')
+      .select('id, embedding')
+      .limit(1)
+      .single();
+    if (sampleError) {
+      console.log('[DEBUG] sanity check: could not fetch sample row:', sampleError.message);
+    } else {
+      const { data: sanityData, error: sanityError } = await supabase.rpc('match_products', {
+        query_embedding: sampleRow.embedding,
+        match_count: 5,
+        filter_brand: null,
+        include_old: false
+      });
+      if (sanityError) {
+        console.log('[DEBUG] sanity check RPC ERROR:', sanityError.message);
+      } else {
+        console.log('[DEBUG] sanity check (real DB embedding via Vercel) result count:', sanityData?.length);
+      }
+    }
+  } catch (e) {
+    console.log('[DEBUG] sanity check EXCEPTION:', e.message);
+  }
+
   // 全ブランド検索の場合は多めに取得してブランドバランスを確保
   const fetchLimit = brandFilter ? limit : limit * 3;
 
