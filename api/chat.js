@@ -455,6 +455,8 @@ export default async function handler(req, res) {
       }
 
       ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
+      throw new Error(  `CATEGORY=${JSON.stringify(categoryFilter)}`);
+
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
     } else {
       systemPrompt = buildGuidancePrompt(lang, detectedCategory, brand);
