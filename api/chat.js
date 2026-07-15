@@ -53,11 +53,15 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   let results = data || [];
 
   // カテゴリフィルター（必須）
+  console.log(`[DEBUG] results before filter: ${results.length}件`);
   if (categoryFilter) {
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
+    console.log(`[DEBUG] categoryFilter: ${JSON.stringify(filters)}`);
     const filtered = results.filter(p => filters.includes(p.category));
+    console.log(`[DEBUG] filtered: ${filtered.length}件, categories in results: ${[...new Set(results.map(p=>p.category))].join(',')}`);
     if (filtered.length > 0) results = filtered;
   }
+  console.log(`[DEBUG] results after filter: ${results.length}件`);
 
   // 全ブランド検索かつ複数ブランドが混在する場合、ブランドごとに均等にバランス
   if (!brandFilter && results.length > 0) {
