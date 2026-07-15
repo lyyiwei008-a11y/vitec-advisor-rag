@@ -44,8 +44,9 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 固定小数展開（指数表記なし）にすることで、DB側のembedding文字列表現と揃える。
   const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
 
-  // 全ブランド検索の場合は多めに取得してブランドバランスを確保
-  const fetchLimit = brandFilter ? limit : limit * 3;
+  // ブランド指定時も、そのブランド内でカテゴリの偏りなく候補が拾えるよう
+  // 十分な件数を取得する（品目数が少ないと目的のカテゴリが候補に入らないことがあるため）
+  const fetchLimit = brandFilter ? Math.max(limit * 3, 45) : limit * 3;
 
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embeddingForRpc,
@@ -63,7 +64,9 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     console.log(`[DEBUG] categoryFilter: ${JSON.stringify(filters)}`);
     const filtered = results.filter(p => filters.includes(p.category));
     console.log(`[DEBUG] filtered: ${filtered.length}件, categories in results: ${[...new Set(results.map(p=>p.category))].join(',')}`);
-    if (filtered.length > 0) results = filtered;
+    // カテゴリに一致する商品が1件もない場合、無関係な商品にフォールバックせず
+    // 空配列のまま返す（呼び出し元で「該当製品なし」として正しく扱われる）
+    results = filtered;
   }
   console.log(`[DEBUG] results after filter: ${results.length}件`);
 
@@ -456,6 +459,20 @@ function buildRecommendPrompt(lang, brand, products) {
   const langRule = lang === 'ja' ? '必ず日本語で回答してください。' : 'Always respond in English.';
   const brandRule = brand ? `対象ブランド: ${brand}` : '対象: 全ブランド (Manfrotto / Gitzo / Lowepro / Avenger)';
 
+  // 検索結果が0件の場合は、無理に商品を作らせず正直に「該当なし」を返させる
+  if (!products || products.length === 0) {
+    return `You are a Vitec Japan product advisor.
+${langRule}
+${brandRule}
+
+No products matching the customer's requirements were found in the catalog.
+
+RESPONSE FORMAT — strict JSON only:
+{"type":"products","message":"申し訳ございません、ご条件に完全に一致する製品が見つかりませんでした。条件を変えて再度お試しいただくか、他のカテゴリもご検討ください。","items":[]}
+
+Do NOT invent or hallucinate any product. Return an empty items array exactly as shown above (translate the message if lang is English).`;
+  }
+
   const productList = products.map(p => ({
     name:       p.name,
     sku:        p.sku,
@@ -488,7 +505,7 @@ INSTRUCTIONS:
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
 
-Recommend 5-7 products. Never return empty items array.`;
+Recommend 5-7 products from the list above. Do not fabricate products beyond this list.`;
 }
 
 // ────────────────────────────────────────────────
@@ -542,11 +559,12 @@ export default async function handler(req, res) {
         '雲台':      '雲台',
         '一脚':      '一脚',
         // バッグ（全ブランド統合）
-        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'],
+        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'],
         'バックパック':            'バックパック',
         'ショルダーバッグ':        'ショルダーバッグ',
         'ローラーバッグ':          'ローラーバッグ',
         '三脚バッグ':              '三脚バッグ',
+        'レンズ・ハードケース':    'レンズ・ハードケース',
         'ギアアップ・アクセサリー': 'ギアアップ・アクセサリー',
         // アクセサリー
         'アクセサリー': 'アクセサリー',
@@ -566,7 +584,7 @@ export default async function handler(req, res) {
         'Tripod':              '三脚',
         'Head':                '雲台',
         'Monopod':             '一脚',
-        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'],
+        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'],
         'Backpack':            'バックパック',
         'Shoulder Bag':        'ショルダーバッグ',
         'Roller Bag':          'ローラーバッグ',
@@ -579,12 +597,12 @@ export default async function handler(req, res) {
         'Head (Gitzo)':        '雲台',
         'Bag & Accessories':   '三脚バッグ',
         'TLZ / Top Loading':   'ショルダーバッグ',
-        'Lens & Hard Case':    'ローラーバッグ',
+        'Lens & Hard Case':    'レンズ・ハードケース',
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
       // 全ブランド選択時のブランド自動絞り込み
-      const loweproCategories = ['バックパック','ショルダーバッグ','ローラーバッグ','ギアアップ・アクセサリー','Backpack','Shoulder Bag','Roller Bag','GearUp & Accessories','TLZ / Top Loading','Lens & Hard Case'];
+      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','ギアアップ・アクセサリー','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Lens & Hard Case'];
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'];
       const manfrottoOnlyCategories = ['アクセサリー','ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Accessories','Lighting'];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
