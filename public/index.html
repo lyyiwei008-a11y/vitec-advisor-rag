@@ -793,17 +793,20 @@ function selectCategory(cat) {
 
     // Loweproには三脚バッグ・ローラーバッグの実商品がないため、Lowepro選択時はボタンを非表示にする
     // （ローラーバッグは2026/07/15確認：該当category商品は誤分類のアクセサリー類のみで実際のローラーバッグ商品は存在しない）
-    // レンズ・ハードケースはLowepro専用の製品ライン（プロタクティック/TLZ等）のため、Manfrotto/Gitzo選択時は非表示にする
-    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'];
-    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','Lens & Hard Case','GearUp & Accessories'];
+    // レンズ・ハードケース、ギアアップ・アクセサリーはLowepro専用の製品ライン（プロタクティック/TLZ/GearUp等）のため、Manfrotto/Gitzo選択時は非表示にする
+    // （ギアアップ・アクセサリーは2026/07/15確認：Manfrotto側の該当4件は本来「アクセサリー」に属する背負い・携行系パーツで'アクセサリー'へ再分類済み）
+    // アクセサリーはLoweproの商品も含まれるようになったため、Loweproフローにも入口として追加
+    // （Manfrotto/Gitzoは既に独自のトップレベル「アクセサリー」カテゴリボタンを持つため、この画面では二重表示を避けて除外）
+    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','アクセサリー'];
+    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','Lens & Hard Case','GearUp & Accessories','Accessories'];
 
     let bagCatsJa, bagCatsEn;
     if (selectedBrand === 'Lowepro') {
       bagCatsJa = allBagCatsJa.filter(c => !['三脚バッグ','ローラーバッグ'].includes(c));
       bagCatsEn = allBagCatsEn.filter(c => !['Tripod Bag','Roller Bag'].includes(c));
     } else if (selectedBrand === 'Manfrotto' || selectedBrand === 'Gitzo') {
-      bagCatsJa = allBagCatsJa.filter(c => c !== 'レンズ・ハードケース');
-      bagCatsEn = allBagCatsEn.filter(c => c !== 'Lens & Hard Case');
+      bagCatsJa = allBagCatsJa.filter(c => !['レンズ・ハードケース','ギアアップ・アクセサリー','アクセサリー'].includes(c));
+      bagCatsEn = allBagCatsEn.filter(c => !['Lens & Hard Case','GearUp & Accessories','Accessories'].includes(c));
     } else {
       // 全ブランドから探す場合は全カテゴリを表示（各カテゴリに対応するブランドの商品が検索される）
       bagCatsJa = allBagCatsJa;
