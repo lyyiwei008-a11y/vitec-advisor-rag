@@ -765,9 +765,13 @@ function selectCategory(cat) {
     const w = document.getElementById('welcome');
     if (!w) return;
 
+    // Loweproには三脚バッグの取り扱いがないため、Lowepro選択時はボタンを非表示にする
+    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'];
+    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','GearUp & Accessories'];
+
     const bagCats = lang === 'ja'
-      ? ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー']
-      : ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','GearUp & Accessories'];
+      ? (selectedBrand === 'Lowepro' ? allBagCatsJa.filter(c => c !== '三脚バッグ') : allBagCatsJa)
+      : (selectedBrand === 'Lowepro' ? allBagCatsEn.filter(c => c !== 'Tripod Bag') : allBagCatsEn);
 
     const chips = bagCats.map(c =>
       `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
