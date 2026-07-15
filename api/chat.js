@@ -63,7 +63,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 
 
 
-  // priority=1（新製品）を別途取得して必ず含める
+  /*// priority=1（新製品）を別途取得して必ず含める
   const { data: newData } = await supabase
     .from('products')
     .select('id, sku, name, brand, category, priority, content')
@@ -77,7 +77,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const newProducts = newData
       .filter(p => !existingIds.has(p.id))
       .map(p => ({ ...p, similarity: 1.0 }));
-    results = [...newProducts, ...results];
+    results = [...newProducts, ...results]; */
 
     throw new Error(
   JSON.stringify(
