@@ -55,7 +55,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
     const filtered = results.filter(p => filters.includes(p.category));
     // カテゴリフィルターがある場合は必ず適用（件数が少なくても）
-    if (filtered.length > 0) results = filtered;
+    results = filtered;
   }
 
   // priority=1（新製品）を別途取得して必ず含める
@@ -405,7 +405,7 @@ export default async function handler(req, res) {
 　　　
 
       const query = brandQuery + categoryQuery + userQuery;
-      throw new Error(`query=${query}`);
+      
 
       // カテゴリ→シートマッピング（Supabaseのcategory列でフィルター）
       const categorySheetMap = {
