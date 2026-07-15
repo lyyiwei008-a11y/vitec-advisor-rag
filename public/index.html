@@ -389,7 +389,32 @@ const FLOW_OPTIONS = {
       ['13インチ以下','15インチ','不要'],
       ['旅行・登山','街撮り・日常','プロ撮影','ドローン運搬'],
     ],
-    'ライティング': [
+    'ライティング_スタンド': [
+      ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
+      ['ライトスタンド','ブームスタンド','ベイビースタンド','オートポール'],
+      ['スタジオ固定','自宅・小スペース','屋外移動'],
+      ['〜2m','〜3m','3m以上'],
+    ],
+    'ライティング_ソフトボックス': [
+      ['ポートレート','商品・物撮り','動画・YouTube'],
+      ['オクタボックス','長方形ソフトボックス','ストリップボックス'],
+      ['小型（〜60cm）','中型（60〜100cm）','大型（100cm以上）'],
+    ],
+    'ライティング_アクセサリー': [
+      ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'],
+      ['クランプ・アーム','スピードリング','バーンドア・グリッド','その他'],
+      ['スタジオ','ロケ撮影','自宅'],
+    ],
+    'ライティング_リフレクター': [
+      ['ポートレート','商品・物撮り','屋外ロケ'],
+      ['丸型リフレクター','大型レフ板','リフレクタースタンド'],
+      ['白・シルバー','ゴールド','トランスルーセント'],
+    ],
+    'ライティング_背景': [
+      ['ポートレート','商品・物撮り','動画・YouTube'],
+      ['背景布','クロマキー（グリーン・ブルー）','背景サポートシステム'],
+      ['1.5m以下','2m〜3m','3m以上'],
+    ],
       ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
       ['ストロボ','LED','リングライト','大型モノブロック'],
       ['スタンドも欲しい','既に持っている','アクセサリーのみ'],
@@ -701,6 +726,38 @@ function showCategoryScreen(brand) {
 }
 
 function selectCategory(cat) {
+  // ライティングを選んだ場合はサブカテゴリ選択へ
+  if (cat === 'ライティング' || cat === 'Lighting') {
+    const t = i18n[lang];
+    const w = document.getElementById('welcome');
+    if (!w) return;
+
+    const lightCats = lang === 'ja'
+      ? ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_アクセサリー','ライティング_リフレクター','ライティング_背景']
+      : ['Lighting_Stand','Lighting_Softbox','Lighting_Accessories','Lighting_Reflector','Lighting_Background'];
+
+    const lightLabels = lang === 'ja'
+      ? ['スタンド・ブーム','ソフトボックス','アクセサリー・クランプ','リフレクター','背景・クロマキー']
+      : ['Stand & Boom','Softbox','Accessories & Clamps','Reflector','Background'];
+
+    const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+
+    const chips = lightCats.map((c, i) =>
+      `<button class="category-chip" onclick="selectLightingCategory('${c}')">${lightLabels[i]}</button>`
+    ).join('');
+
+    w.innerHTML = `
+      <div class="category-header">
+        <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
+        <span class="category-label">${lang === 'ja' ? 'ライティングの種類を選択' : 'Select lighting type'}</span>
+      </div>
+      <div class="category-grid">${chips}</div>
+      <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
+        onclick="selectLightingCategory('ライティング')">${t.skipCategory}</button>
+      <button class="back-link" onclick="${selectedBrand && selectedBrand !== 'all' ? 'showCategoryScreen(\'' + selectedBrand + '\')' : 'showCategoryScreen(null)'}">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
+    return;
+  }
+
   // カメラバッグを選んだ場合はさらに細分化
   if (cat === 'カメラバッグ' || cat === 'Camera Bag') {
     const t = i18n[lang];
@@ -708,8 +765,8 @@ function selectCategory(cat) {
     if (!w) return;
 
     const bagCats = lang === 'ja'
-      ? ['バックパック','ショルダーバッグ','TLZ・トップローディング','レンズ・ハードケース','ギアアップ・アクセサリー']
-      : ['Backpack','Shoulder Bag','TLZ / Top Loading','Lens & Hard Case','GearUp & Accessories'];
+      ? ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー']
+      : ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','GearUp & Accessories'];
 
     const chips = bagCats.map(c =>
       `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
@@ -729,6 +786,11 @@ function selectCategory(cat) {
     return;
   }
 
+  selectedCategory = cat;
+  startChat(selectedBrand, cat);
+}
+
+function selectLightingCategory(cat) {
   selectedCategory = cat;
   startChat(selectedBrand, cat);
 }
@@ -760,7 +822,12 @@ function startChat(brand, category) {
       'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
-      'ライティング':            { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品撮影','屋外ロケ'] },
+      'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
+      'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
+      'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
+      'ライティング_リフレクター':  { msg: `${brandLabel ? brandLabel + 'の' : ''}リフレクターをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','屋外ロケ'] },
+      'ライティング_背景':          { msg: `${brandLabel ? brandLabel + 'の' : ''}撮影背景をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
+      'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！何に使いたいですか？`, opts: ['カメラ固定・支持','テザー撮影','ライティング補助','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
