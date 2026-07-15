@@ -61,15 +61,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     results = filtered;
   }
 
-  throw new Error(
-  JSON.stringify(
-    results.slice(0,5).map(p => ({
-      sku: p.sku,
-      category: p.category,
-      priority: p.priority
-    }))
-  )
-);
+
 
   // priority=1（新製品）を別途取得して必ず含める
   const { data: newData } = await supabase
@@ -86,6 +78,16 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       .filter(p => !existingIds.has(p.id))
       .map(p => ({ ...p, similarity: 1.0 }));
     results = [...newProducts, ...results];
+
+    throw new Error(
+  JSON.stringify(
+    results.slice(0, 10).map(p => ({
+      sku: p.sku,
+      category: p.category,
+      priority: p.priority
+    }))
+  )
+);
   }
 
   // priority順→similarity順でソート
