@@ -54,6 +54,9 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   if (categoryFilter) {
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
     const filtered = results.filter(p => filters.includes(p.category));
+    
+    throw new Error(  `before=${results.length} after=${filtered.length}`);
+
     // カテゴリフィルターがある場合は必ず適用（件数が少なくても）
     results = filtered;
   }
