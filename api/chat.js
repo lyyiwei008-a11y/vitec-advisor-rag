@@ -399,10 +399,11 @@ export default async function handler(req, res) {
     if (shouldRecommend) {
       // カテゴリをクエリに含めてRAG検索精度を上げる
       const categoryQuery = detectedCategory ? detectedCategory + ' ' : '';
+      throw new Error(  `detectedCategory=${detectedCategory}`);
       const brandQuery = brand ? brand + ' ' : '';
       const userQuery = userMessages.map(m => m.content).join(' ');
       
-　　　throw new Error(  JSON.stringify(userMessages.map(m => m.content)));
+　　　
 
       const query = brandQuery + categoryQuery + userQuery;
 
