@@ -79,14 +79,6 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       .map(p => ({ ...p, similarity: 1.0 }));
     results = [...newProducts, ...results]; */
 
-    throw new Error(
-  JSON.stringify(
-    results.slice(0, 10).map(p => ({
-      sku: p.sku,
-      category: p.category,
-      priority: p.priority
-    }))
-  )
 );
   }
 
