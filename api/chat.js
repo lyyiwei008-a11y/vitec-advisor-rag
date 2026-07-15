@@ -346,21 +346,20 @@ function buildRecommendPrompt(lang, brand, products) {
 ${langRule}
 ${brandRule}
 
-SEARCH RESULTS (priority 1=new, 2=current — already filtered):
+SEARCH RESULTS (priority 1=new, 2=current — already filtered by category):
 ${JSON.stringify(productList, null, 2)}
 
 INSTRUCTIONS:
-- Recommend 3-5 products from the list ONLY
+- Recommend 5-7 products from the list ONLY
 - Never invent products not in the list
 - Give specific reasons based on the customer's stated needs
 - Mention brand name in each recommendation
 - Extract price from content field if available (look for "販売価格: ¥" or "メーカ希望小売価格: ¥")
-- PRIORITY ORDER IS MANDATORY:
-  * priority=1 (新製品): MUST recommend first if relevant to customer needs
-  * priority=2 (現行品): recommend after priority=1 products
-  * NEVER recommend priority=3 or 4 products
-- Always check priority field and sort recommendations: priority=1 first, then priority=2
-- If there are priority=1 products in the list, at least one MUST appear in your recommendations
+- NEVER recommend priority=3 or 4 products
+- PRIORITY ORDER within the search results:
+  * priority=1 (新製品): MUST include in recommendations if present in the list
+  * priority=2 (現行品): recommend based on relevance to customer needs
+  * Sort recommendations: priority=1 first, then priority=2 by relevance
 
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
@@ -414,55 +413,66 @@ export default async function handler(req, res) {
       const query = brandQuery + categoryQuery + userQuery;
       
 
-      // カテゴリ→シートマッピング（Supabaseのcategory列でフィルター）
+      // カテゴリ→Supabase category列マッピング（新CSV準拠）
       const categorySheetMap = {
-        // Manfrotto（Supabaseの実際のcategory列名に合わせる）
-        '三脚':      ['01_フォト三脚', '08_ビデオ三脚'],
-        '雲台':      ['02_フォト雲台', '07_ビデオ雲台'],
-        '一脚':      ['03_フォト一脚', '09_ビデオ一脚'],
-        'カメラバッグ': '10_カメラバッグ',
-        'ライティング': '11_ライティング',
-        'アクセサリー': ['04_三脚雲台Acc', '05_VR・テザー', '06_アーム_RC'],
-        // Gitzo（実際のSupabaseのcategory列名）
-        '三脚（Gitzo）':             '三脚 Tripods',
-        '一脚（Gitzo）':             '一脚 Monopods',
-        '雲台（Gitzo）':             '雲台 Heads',
-        'バッグ・アクセサリー（Gitzo）': 'バッグ・アクセサリー',
-        // Lowepro（Supabaseの実際のcategory列名）
-        'バックパック':             'バックパック',
-        'ショルダーバッグ':         ['ショルダー・TLZ・スリング', 'フォトスポーツ・その他'],
-        'TLZ・トップローディング':  'ショルダー・TLZ・スリング',
-        'レンズ・ハードケース':     'レンズ・ハードサイドケース',
-        'ギアアップ・アクセサリー': ['ギアアップ GearUp', 'プロタクティック アクセサリー'],
+        // 三脚・雲台・一脚（全ブランド統合）
+        '三脚':      '三脚',
+        '雲台':      '雲台',
+        '一脚':      '一脚',
+        // バッグ（全ブランド統合）
+        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'],
+        'バックパック':            'バックパック',
+        'ショルダーバッグ':        'ショルダーバッグ',
+        'ローラーバッグ':          'ローラーバッグ',
+        '三脚バッグ':              '三脚バッグ',
+        'ギアアップ・アクセサリー': 'ギアアップ・アクセサリー',
+        // アクセサリー
+        'アクセサリー': 'アクセサリー',
+        // ライティング（細分化）
+        'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+        'ライティング_スタンド':      'ライティング_スタンド',
+        'ライティング_アクセサリー':  'ライティング_アクセサリー',
+        'ライティング_ソフトボックス': 'ライティング_ソフトボックス',
+        'ライティング_リフレクター':  'ライティング_リフレクター',
+        'ライティング_背景':          'ライティング_背景',
+        // Gitzo専用カテゴリ（UIから選んだ場合）
+        '三脚（Gitzo）':             '三脚',
+        '一脚（Gitzo）':             '一脚',
+        '雲台（Gitzo）':             '雲台',
+        'バッグ・アクセサリー（Gitzo）': '三脚バッグ',
         // 英語カテゴリ
-        'Tripod':              ['01_フォト三脚', '08_ビデオ三脚'],
-        'Head':                ['02_フォト雲台', '07_ビデオ雲台'],
-        'Monopod':             ['03_フォト一脚', '09_ビデオ一脚'],
-        'Camera Bag':          '10_カメラバッグ',
-        'Lighting':            '11_ライティング',
-        'Accessories':         ['04_三脚雲台Acc', '05_VR・テザー', '06_アーム_RC'],
+        'Tripod':              '三脚',
+        'Head':                '雲台',
+        'Monopod':             '一脚',
+        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'],
         'Backpack':            'バックパック',
-        'Shoulder Bag':        ['ショルダー・TLZ・スリング', 'フォトスポーツ・その他'],
-        'TLZ / Top Loading':   'ショルダー・TLZ・スリング',
-        'Lens & Hard Case':    'レンズ・ハードサイドケース',
-        'GearUp & Accessories':['ギアアップ GearUp', 'プロタクティック アクセサリー'],
-        'Tripod (Gitzo)':      '三脚 Tripods',
-        'Monopod (Gitzo)':     '一脚 Monopods',
-        'Head (Gitzo)':        '雲台 Heads',
-        'Bag & Accessories':   'バッグ・アクセサリー',
+        'Shoulder Bag':        'ショルダーバッグ',
+        'Roller Bag':          'ローラーバッグ',
+        'Tripod Bag':          '三脚バッグ',
+        'GearUp & Accessories': 'ギアアップ・アクセサリー',
+        'Accessories':         'アクセサリー',
+        'Lighting':            ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+        'Tripod (Gitzo)':      '三脚',
+        'Monopod (Gitzo)':     '一脚',
+        'Head (Gitzo)':        '雲台',
+        'Bag & Accessories':   '三脚バッグ',
+        'TLZ / Top Loading':   'ショルダーバッグ',
+        'Lens & Hard Case':    'ローラーバッグ',
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
-      // 全ブランド選択時もカテゴリに応じて適切なブランドに絞る
-      const loweproCategories = ['バックパック','ショルダーバッグ','TLZ・トップローディング','レンズ・ハードケース','ギアアップ・アクセサリー','Backpack','Shoulder Bag','TLZ / Top Loading','Lens & Hard Case','GearUp & Accessories'];
-      const gitzoCategories = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'];
-      const manfrottoOnlyCategories = ['アクセサリー','ライティング','Accessories','Lighting'];
+      // 全ブランド選択時のブランド自動絞り込み
+      const loweproCategories = ['バックパック','ショルダーバッグ','ローラーバッグ','ギアアップ・アクセサリー','Backpack','Shoulder Bag','Roller Bag','GearUp & Accessories','TLZ / Top Loading','Lens & Hard Case'];
+      const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'];
+      const manfrottoOnlyCategories = ['アクセサリー','ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Accessories','Lighting'];
+      // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
       let effectiveBrand = brand;
       if (!brand) {
         if (loweproCategories.includes(detectedCategory)) effectiveBrand = 'Lowepro';
         else if (gitzoCategories.includes(detectedCategory)) effectiveBrand = 'Gitzo';
         else if (manfrottoOnlyCategories.includes(detectedCategory)) effectiveBrand = 'Manfrotto';
+        // 三脚・雲台・一脚・三脚バッグ・カメラバッグは全ブランド対象（nullのまま）
       }
 
       ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
