@@ -791,13 +791,25 @@ function selectCategory(cat) {
     const w = document.getElementById('welcome');
     if (!w) return;
 
-    // Loweproには三脚バッグの取り扱いがないため、Lowepro選択時はボタンを非表示にする
-    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','ギアアップ・アクセサリー'];
-    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','GearUp & Accessories'];
+    // Loweproには三脚バッグ・ローラーバッグの実商品がないため、Lowepro選択時はボタンを非表示にする
+    // （ローラーバッグは2026/07/15確認：該当category商品は誤分類のアクセサリー類のみで実際のローラーバッグ商品は存在しない）
+    // レンズ・ハードケースはLowepro専用の製品ライン（プロタクティック/TLZ等）のため、Manfrotto/Gitzo選択時は非表示にする
+    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'];
+    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','Lens & Hard Case','GearUp & Accessories'];
 
-    const bagCats = lang === 'ja'
-      ? (selectedBrand === 'Lowepro' ? allBagCatsJa.filter(c => c !== '三脚バッグ') : allBagCatsJa)
-      : (selectedBrand === 'Lowepro' ? allBagCatsEn.filter(c => c !== 'Tripod Bag') : allBagCatsEn);
+    let bagCatsJa, bagCatsEn;
+    if (selectedBrand === 'Lowepro') {
+      bagCatsJa = allBagCatsJa.filter(c => !['三脚バッグ','ローラーバッグ'].includes(c));
+      bagCatsEn = allBagCatsEn.filter(c => !['Tripod Bag','Roller Bag'].includes(c));
+    } else if (selectedBrand === 'Manfrotto' || selectedBrand === 'Gitzo') {
+      bagCatsJa = allBagCatsJa.filter(c => c !== 'レンズ・ハードケース');
+      bagCatsEn = allBagCatsEn.filter(c => c !== 'Lens & Hard Case');
+    } else {
+      // 全ブランドから探す場合は全カテゴリを表示（各カテゴリに対応するブランドの商品が検索される）
+      bagCatsJa = allBagCatsJa;
+      bagCatsEn = allBagCatsEn;
+    }
+    const bagCats = lang === 'ja' ? bagCatsJa : bagCatsEn;
 
     const chips = bagCats.map(c =>
       `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
@@ -961,7 +973,10 @@ function appendMsg(role, content) {
   if (role === 'bot' && typeof content === 'object' && content.type === 'products') {
     const intro = document.createElement('div');
     intro.className = 'product-intro';
-    intro.textContent = t.introText(content.items.length);
+    // 該当製品が0件の場合はバックエンドからのメッセージ（お詫び文）をそのまま表示
+    intro.textContent = (content.items.length === 0 && content.message)
+      ? content.message
+      : t.introText(content.items.length);
     bubble.appendChild(intro);
     const wrap = document.createElement('div');
     wrap.className = 'products-wrap';
