@@ -29,7 +29,7 @@ function detectCategory(messages, categoryHint) {
 
 
 
-async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 15) {
+async function searchProducts(query, brandFilter = null, categoryFilter = null, limit = 15, messages = []) {
 
   console.log("QUERY=", query);
   console.log("CATEGORY=", categoryFilter);
@@ -69,12 +69,23 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const brands = Object.keys(brandGroups);
     console.log(`[BRAND BALANCE] brands found: ${brands.join(',')} total:${results.length}`);
 
-    // Gitzoが含まれていない場合は別途取得して追加
+    // Gitzoを別途取得するか判断
+    // 除外条件：アルミ素材指定・Manfrotto三脚と合わせたい・他社三脚を持っている
     const multiCategories = ['三脚', '雲台', '一脚'];
     const catList = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
-    const needsGitzo = catList.some(c => multiCategories.includes(c));
+    const needsGitzoCategory = catList.some(c => multiCategories.includes(c));
 
-    if (needsGitzo && !brandGroups['Gitzo']) {
+    // 会話内容からGitzo除外条件を確認
+    const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
+    const excludeGitzo = (
+      /アルミ|aluminum/i.test(allMessages) ||           // アルミ指定
+      /Manfrotto三脚と合わせたい/i.test(allMessages) || // Manfrotto三脚と合わせたい
+      /他社三脚を持っている/i.test(allMessages)         // 他社三脚（雲台の場合）
+    );
+
+    console.log(`[BRAND BALANCE] needsGitzo:${needsGitzoCategory} excludeGitzo:${excludeGitzo}`);
+
+    if (needsGitzoCategory && !excludeGitzo && !brandGroups['Gitzo']) {
       console.log('[BRAND BALANCE] Gitzo not found, fetching separately...');
       const { data: gitzoData } = await supabase.rpc('match_products', {
         query_embedding: embedding,
@@ -94,17 +105,42 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       }
     }
 
-    if (brands.length > 1) {
-      // 各ブランドからpriority→similarity順で均等に選ぶ
-      const perBrand = Math.max(3, Math.floor(12 / brands.length));
-      let balanced = [];
-      for (const brand of brands) {
-        const sorted = brandGroups[brand].sort((a, b) => {
+    // アルミ指定の場合はManfrottoのみに絞る
+    if (excludeGitzo) {
+      const mfOnly = results.filter(p => p.brand === 'Manfrotto');
+      if (mfOnly.length > 0) {
+        mfOnly.sort((a, b) => {
           if (a.priority !== b.priority) return a.priority - b.priority;
           return b.similarity - a.similarity;
         });
-        balanced.push(...sorted.slice(0, perBrand));
+        return mfOnly.slice(0, 12);
       }
+    }
+
+    if (brands.length > 1) {
+      // ManfrottoとGitzoをバランスよく選ぶ（Manfrotto優先・Gitzoは最低3件）
+      const gitzoCount = Math.min(4, brandGroups['Gitzo']?.length || 0);
+      const manfrottoCount = 12 - gitzoCount;
+      let balanced = [];
+
+      // Manfrotto
+      if (brandGroups['Manfrotto']) {
+        const sorted = [...brandGroups['Manfrotto']].sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return b.similarity - a.similarity;
+        });
+        balanced.push(...sorted.slice(0, manfrottoCount));
+      }
+
+      // Gitzo
+      if (brandGroups['Gitzo']) {
+        const sorted = [...brandGroups['Gitzo']].sort((a, b) => {
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return b.similarity - a.similarity;
+        });
+        balanced.push(...sorted.slice(0, gitzoCount));
+      }
+
       // priority→similarity順で最終ソート
       balanced.sort((a, b) => {
         if (a.priority !== b.priority) return a.priority - b.priority;
@@ -533,7 +569,7 @@ export default async function handler(req, res) {
         // 三脚・雲台・一脚・三脚バッグ・カメラバッグは全ブランド対象（nullのまま）
       }
 
-      ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
+      ragProducts = await searchProducts(query, effectiveBrand, categoryFilter, 15, messages);
     
 
 
