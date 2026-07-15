@@ -283,6 +283,17 @@ const FLOWS = {
     'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つずつ質問：
 1. 収納したいもの → options:["ケーブル・バッテリー","カメラ本体","レンズ","メモリーカード"]
 2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`,
+
+    'ローラーバッグ': `【ローラーバッグの質問フロー】1つずつ質問：
+1. 収納したい機材量 → options:["ミラーレス+レンズ数本","一眼+レンズ複数+アクセサリー","スタジオ機材一式"]
+2. 移動手段 → options:["飛行機（機内持ち込み）","車での移動","徒歩・電車"]
+3. PC・タブレット収納 → options:["13インチ以下","15インチ以上","不要"]
+4. 使用シーン → options:["出張・旅行","プロ撮影現場","スタジオ間の機材移動"]`,
+
+    '三脚バッグ': `【三脚バッグの質問フロー】1つずつ質問：
+1. 収納したい三脚のサイズ → options:["トラベル三脚（小型）","一般的な三脚（中型）","大型・重量三脚"]
+2. 携帯方法 → options:["肩掛けストラップ","バックパックへの装着","手持ち"]
+3. 収納したいもの → options:["三脚のみ","三脚+雲台","三脚+アクセサリー類"]`,
   },
 
   en: {
@@ -371,6 +382,17 @@ const FLOWS = {
     'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONE question at a time:
 1. What to store → options:["Cables/batteries","Camera body","Lens","Memory cards"]
 2. Usage → options:["As bag insert","Standalone use","Organization"]`,
+
+    'Roller Bag': `[Roller Bag Flow] Ask ONE question at a time:
+1. Amount of gear → options:["Mirrorless + a few lenses","DSLR + multiple lenses + accessories","Full studio kit"]
+2. Travel method → options:["Airplane (carry-on)","By car","Walking/train"]
+3. Laptop storage → options:["13-inch or smaller","15-inch or larger","Not needed"]
+4. Use case → options:["Business travel","Professional shoots","Moving gear between studios"]`,
+
+    'Tripod Bag': `[Tripod Bag Flow] Ask ONE question at a time:
+1. Tripod size → options:["Travel tripod (compact)","Standard tripod (medium)","Large/heavy tripod"]
+2. Carry method → options:["Shoulder strap","Attach to backpack","Hand carry"]
+3. What to store → options:["Tripod only","Tripod + head","Tripod + accessories"]`,
   }
 };
 
@@ -637,6 +659,8 @@ export default async function handler(req, res) {
         '雲台（Gitzo）':     ['写真撮影', '動画撮影', 'パノラマ'],
         'バックパック':      ['ミラーレス+レンズ2〜3本', '一眼+レンズ3〜4本', '大型機材'],
         'ショルダーバッグ':  ['コンパクト1台のみ', 'カメラ1台+レンズ1本', 'カメラ+レンズ複数'],
+        'ローラーバッグ':    ['ミラーレス+レンズ数本', '一眼+レンズ複数+アクセサリー', 'スタジオ機材一式'],
+        '三脚バッグ':        ['トラベル三脚（小型）', '一般的な三脚（中型）', '大型・重量三脚'],
       };
       parsed.options = defaultOptions[detectedCategory] || ['はい', 'いいえ', 'わからない'];
     }
