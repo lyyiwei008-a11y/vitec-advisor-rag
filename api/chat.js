@@ -77,10 +77,10 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const newProducts = newData
       .filter(p => !existingIds.has(p.id))
       .map(p => ({ ...p, similarity: 1.0 }));
-    results = [...newProducts, ...results]; */
+    results = [...newProducts, ...results];
 
 );
-  }
+  } */
 
   // priority順→similarity順でソート
   results.sort((a, b) => {
