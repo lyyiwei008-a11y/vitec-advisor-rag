@@ -501,8 +501,6 @@ export default async function handler(req, res) {
       const categoryQuery = detectedCategory ? detectedCategory + ' ' : '';
       const brandQuery = brand ? brand + ' ' : '';
       const userQuery = userMessages.map(m => m.content).join(' ');
-      
-　　　
 
       const query = brandQuery + categoryQuery + userQuery;
       
