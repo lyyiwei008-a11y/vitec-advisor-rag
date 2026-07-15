@@ -474,6 +474,17 @@ const FLOW_OPTIONS = {
       ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'],
       ['バッグのインサート','単独で使う','整理収納'],
     ],
+    'ローラーバッグ': [
+      ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'],
+      ['飛行機（機内持ち込み）','車での移動','徒歩・電車'],
+      ['13インチ以下','15インチ以上','不要'],
+      ['出張・旅行','プロ撮影現場','スタジオ間の機材移動'],
+    ],
+    '三脚バッグ': [
+      ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'],
+      ['肩掛けストラップ','バックパックへの装着','手持ち'],
+      ['三脚のみ','三脚+雲台','三脚+アクセサリー類'],
+    ],
   },
   en: {
     'Tripod': [
@@ -562,6 +573,17 @@ const FLOW_OPTIONS = {
       ['Cables/batteries','Camera body','Lens','Memory cards'],
       ['As bag insert','Standalone use','Organization'],
     ],
+    'Roller Bag': [
+      ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'],
+      ['Airplane (carry-on)','By car','Walking/train'],
+      ['13-inch or smaller','15-inch or larger','Not needed'],
+      ['Business travel','Professional shoots','Moving gear between studios'],
+    ],
+    'Tripod Bag': [
+      ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'],
+      ['Shoulder strap','Attach to backpack','Hand carry'],
+      ['Tripod only','Tripod + head','Tripod + accessories'],
+    ],
   }
 }
 
@@ -602,7 +624,9 @@ const SUGGESTIONS = {
     'ショルダーバッグ': ['小型ミラーレス向けは？','アドベンチュラシリーズは？'],
     'TLZ・トップローディング': ['素早い取り出しができるバッグは？','望遠レンズをそのまま入れられる？'],
     'レンズ・ハードケース': ['レンズを単体で収納したい','衝撃に強いケースは？'],
-    'ギアアップ・アクセサリー': ['ポーチやケースを探している','クリエーターボックスは？']
+    'ギアアップ・アクセサリー': ['ポーチやケースを探している','クリエーターボックスは？'],
+    'ローラーバッグ':  ['大容量の機材を運びたい','出張・旅行に使いたい','機内持ち込みサイズは？'],
+    '三脚バッグ':      ['三脚を持ち運びたい','肩掛けできるものは？','大型三脚も入る？']
   },
   en: {
     'Photo Tripod':   ["Looking for a lightweight travel tripod","Carbon fiber recommendations?","Best tripod for mirrorless?"],
@@ -612,6 +636,8 @@ const SUGGESTIONS = {
     'Tripod':         ["Carbon fiber recommendations?","Compact travel tripod?"],
     'Monopod':        ["Lightest monopod available?","For large telephoto lens"],
     'Head':           ["Center ball head recommendations?","For bird photography"],
+    'Roller Bag':     ["Need to carry lots of gear","For business travel","Carry-on size?"],
+    'Tripod Bag':     ["Want to carry my tripod","Shoulder strap options?","Fits large tripods?"],
   }
 };
 
@@ -824,6 +850,8 @@ function startChat(brand, category) {
       'カメラバッグ':            { msg: `${brandLabel ? brandLabel + 'の' : ''}カメラバッグをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
       'バックパック':            { msg: `${brandLabel ? brandLabel + 'の' : ''}バックパックをお探しですね！どのような機材を収納したいですか？`, opts: ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'] },
       'ショルダーバッグ':        { msg: `${brandLabel ? brandLabel + 'の' : ''}ショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
+      'ローラーバッグ':          { msg: `${brandLabel ? brandLabel + 'の' : ''}ローラーバッグをお探しですね！どのくらいの機材を収納したいですか？`, opts: ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'] },
+      '三脚バッグ':              { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。`, opts: ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'] },
       'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
@@ -852,6 +880,8 @@ function startChat(brand, category) {
       'Bag & Accessories': { msg: `Looking for Gitzo bags or accessories! What would you like to store?`, opts: ['Tripod bag','Camera bag','Accessories'] },
       'Backpack':     { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}backpack! What gear do you need to carry?`, opts: ['Mirrorless + 2-3 lenses','DSLR + 3-4 lenses','Large gear + accessories'] },
       'Shoulder Bag': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}shoulder bag! What gear do you need to carry?`, opts: ['Compact camera only','Camera + 1 lens','Camera + multiple lenses'] },
+      'Roller Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}roller bag! How much gear do you need to carry?`, opts: ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'] },
+      'Tripod Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod bag! What size tripod do you need to store?`, opts: ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'] },
       'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What lens size do you need?`, opts: ['Up to 24-70mm','Up to 70-200mm','300mm+'] },
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp accessories! What would you like to store?`, opts: ['Cables/batteries','Camera body','Lens','Memory cards'] },
