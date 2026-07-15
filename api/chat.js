@@ -401,6 +401,9 @@ export default async function handler(req, res) {
       const categoryQuery = detectedCategory ? detectedCategory + ' ' : '';
       const brandQuery = brand ? brand + ' ' : '';
       const userQuery = userMessages.map(m => m.content).join(' ');
+      
+　　　throw new Error(  JSON.stringify(userMessages.map(m => m.content)));
+
       const query = brandQuery + categoryQuery + userQuery;
 
       // カテゴリ→シートマッピング（Supabaseのcategory列でフィルター）
@@ -455,7 +458,7 @@ export default async function handler(req, res) {
       }
 
       ragProducts = await searchProducts(query, effectiveBrand, categoryFilter);
-      throw new Error('QUERY=${query}');
+    
 
 
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
