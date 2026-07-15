@@ -67,6 +67,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       brandGroups[p.brand].push(p);
     }
     const brands = Object.keys(brandGroups);
+    console.log(`[BRAND BALANCE] brands found: ${brands.join(',')} total:${results.length}`);
 
     if (brands.length > 1) {
       // 各ブランドからpriority→similarity順で均等に選ぶ
