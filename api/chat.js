@@ -69,6 +69,31 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const brands = Object.keys(brandGroups);
     console.log(`[BRAND BALANCE] brands found: ${brands.join(',')} total:${results.length}`);
 
+    // Gitzoが含まれていない場合は別途取得して追加
+    const multiCategories = ['三脚', '雲台', '一脚'];
+    const catList = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
+    const needsGitzo = catList.some(c => multiCategories.includes(c));
+
+    if (needsGitzo && !brandGroups['Gitzo']) {
+      console.log('[BRAND BALANCE] Gitzo not found, fetching separately...');
+      const { data: gitzoData } = await supabase.rpc('match_products', {
+        query_embedding: embedding,
+        match_count: 10,
+        filter_brand: 'Gitzo',
+        include_old: false
+      });
+      if (gitzoData && gitzoData.length > 0) {
+        const gitzoFiltered = categoryFilter
+          ? gitzoData.filter(p => catList.includes(p.category))
+          : gitzoData;
+        if (gitzoFiltered.length > 0) {
+          brandGroups['Gitzo'] = gitzoFiltered;
+          brands.push('Gitzo');
+          console.log(`[BRAND BALANCE] Gitzo added: ${gitzoFiltered.length}件`);
+        }
+      }
+    }
+
     if (brands.length > 1) {
       // 各ブランドからpriority→similarity順で均等に選ぶ
       const perBrand = Math.max(3, Math.floor(12 / brands.length));
