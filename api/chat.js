@@ -55,11 +55,21 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
     const filtered = results.filter(p => filters.includes(p.category));
     
-    throw new Error(  `before=${results.length} after=${filtered.length}`);
+    
 
     // カテゴリフィルターがある場合は必ず適用（件数が少なくても）
     results = filtered;
   }
+
+  throw new Error(
+  JSON.stringify(
+    results.slice(0,5).map(p => ({
+      sku: p.sku,
+      category: p.category,
+      priority: p.priority
+    }))
+  )
+);
 
   // priority=1（新製品）を別途取得して必ず含める
   const { data: newData } = await supabase
