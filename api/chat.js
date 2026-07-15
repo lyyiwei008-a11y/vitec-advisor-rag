@@ -7,17 +7,6 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
-// [DEBUG] デバッグ用: 最後に生成したembeddingForRpc文字列をレスポンスで確認できるように保持
-let __debugLastEmbedding = null;
-
-// ────────────────────────────────────────────────
-// [DEBUG] 環境変数・接続先確認用（デバッグ後に削除すること）
-// ────────────────────────────────────────────────
-console.log('[DEBUG] SUPABASE_URL:', process.env.SUPABASE_URL);
-console.log('[DEBUG] SUPABASE_URL length:', process.env.SUPABASE_URL?.length);
-console.log('[DEBUG] SUPABASE_KEY length:', process.env.SUPABASE_KEY?.length);
-console.log('[DEBUG] SUPABASE_KEY prefix:', process.env.SUPABASE_KEY?.substring(0, 12));
-
 // ────────────────────────────────────────────────
 // カテゴリ検出
 // フロントから brand / category が渡される場合はそちらを優先
@@ -45,96 +34,18 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   console.log("QUERY=", query);
   console.log("CATEGORY=", categoryFilter);
 
-  // [DEBUG] 接続先のproductsテーブルの件数を確認（デバッグ後に削除すること）
-  try {
-    const { count, error: countError } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true });
-    if (countError) {
-      console.log('[DEBUG] products count check ERROR:', countError.message);
-    } else {
-      console.log('[DEBUG] products table row count:', count);
-    }
-  } catch (e) {
-    console.log('[DEBUG] products count check EXCEPTION:', e.message);
-  }
-
   const embeddingRes = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: query
   });
   const embedding = embeddingRes.data[0].embedding;
 
-  // [DEBUG] embeddingの形式確認（デバッグ後に削除すること）
-  console.log('[DEBUG] embedding is array:', Array.isArray(embedding));
-  console.log('[DEBUG] embedding length:', embedding?.length);
-  console.log('[DEBUG] embedding sample values:', embedding?.slice(0, 3));
-  console.log('[DEBUG] embedding has NaN:', embedding?.some(v => Number.isNaN(v)));
-
-  // [DEBUG] サニティチェック: DB内の実embeddingを取得してmatch_productsを試す
-  // これでVercel環境からのRPC呼び出し自体が悪いのか、OpenAIの新規embeddingが悪いのか切り分ける
-  try {
-    const { data: sampleRow, error: sampleError } = await supabase
-      .from('products')
-      .select('id, embedding')
-      .limit(1)
-      .single();
-    if (sampleError) {
-      console.log('[DEBUG] sanity check: could not fetch sample row:', sampleError.message);
-    } else {
-      console.log('[DEBUG] sampleRow.embedding typeof:', typeof sampleRow.embedding);
-      console.log('[DEBUG] sampleRow.embedding is array:', Array.isArray(sampleRow.embedding));
-      const { data: sanityData, error: sanityError } = await supabase.rpc('match_products', {
-        query_embedding: sampleRow.embedding,
-        match_count: 5,
-        filter_brand: null,
-        include_old: false
-      });
-      if (sanityError) {
-        console.log('[DEBUG] sanity check RPC ERROR:', sanityError.message);
-      } else {
-        console.log('[DEBUG] sanity check (real DB embedding via Vercel) result count:', sanityData?.length);
-      }
-    }
-  } catch (e) {
-    console.log('[DEBUG] sanity check EXCEPTION:', e.message);
-  }
+  // pgvectorのテキスト入力形式（"[0.1,0.2,...]"）に変換してから渡す。
+  // 固定小数展開（指数表記なし）にすることで、DB側のembedding文字列表現と揃える。
+  const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
 
   // 全ブランド検索の場合は多めに取得してブランドバランスを確保
   const fetchLimit = brandFilter ? limit : limit * 3;
-
-  // ★修正v2: JSのデフォルト数値→文字列変換は、極小値の場合に指数表記
-  // （例: "3.2e-7"）になることがあり、pgvectorのテキストパーサーが
-  // これを正しく扱えない可能性がある。toFixedで固定小数展開に強制する。
-  const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
-
-  // [DEBUG] 生成された文字列の形式確認（デバッグ後に削除すること）
-  console.log('[DEBUG] embeddingForRpc length (chars):', embeddingForRpc.length);
-  console.log('[DEBUG] embeddingForRpc element count:', embeddingForRpc.split(',').length);
-  console.log('[DEBUG] embeddingForRpc has e-notation:', /[0-9]e[+-]/i.test(embeddingForRpc));
-  __debugLastEmbedding = embeddingForRpc;
-  // 完全な文字列を2000文字ごとに分割出力（SQL editorでの直接テスト用）
-  const CHUNK = 2000;
-  for (let i = 0; i < embeddingForRpc.length; i += CHUNK) {
-    console.log(`[DEBUG][CHUNK ${i / CHUNK}]`, embeddingForRpc.substring(i, i + CHUNK));
-  }
-
-  // [DEBUG] 実embedding + match_count=5（sanity checkと同条件）で切り分け
-  try {
-    const { data: realSmallData, error: realSmallError } = await supabase.rpc('match_products', {
-      query_embedding: embeddingForRpc,
-      match_count: 5,
-      filter_brand: null,
-      include_old: false
-    });
-    if (realSmallError) {
-      console.log('[DEBUG] real embedding + match_count=5 RPC ERROR:', realSmallError.message);
-    } else {
-      console.log('[DEBUG] real embedding + match_count=5 result count:', realSmallData?.length);
-    }
-  } catch (e) {
-    console.log('[DEBUG] real embedding + match_count=5 EXCEPTION:', e.message);
-  }
 
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embeddingForRpc,
@@ -736,8 +647,7 @@ export default async function handler(req, res) {
       reply: parsed,
       phase,
       category: detectedCategory,
-      brand,
-      debug_embedding_for_rpc: __debugLastEmbedding // [DEBUG] SQL editorでの直接テスト用。確認後に削除すること
+      brand
     });
 
   } catch (error) {
