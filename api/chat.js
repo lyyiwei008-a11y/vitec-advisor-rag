@@ -100,10 +100,35 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 全ブランド検索の場合は多めに取得してブランドバランスを確保
   const fetchLimit = brandFilter ? limit : limit * 3;
 
-  // ★修正: OpenAIが返す生のJS配列ではなく、pgvectorのテキスト入力形式（"[0.1,0.2,...]"）に
-  // 変換してから渡す。DB由来のembedding文字列と同じ形式に揃えることで、
-  // Supabase RPC経由でのvector型キャストが正しく機能するようにする。
-  const embeddingForRpc = `[${embedding.join(',')}]`;
+  // ★修正v2: JSのデフォルト数値→文字列変換は、極小値の場合に指数表記
+  // （例: "3.2e-7"）になることがあり、pgvectorのテキストパーサーが
+  // これを正しく扱えない可能性がある。toFixedで固定小数展開に強制する。
+  const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
+
+  // [DEBUG] 生成された文字列の形式確認（デバッグ後に削除すること）
+  console.log('[DEBUG] embeddingForRpc length (chars):', embeddingForRpc.length);
+  console.log('[DEBUG] embeddingForRpc preview:', embeddingForRpc.substring(0, 150));
+  console.log('[DEBUG] embeddingForRpc has e-notation:', /[0-9]e[+-]/i.test(embeddingForRpc));
+  // 比較用: 単純join版に指数表記が含まれるかも確認
+  const naiveJoin = `[${embedding.join(',')}]`;
+  console.log('[DEBUG] naiveJoin has e-notation:', /[0-9]e[+-]/i.test(naiveJoin));
+
+  // [DEBUG] 実embedding + match_count=5（sanity checkと同条件）で切り分け
+  try {
+    const { data: realSmallData, error: realSmallError } = await supabase.rpc('match_products', {
+      query_embedding: embeddingForRpc,
+      match_count: 5,
+      filter_brand: null,
+      include_old: false
+    });
+    if (realSmallError) {
+      console.log('[DEBUG] real embedding + match_count=5 RPC ERROR:', realSmallError.message);
+    } else {
+      console.log('[DEBUG] real embedding + match_count=5 result count:', realSmallData?.length);
+    }
+  } catch (e) {
+    console.log('[DEBUG] real embedding + match_count=5 EXCEPTION:', e.message);
+  }
 
   const { data, error } = await supabase.rpc('match_products', {
     query_embedding: embeddingForRpc,
