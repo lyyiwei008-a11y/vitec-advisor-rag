@@ -279,21 +279,25 @@ const FLOWS = {
 ※MKPROVR等VRベース・MBOOMAVR等エクステンションブーム
 1. 何をお探しか → options:["VR撮影用ベース・スタンド","エクステンションブーム","セットで探したい"]`,
 
-    '商品撮影ライティング': `【商品撮影ライティングの質問フロー】1つだけ質問：
-※背景・ソフトボックス・リフレクターを横断して提案する
-1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+    '商品撮影ライティング': `【商品撮影ライティングの質問フロー】1つずつ質問：
+※背景・ソフトボックス・リフレクターを横断して提案する。1問目の回答でどのサブカテゴリを重視するか判断すること
+1. 何を重視するか → options:["背景をきれいに見せたい","被写体に柔らかい光を当てたい","反射光で自然に補光したい","どれが必要かわからない"]
+2. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
 
-    '人物撮影ライティング': `【人物撮影ライティングの質問フロー】1つだけ質問：
+    '人物撮影ライティング': `【人物撮影ライティングの質問フロー】1つずつ質問：
 ※ソフトボックス・リフレクター・スタンドを横断して提案する
-1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+1. 撮影環境 → options:["スタジオで本格的に","自宅で手軽に","屋外・ロケで"]
+2. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
 
-    '動画制作ライティング': `【動画制作ライティングの質問フロー】1つだけ質問：
+    '動画制作ライティング': `【動画制作ライティングの質問フロー】1つずつ質問：
 ※スタンド・背景を横断して提案する
-1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+1. 何が必要か → options:["ライトを立てる場所が欲しい","背景の準備がしたい","両方欲しい"]
+2. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
 
-    'ライブ配信ライティング': `【ライブ配信ライティングの質問フロー】1つだけ質問：
+    'ライブ配信ライティング': `【ライブ配信ライティングの質問フロー】1つずつ質問：
 ※スタンド・アクセサリー（クランプ類）を横断して提案する
-1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+1. 設置環境 → options:["机の上でコンパクトに","スタンドでしっかり固定","天井・壁に取り付け"]
+2. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
 
     '三脚（Gitzo）': `【Gitzo三脚の質問フロー】1つずつ質問：
 1. 撮影シーン → options:["旅行・登山","風景・長時間露光","野鳥・超望遠","動画・映像制作"]
@@ -459,21 +463,25 @@ Note: MVR901 series (LANC), 522 series remote cables
 Note: MKPROVR etc. VR bases, MBOOMAVR etc. extension booms
 1. What are you looking for → options:["VR shooting base/stand","Extension boom","Looking for a full set"]`,
 
-    'Product Photography Lighting': `[Product Photography Lighting Flow] Ask ONLY ONE question:
-Note: recommends across Background, Softbox, and Reflector categories
-1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+    'Product Photography Lighting': `[Product Photography Lighting Flow] Ask ONE question at a time:
+Note: recommends across Background, Softbox, and Reflector categories — use Q1 to figure out which sub-category matters most
+1. What matters most → options:["Make the background look great","Soften light on the subject","Add natural fill light","Not sure which I need"]
+2. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
 
-    'Portrait Lighting': `[Portrait Lighting Flow] Ask ONLY ONE question:
+    'Portrait Lighting': `[Portrait Lighting Flow] Ask ONE question at a time:
 Note: recommends across Softbox, Reflector, and Stand categories
-1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+1. Shooting environment → options:["Studio, full setup","Casual, at home","Outdoor/on-location"]
+2. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
 
-    'Video Production Lighting': `[Video Production Lighting Flow] Ask ONLY ONE question:
+    'Video Production Lighting': `[Video Production Lighting Flow] Ask ONE question at a time:
 Note: recommends across Stand and Background categories
-1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+1. What's needed → options:["Need somewhere to put lights","Need a background setup","Need both"]
+2. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
 
-    'Live Streaming Lighting': `[Live Streaming Lighting Flow] Ask ONLY ONE question:
+    'Live Streaming Lighting': `[Live Streaming Lighting Flow] Ask ONE question at a time:
 Note: recommends across Stand and Accessories (clamps) categories
-1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+1. Setup → options:["Compact, on my desk","Sturdy stand-mounted","Ceiling/wall mounted"]
+2. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
 
     'Tripod (Gitzo)': `[Gitzo Tripod Flow] Ask ONE question at a time:
 1. Shooting scene → options:["Travel/hiking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
