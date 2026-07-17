@@ -454,7 +454,8 @@ const FLOW_OPTIONS = {
       ['肩掛けストラップ','バックパックへの装着','手持ち'],
     ],
     'アクセサリー（Gitzo）': [
-      ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'],
+      // 実商品6点（GC2560/GC5560/GC5160F=レッグウォーマー、GCB100NS/GCB100SS=ストラップ、GSLBRSY=L型ブラケット）に基づく
+      ['三脚レッグウォーマー（保護カバー）','カメラストラップ','L型ブラケット（Sony用）'],
     ],
     'バックパック': [
       ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'],
@@ -560,7 +561,8 @@ const FLOW_OPTIONS = {
       ['Shoulder strap','Attach to backpack','Hand carry'],
     ],
     'Accessories (Gitzo)': [
-      ['Quick release plate','Magic arm/clamp','Tethering/VR shooting','Remote control','Tripod spike'],
+      // Based on the 6 actual SKUs: GC2560/GC5560/GC5160F=leg warmers, GCB100NS/GCB100SS=straps, GSLBRSY=L-bracket
+      ['Tripod leg warmer','Camera strap','L-bracket (Sony only)'],
     ],
     'Backpack': [
       ['Mirrorless + 2-3 lenses','DSLR + 3-4 lenses','Large gear + accessories'],
@@ -994,7 +996,7 @@ function startChat(brand, category) {
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
       '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
       '三脚バッグ（Gitzo）':      { msg: 'Gitzoの三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。', opts: ['コンパクト（トラベラー相当）','中型','大型'] },
-      'アクセサリー（Gitzo）':    { msg: 'Gitzoのアクセサリーをお探しですね！どのようなアクセサリーをお探しですか？', opts: ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'] },
+      'アクセサリー（Gitzo）':    { msg: 'Gitzoのアクセサリーをお探しですね！どのようなアクセサリーをお探しですか？', opts: ['三脚レッグウォーマー（保護カバー）','カメラストラップ','L型ブラケット（Sony用）'] },
     },
     en: {
       'Tripod':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
@@ -1008,7 +1010,7 @@ function startChat(brand, category) {
       'Monopod (Gitzo)':  { msg: `Looking for a Gitzo monopod! What's the main use?`, opts: ['Sports/wildlife','Landscape/travel','Video/vlog'] },
       'Head (Gitzo)':     { msg: `Looking for a Gitzo head! What's the main purpose?`, opts: ['Photography','Video','Panorama/360°'] },
       'Tripod Bag (Gitzo)': { msg: `Looking for a Gitzo tripod bag! What size tripod do you need to store?`, opts: ['Compact (Traveler size)','Medium','Large'] },
-      'Accessories (Gitzo)': { msg: `Looking for Gitzo accessories! What kind of accessory are you looking for?`, opts: ['Quick release plate','Magic arm/clamp','Tethering/VR shooting','Remote control','Tripod spike'] },
+      'Accessories (Gitzo)': { msg: `Looking for Gitzo accessories! What kind of accessory are you looking for?`, opts: ['Tripod leg warmer','Camera strap','L-bracket (Sony only)'] },
       'Backpack':     { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}backpack! What gear do you need to carry?`, opts: ['Mirrorless + 2-3 lenses','DSLR + 3-4 lenses','Large gear + accessories'] },
       'Shoulder Bag': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}shoulder bag! What gear do you need to carry?`, opts: ['Compact camera only','Camera + 1 lens','Camera + multiple lenses'] },
       'Roller Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}roller bag! How much gear do you need to carry?`, opts: ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'] },
