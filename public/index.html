@@ -420,6 +420,18 @@ const FLOW_OPTIONS = {
       ['背景布','クロマキー（グリーン・ブルー）','背景サポートシステム'],
       ['1.5m以下','2m〜3m','3m以上'],
     ],
+    '商品撮影ライティング': [
+      ['〜3万円','3〜8万円','8万円以上','こだわらない'],
+    ],
+    '人物撮影ライティング': [
+      ['〜3万円','3〜8万円','8万円以上','こだわらない'],
+    ],
+    '動画制作ライティング': [
+      ['〜3万円','3〜8万円','8万円以上','こだわらない'],
+    ],
+    'ライブ配信ライティング': [
+      ['〜3万円','3〜8万円','8万円以上','こだわらない'],
+    ],
     'ライティング': [
       ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
       ['ストロボ','LED','リングライト','大型モノブロック'],
@@ -428,9 +440,26 @@ const FLOW_OPTIONS = {
       ['必要','不要','わからない'],
     ],
     'アクセサリー': [
-      ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'],
-      ['三脚・雲台に取り付ける','ライトスタンドに固定する','カメラ本体に取り付ける'],
-      ['プレート・アダプター','マジックアーム','クランプ・ナノクランプ','タブレット・PCホルダー'],
+      ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'],
+    ],
+    '三脚雲台アクセサリー': [
+      ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'],
+    ],
+    'クイックリリースプレート': [
+      ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Arcaタイプ','わからない'],
+    ],
+    'モニター・PC設置': [
+      ['モニター','タブレット','ノートPC','マウス'],
+    ],
+    '固定クランプ・アーム': [
+      ['カメラ','LED・照明機材','モニター','マイク'],
+      ['三脚・スタンドに固定','机・棚に固定','パイプ・レールに固定'],
+    ],
+    'リモートコントロール': [
+      ['Sony（LANC対応）','Panasonic','その他のカメラ'],
+    ],
+    'VR・360°撮影': [
+      ['VR撮影用ベース・スタンド','エクステンションブーム','セットで探したい'],
     ],
     '三脚（Gitzo）': [
       ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'],
@@ -558,6 +587,18 @@ const FLOW_OPTIONS = {
       ['Backdrop cloth','Chroma key (green/blue)','Background support system'],
       ['1.5m or less','2-3m','3m+'],
     ],
+    'Product Photography Lighting': [
+      ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
+    ],
+    'Portrait Lighting': [
+      ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
+    ],
+    'Video Production Lighting': [
+      ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
+    ],
+    'Live Streaming Lighting': [
+      ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
+    ],
     'Lighting': [
       ['Portrait','Video/YouTube','Product photography','Outdoor location'],
       ['Strobe','LED','Ring light','Large monoblock'],
@@ -566,9 +607,26 @@ const FLOW_OPTIONS = {
       ['Needed','Not needed','Not sure'],
     ],
     'Accessories': [
-      ['Camera support','Tethered shooting','Lighting support','Other'],
-      ['Tripod','Light stand','Camera body','Wall/ceiling'],
-      ['Magic arm','Clamp','Plate','Strap'],
+      ['Strap/grip','Rain cover/protection','Organization/storage','Other'],
+    ],
+    'Tripod/Head Accessories': [
+      ['Leveling','Low-angle shooting','Stability (spikes)','Other'],
+    ],
+    'Quick Release Plate': [
+      ['200PL series (standard heads)','501PL series (video heads)','Arca type','Not sure'],
+    ],
+    'Monitor/PC Mount': [
+      ['Monitor','Tablet','Laptop','Mouse'],
+    ],
+    'Clamps & Arms': [
+      ['Camera','LED/lighting gear','Monitor','Microphone'],
+      ['Mount to tripod/stand','Mount to desk/shelf','Mount to pipe/rail'],
+    ],
+    'Remote Control': [
+      ['Sony (LANC)','Panasonic','Other camera'],
+    ],
+    'VR & 360°': [
+      ['VR shooting base/stand','Extension boom','Looking for a full set'],
     ],
     'Tripod (Gitzo)': [
       ['Travel/hiking','Landscape/long exposure','Wildlife/telephoto','Video/cinema'],
@@ -822,33 +880,76 @@ function showCategoryScreen(brand) {
 
 function selectCategory(cat) {
   // ライティングを選んだ場合はサブカテゴリ選択へ
+  // Copilotの提案に基づき、商品名ベースの選択肢（「スタンド」「ソフトボックス」等）から
+  // 目的ベースの選択肢（「ライトを設置したい」等）に変更。器材の名前を知らない客でも
+  // 自分のやりたいことから正しいカテゴリに辿り着けるようにする（2026/07/17）。
   if (cat === 'ライティング' || cat === 'Lighting') {
     const t = i18n[lang];
     const w = document.getElementById('welcome');
     if (!w) return;
 
     const lightCats = lang === 'ja'
-      ? ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_アクセサリー','ライティング_リフレクター','ライティング_背景']
-      : ['Lighting_Stand','Lighting_Softbox','Lighting_Accessories','Lighting_Reflector','Lighting_Background'];
+      ? ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
+      : ['Lighting_Stand','Lighting_Softbox','Lighting_Reflector','Lighting_Background','Lighting_Accessories'];
 
     const lightLabels = lang === 'ja'
-      ? ['スタンド・ブーム','ソフトボックス','アクセサリー・クランプ','リフレクター','背景・クロマキー']
-      : ['Stand & Boom','Softbox','Accessories & Clamps','Reflector','Background'];
+      ? ['ライトを設置したい','光を柔らかくしたい','反射光で補助したい','背景を作りたい','機材を固定したい']
+      : ['Set up a light','Soften the light','Fill with reflected light','Create a background','Mount my gear'];
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
     const chips = lightCats.map((c, i) =>
       `<button class="category-chip" onclick="selectLightingCategory('${c}')">${lightLabels[i]}</button>`
+    ).join('') + `<button class="category-chip" onclick="selectLightingUseCaseScreen()">${lang === 'ja' ? 'わからないので撮影内容から探したい' : "Not sure — help me by shooting type"}</button>`;
+
+    w.innerHTML = `
+      <div class="category-header">
+        <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
+        <span class="category-label">${lang === 'ja' ? '何をしたいですか？' : 'What would you like to do?'}</span>
+      </div>
+      <div class="category-grid">${chips}</div>
+      <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
+        onclick="selectLightingCategory('ライティング')">${t.skipCategory}</button>
+      <button class="back-link" onclick="${selectedBrand && selectedBrand !== 'all' ? 'showCategoryScreen(\'' + selectedBrand + '\')' : 'showCategoryScreen(null)'}">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
+    return;
+  }
+
+  // 「わからないので撮影内容から探したい」用のサブ選択画面。
+  // 撮影内容（商品撮影・人物撮影・動画制作・ライブ配信）に応じて、
+  // 複数のライティングサブカテゴリを横断検索する集約カテゴリへ振り分ける。
+  if (cat === '撮影内容から探す' || cat === 'Find by shooting type') {
+    return selectLightingUseCaseScreen();
+  }
+
+  // Manfrottoの「アクセサリー」を選んだ場合、以前は1つの質問フローの中で
+  // 「クイックリリース・プレート／マジックアーム・クランプ／...」のように選択肢のテキストだけで
+  // 分岐していたが、DB検索カテゴリは全部「アクセサリー」という単一の大きな塊のままだったため、
+  // 実際の検索範囲が絞られておらず精度が低かった（Copilotの提案・実商品81点の分析に基づき、
+  // 目的別に6つの独立したDBカテゴリへ正式に分割。2026/07/17）。
+  // Gitzo（アクセサリー（Gitzo））・Lowepro（アクセサリー（Lowepro））は元々別の入口を持つため対象外。
+  if ((cat === 'アクセサリー' || cat === 'Accessories') && selectedBrand !== 'Gitzo' && selectedBrand !== 'Lowepro') {
+    const w = document.getElementById('welcome');
+    if (!w) return;
+
+    const accCats = lang === 'ja'
+      ? ['三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影','アクセサリー']
+      : ['Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Accessories'];
+    const accLabels = lang === 'ja'
+      ? ['三脚・雲台を使いやすくしたい','クイックリリースプレートが欲しい','モニター・タブレットを設置したい','カメラや機材を固定したい','リモートで操作したい','VR・360°撮影がしたい','その他（ストラップ・レインカバー等）']
+      : ['Improve my tripod/head','I need a quick release plate','Mount a monitor/tablet','Clamp/mount my gear','Remote control my camera','VR / 360° shooting','Other (straps, rain covers, etc.)'];
+
+    const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+
+    const chips = accCats.map((c, i) =>
+      `<button class="category-chip" onclick="selectBagCategory('${c}')">${accLabels[i]}</button>`
     ).join('');
 
     w.innerHTML = `
       <div class="category-header">
         <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
-        <span class="category-label">${lang === 'ja' ? 'ライティングの種類を選択' : 'Select lighting type'}</span>
+        <span class="category-label">${lang === 'ja' ? '何をしたいですか？' : 'What would you like to do?'}</span>
       </div>
       <div class="category-grid">${chips}</div>
-      <button class="category-chip" style="margin-bottom:8px;border-style:dashed;color:var(--gray-500)"
-        onclick="selectLightingCategory('ライティング')">${t.skipCategory}</button>
       <button class="back-link" onclick="${selectedBrand && selectedBrand !== 'all' ? 'showCategoryScreen(\'' + selectedBrand + '\')' : 'showCategoryScreen(null)'}">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
     return;
   }
@@ -1008,6 +1109,41 @@ function selectLightingCategory(cat) {
   startChat(selectedBrand, cat);
 }
 
+// 「わからないので撮影内容から探したい」の4択画面
+// 各撮影内容は複数のライティングサブカテゴリを横断する集約カテゴリにマッピングされる
+function selectLightingUseCaseScreen() {
+  const w = document.getElementById('welcome');
+  if (!w) return;
+
+  const useCases = lang === 'ja'
+    ? [
+        { key: '商品撮影ライティング', label: '商品撮影' },
+        { key: '人物撮影ライティング', label: '人物撮影' },
+        { key: '動画制作ライティング', label: '動画制作' },
+        { key: 'ライブ配信ライティング', label: 'ライブ配信' },
+      ]
+    : [
+        { key: 'Product Photography Lighting', label: 'Product Photography' },
+        { key: 'Portrait Lighting', label: 'Portrait' },
+        { key: 'Video Production Lighting', label: 'Video Production' },
+        { key: 'Live Streaming Lighting', label: 'Live Streaming' },
+      ];
+
+  const chips = useCases.map(({key, label}) =>
+    `<button class="category-chip" onclick="selectBagCategory('${key}')">${label}</button>`
+  ).join('');
+
+  const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+
+  w.innerHTML = `
+    <div class="category-header">
+      <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
+      <span class="category-label">${lang === 'ja' ? '何を撮影しますか？' : 'What are you shooting?'}</span>
+    </div>
+    <div class="category-grid">${chips}</div>
+    <button class="back-link" onclick="selectCategory(${lang === 'ja' ? "'ライティング'" : "'Lighting'"})">${lang === 'ja' ? '前の画面に戻る' : 'Back'}</button>`;
+}
+
 function selectBagCategory(cat) {
   selectedCategory = cat;
   startChat(selectedBrand, cat);
@@ -1087,8 +1223,18 @@ function startChat(brand, category) {
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
       'ライティング_リフレクター':  { msg: `${brandLabel ? brandLabel + 'の' : ''}リフレクターをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','屋外ロケ'] },
       'ライティング_背景':          { msg: `${brandLabel ? brandLabel + 'の' : ''}撮影背景をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
+      '商品撮影ライティング':   { msg: `商品撮影用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
+      '人物撮影ライティング':   { msg: `人物撮影用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
+      '動画制作ライティング':   { msg: `動画制作用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
+      'ライブ配信ライティング': { msg: `ライブ配信用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
-      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'] },
+      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
+      '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'] },
+      'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Arcaタイプ','わからない'] },
+      'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
+      '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
+      'リモートコントロール':    { msg: `${brandLabel ? brandLabel + 'の' : ''}リモートコントロールをお探しですね！お使いのカメラは？`, opts: ['Sony（LANC対応）','Panasonic','その他のカメラ'] },
+      'VR・360°撮影':           { msg: `${brandLabel ? brandLabel + 'の' : ''}VR・360°撮影機材をお探しですね！何をお探しですか？`, opts: ['VR撮影用ベース・スタンド','エクステンションブーム','セットで探したい'] },
       'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
@@ -1106,8 +1252,18 @@ function startChat(brand, category) {
       'Lighting_Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting accessories! Where would you like to attach it?`, opts: ['Attach to strobe','Attach to light stand','Attach to camera'] },
       'Lighting_Reflector':   { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}reflectors! What's the main purpose?`, opts: ['Portrait','Product photography','Outdoor location'] },
       'Lighting_Background':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}backgrounds! What's the main purpose?`, opts: ['Portrait','Product photography','Video/YouTube'] },
+      'Product Photography Lighting': { msg: `Looking for product photography lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
+      'Portrait Lighting': { msg: `Looking for portrait lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
+      'Video Production Lighting': { msg: `Looking for video production lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
+      'Live Streaming Lighting': { msg: `Looking for live streaming lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
-      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Camera support','Tethered shooting','Lighting support','Other'] },
+      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
+      'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Other'] },
+      'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Arca type','Not sure'] },
+      'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
+      'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
+      'Remote Control': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}remote control! What camera are you using?`, opts: ['Sony (LANC)','Panasonic','Other camera'] },
+      'VR & 360°': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}VR/360° shooting gear! What are you looking for?`, opts: ['VR shooting base/stand','Extension boom','Looking for a full set'] },
       'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
       'Tripod (Gitzo)':   { msg: `Looking for a Gitzo tripod! What's your shooting scene?`, opts: ['Travel/hiking','Landscape/long exposure','Wildlife/telephoto','Video/cinema'] },
       'Monopod (Gitzo)':  { msg: `Looking for a Gitzo monopod! What's the main use?`, opts: ['Sports/wildlife','Landscape/travel','Video/vlog'] },
