@@ -294,12 +294,13 @@ const FLOWS = {
 2. レンズサイズ → options:["小型（〜8cm径）","中型（〜11cm径）","大型（〜13cm径）"]
 3. 使い方 → options:["バッグのインサート","単独で携帯","スタジオ保管"]`,
 
-    'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つずつ質問：
-1. 収納したいもの → options:["ケーブル・バッテリー","カメラ本体","レンズ","メモリーカード"]
-2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`,
+    'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つだけ質問：
+※実商品はカメラボックスL/XL、クリエーターボックスM/L/XLの5点のみ（サイズ違いのインサートケース）
+1. 収納したい機材の量 → options:["カメラ+レンズ1本","カメラ+レンズ2〜3本","カメラ+レンズ複数+アクセサリー"]`,
 
     'アクセサリーケース': `【Loweproアクセサリーケースの質問フロー】1つだけ質問：
-1. 何を収納したいか → options:["カメラ本体","レンズ","メモリーカード・小物","スマートフォン","その他"]`,
+※カメラ・レンズのサイズはギアアップ側で扱うため、ここでは聞かない
+1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","その他"]`,
 
     'アクセサリー（Lowepro）': `【Loweproアクセサリーの質問フロー】1つだけ質問：
 1. どのような用途か → options:["ストラップ・グリップ","レインカバー・保護","収納・整理","その他"]`,
@@ -433,12 +434,13 @@ Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — exclud
 2. Lens size → options:["Small (~8cm dia.)","Medium (~11cm dia.)","Large (~13cm dia.)"]
 3. Usage → options:["As bag insert","Standalone carry","Studio storage"]`,
 
-    'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONE question at a time:
-1. What to store → options:["Cables/batteries","Camera body","Lens","Memory cards"]
-2. Usage → options:["As bag insert","Standalone use","Organization"]`,
+    'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONLY ONE question:
+Note: only 5 real SKUs exist (camera box L/XL, creator box M/L/XL — insert cases by capacity)
+1. Gear volume → options:["Camera + 1 lens","Camera + 2-3 lenses","Camera + multiple lenses + accessories"]`,
 
     'Accessory Case': `[Lowepro Accessory Case Flow] Ask ONLY ONE question:
-1. What to store → options:["Camera body","Lens","Memory cards/small items","Smartphone","Other"]`,
+Note: camera/lens sizing is handled by GearUp, don't ask about that here
+1. What to store → options:["Memory cards/small items","Smartphone","Other"]`,
 
     'Accessories (Lowepro)': `[Lowepro Accessories Flow] Ask ONLY ONE question:
 1. What's it for → options:["Strap/grip","Rain cover/protection","Organization/storage","Other"]`,
