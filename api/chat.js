@@ -275,13 +275,16 @@ const FLOWS = {
 
     'ショルダーバッグ': `【Loweproショルダーの質問フロー】1つずつ質問：
 1. 収納したい機材 → options:["コンパクト1台のみ","カメラ1台+レンズ1本","カメラ+レンズ複数"]
-2. バッグのスタイル → options:["斜めがけショルダー","スリング","トップローディング"]
-3. 使用シーン → options:["日常・街撮り","旅行","スポーツ・アウトドア"]`,
+2. 使用シーン → options:["日常・街撮り","旅行","スポーツ・アウトドア"]`,
 
     'TLZ・トップローディング': `【Lowepro TLZの質問フロー】1つずつ質問：
 1. 収納したいレンズサイズ → options:["〜24-70mm","〜70-200mm","300mm以上"]
 2. 重視すること → options:["素早く取り出したい","しっかり保護したい","両方"]
 3. 使い方 → options:["単独で使う","他のバッグのインサートとして"]`,
+
+    'スリング': `【Loweproスリングの質問フロー】1つずつ質問：
+1. 収納したい機材 → options:["コンパクトミラーレス","フルサイズ+レンズ1本","フルサイズ+望遠レンズ"]
+2. 携帯スタイル → options:["斜めがけ（クロスボディ）","ヒップ・ウエスト","どちらも使いたい"]`,
 
     'レンズ・ハードケース': `【Loweproケースの質問フロー】1つずつ質問：
 1. 収納したいもの → options:["交換レンズ","カメラ+アクセサリー","バッテリー・小物"]
@@ -291,6 +294,9 @@ const FLOWS = {
     'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つずつ質問：
 1. 収納したいもの → options:["ケーブル・バッテリー","カメラ本体","レンズ","メモリーカード"]
 2. 使い方 → options:["バッグのインサート","単独で使う","整理収納"]`,
+
+    'アクセサリーケース': `【Loweproアクセサリーケースの質問フロー】1つだけ質問：
+1. 何を収納したいか → options:["カメラ本体","レンズ","メモリーカード・小物","スマートフォン","その他"]`,
 
     'アクセサリー（Lowepro）': `【Loweproアクセサリーの質問フロー】1つだけ質問：
 1. どのような用途か → options:["ストラップ・グリップ","レインカバー・保護","収納・整理","その他"]`,
@@ -382,13 +388,16 @@ Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — exclud
 
     'Shoulder Bag': `[Lowepro Shoulder Bag Flow] Ask ONE question at a time:
 1. Gear to carry → options:["Compact camera only","Camera + 1 lens","Camera + multiple lenses"]
-2. Bag style → options:["Shoulder bag","Sling","Top loading"]
-3. Main scene → options:["Daily/street","Travel","Sports/outdoor"]`,
+2. Main scene → options:["Daily/street","Travel","Sports/outdoor"]`,
 
     'TLZ / Top Loading': `[Lowepro TLZ Flow] Ask ONE question at a time:
 1. Lens size → options:["Up to 24-70mm","Up to 70-200mm","300mm+"]
 2. Priority → options:["Quick access","Solid protection","Both"]
 3. Usage → options:["Standalone use","As bag insert"]`,
+
+    'Sling': `[Lowepro Sling Flow] Ask ONE question at a time:
+1. Gear to carry → options:["Compact mirrorless","Full-frame + 1 lens","Full-frame + telephoto"]
+2. Carry style → options:["Cross-body sling","Hip/waist","Both"]`,
 
     'Lens & Hard Case': `[Lowepro Case Flow] Ask ONE question at a time:
 1. What to store → options:["Interchangeable lens","Camera + accessories","Battery/small items"]
@@ -398,6 +407,9 @@ Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — exclud
     'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONE question at a time:
 1. What to store → options:["Cables/batteries","Camera body","Lens","Memory cards"]
 2. Usage → options:["As bag insert","Standalone use","Organization"]`,
+
+    'Accessory Case': `[Lowepro Accessory Case Flow] Ask ONLY ONE question:
+1. What to store → options:["Camera body","Lens","Memory cards/small items","Smartphone","Other"]`,
 
     'Accessories (Lowepro)': `[Lowepro Accessories Flow] Ask ONLY ONE question:
 1. What's it for → options:["Strap/grip","Rain cover/protection","Organization/storage","Other"]`,
@@ -434,6 +446,8 @@ function buildGuidancePrompt(lang, category, brand) {
     // Lowepro
     'Backpack': 'バックパック', 'Shoulder Bag': 'ショルダーバッグ',
     'TLZ / Top Loading': 'TLZ・トップローディング',
+    'Sling': 'スリング',
+    'Accessory Case': 'アクセサリーケース',
     'Lens & Hard Case': 'レンズ・ハードケース',
     'GearUp & Accessories': 'ギアアップ・アクセサリー',
     'Accessories (Lowepro)': 'アクセサリー（Lowepro）'
@@ -683,13 +697,16 @@ export default async function handler(req, res) {
         '雲台':      '雲台',
         '一脚':      '一脚',
         // バッグ（全ブランド統合）
-        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'],
+        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
         'バックパック':            'バックパック',
         'ショルダーバッグ':        'ショルダーバッグ',
         'ローラーバッグ':          'ローラーバッグ',
         '三脚バッグ':              '三脚バッグ',
         'レンズ・ハードケース':    'レンズ・ハードケース',
         'ギアアップ・アクセサリー': 'ギアアップ・アクセサリー',
+        'TLZ・トップローディング': 'TLZ・トップローディング',
+        'スリング':                'スリング',
+        'アクセサリーケース':      'アクセサリーケース',
         // アクセサリー
         'アクセサリー': 'アクセサリー',
         // ライティング（細分化）
@@ -711,7 +728,7 @@ export default async function handler(req, res) {
         'Tripod':              '三脚',
         'Head':                '雲台',
         'Monopod':             '一脚',
-        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー'],
+        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
         'Backpack':            'バックパック',
         'Shoulder Bag':        'ショルダーバッグ',
         'Roller Bag':          'ローラーバッグ',
@@ -725,13 +742,15 @@ export default async function handler(req, res) {
         'Tripod Bag (Gitzo)':  '三脚バッグ',
         'Accessories (Gitzo)': 'アクセサリー',
         'Accessories (Lowepro)': 'アクセサリー',
-        'TLZ / Top Loading':   'ショルダーバッグ',
+        'TLZ / Top Loading':   'TLZ・トップローディング',
+        'Sling':               'スリング',
+        'Accessory Case':      'アクセサリーケース',
         'Lens & Hard Case':    'レンズ・ハードケース',
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
       // 全ブランド選択時のブランド自動絞り込み
-      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','ギアアップ・アクセサリー','アクセサリー（Lowepro）','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Lens & Hard Case','Accessories (Lowepro)'];
+      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','スリング','アクセサリーケース','ギアアップ・アクセサリー','アクセサリー（Lowepro）','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Sling','Accessory Case','Lens & Hard Case','Accessories (Lowepro)'];
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','三脚バッグ（Gitzo）','アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Tripod Bag (Gitzo)','Accessories (Gitzo)'];
       // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
       // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
