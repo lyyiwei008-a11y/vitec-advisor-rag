@@ -469,6 +469,34 @@ RESPONSE FORMAT — output ONLY this JSON, nothing else:
 6. NEVER repeat the same options from a previous question`;
 }
 
+// ────────────────────────────────────────────────
+// 質問フローの最後の1問に対する返答専用プロンプト
+// GUIDE用のbuildGuidancePromptは「毎回必ず次の質問を1つ聞け」と指示しているため、
+// フロントエンドが「これで固定フローは終わり」と判断した最後の回答に対しても
+// GPTが勝手に追加の質問を作ってしまい、選択肢のない宙に浮いた質問が出る問題があった。
+// これを避けるため、最後の1問への返答だけは「質問せず一言だけ確認する」ことに役割を絞る。
+// ────────────────────────────────────────────────
+function buildLastStepAckPrompt(lang, brand) {
+  const langRule = lang === 'ja' ? '必ず日本語で回答してください。' : 'Always respond in English.';
+  const brandRule = brand ? `対象ブランド: ${brand}` : '対象: Manfrotto / Gitzo / Lowepro / Avenger';
+
+  return `You are a friendly Vitec Japan product advisor.
+${langRule}
+${brandRule}
+
+The customer just answered the LAST question in the guided flow. Do NOT ask any further question — all the needed information has already been collected.
+
+Respond with ONLY a short, warm one-sentence acknowledgment of their last answer (no question, no options).
+
+RESPONSE FORMAT — output ONLY this JSON, nothing else:
+{"message":"short warm one-sentence acknowledgment, no question"}
+
+RULES:
+1. Output MUST be valid JSON only — no markdown, no extra text
+2. Do NOT include an "options" field
+3. Do NOT ask any question`;
+}
+
 function buildRecommendPrompt(lang, brand, products) {
   const langRule = lang === 'ja' ? '必ず日本語で回答してください。' : 'Always respond in English.';
   const brandRule = brand ? `対象ブランド: ${brand}` : '対象: 全ブランド (Manfrotto / Gitzo / Lowepro / Avenger)';
@@ -564,7 +592,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { messages, lang = 'ja', brand = null, category = null, forceRecommend = false, supplementCheck = false } = req.body;
+  const { messages, lang = 'ja', brand = null, category = null, forceRecommend = false, supplementCheck = false, isLastStep = false } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'No messages provided' });
   }
@@ -711,6 +739,9 @@ export default async function handler(req, res) {
 
 
       systemPrompt = buildRecommendPrompt(lang, brand, ragProducts);
+    } else if (isLastStep === true) {
+      // 固定フローの最後の1問への返答 → 追加質問を作らせず一言確認のみ
+      systemPrompt = buildLastStepAckPrompt(lang, brand);
     } else {
       systemPrompt = buildGuidancePrompt(lang, detectedCategory, brand);
     }
@@ -757,7 +788,8 @@ export default async function handler(req, res) {
     }
 
     // 3. optionsが空またはない場合、カテゴリに応じたデフォルト選択肢を付与
-    if (parsed && (!parsed.options || parsed.options.length === 0) && phase === 'GUIDE') {
+    //    ただし「最後の1問への確認のみ」の返答は意図的にoptions無しなので対象外にする
+    if (parsed && (!parsed.options || parsed.options.length === 0) && phase === 'GUIDE' && !isLastStep) {
       const defaultOptions = {
         '三脚':              ['写真撮影メイン', '動画撮影メイン', '写真・動画両方'],
         '雲台':              ['写真撮影メイン', '動画撮影メイン', '写真・動画両方'],
