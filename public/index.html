@@ -415,7 +415,7 @@ const FLOW_OPTIONS = {
     'ライティング_リフレクター': [
       ['ポートレート','商品・物撮り','屋外ロケ'],
       ['丸型リフレクター','大型パネル・スクリーン','リフレクタースタンド'],
-      ['白・シルバー','ゴールド','ディフューザー（半透明）'],
+      ['白・シルバー','ディフューザー（半透明）'],
     ],
     'ライティング_背景': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
@@ -590,7 +590,7 @@ const FLOW_OPTIONS = {
     'Lighting_Reflector': [
       ['Portrait','Product photography','Outdoor location'],
       ['Round reflector','Large panel/scrim','Reflector stand'],
-      ['White/silver','Gold','Diffuser (translucent)'],
+      ['White/silver','Diffuser (translucent)'],
     ],
     'Lighting_Background': [
       ['Portrait','Product photography','Video/YouTube'],
@@ -904,13 +904,18 @@ function selectCategory(cat) {
     const w = document.getElementById('welcome');
     if (!w) return;
 
+    // ライティング_ソフトボックスは在庫確認の結果、検索可能（priority1/2）商品が0件
+    // （実商品9点が全てpriority=4で廃盤）だったため、暫定的にボタンから除外する。
+    // 在庫が復活した場合は下記2行を元に戻すこと：
+    // ja: ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
+    // en: ['Lighting_Stand','Lighting_Softbox','Lighting_Reflector','Lighting_Background','Lighting_Accessories']
     const lightCats = lang === 'ja'
-      ? ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
-      : ['Lighting_Stand','Lighting_Softbox','Lighting_Reflector','Lighting_Background','Lighting_Accessories'];
+      ? ['ライティング_スタンド','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
+      : ['Lighting_Stand','Lighting_Reflector','Lighting_Background','Lighting_Accessories'];
 
     const lightLabels = lang === 'ja'
-      ? ['ライトを設置したい','光を柔らかくしたい','反射光で補助したい','背景を作りたい','機材を固定したい']
-      : ['Set up a light','Soften the light','Fill with reflected light','Create a background','Mount my gear'];
+      ? ['ライトを設置したい','反射光で補助したい','背景を作りたい','機材を固定したい']
+      : ['Set up a light','Fill with reflected light','Create a background','Mount my gear'];
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
