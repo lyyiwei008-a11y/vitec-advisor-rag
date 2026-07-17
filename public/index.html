@@ -421,15 +421,19 @@ const FLOW_OPTIONS = {
       ['1.5m以下','2m〜3m','3m以上'],
     ],
     '商品撮影ライティング': [
+      ['背景をきれいに見せたい','被写体に柔らかい光を当てたい','反射光で自然に補光したい','どれが必要かわからない'],
       ['〜3万円','3〜8万円','8万円以上','こだわらない'],
     ],
     '人物撮影ライティング': [
+      ['スタジオで本格的に','自宅で手軽に','屋外・ロケで'],
       ['〜3万円','3〜8万円','8万円以上','こだわらない'],
     ],
     '動画制作ライティング': [
+      ['ライトを立てる場所が欲しい','背景の準備がしたい','両方欲しい'],
       ['〜3万円','3〜8万円','8万円以上','こだわらない'],
     ],
     'ライブ配信ライティング': [
+      ['机の上でコンパクトに','スタンドでしっかり固定','天井・壁に取り付け'],
       ['〜3万円','3〜8万円','8万円以上','こだわらない'],
     ],
     'ライティング': [
@@ -588,15 +592,19 @@ const FLOW_OPTIONS = {
       ['1.5m or less','2-3m','3m+'],
     ],
     'Product Photography Lighting': [
+      ['Make the background look great','Soften light on the subject','Add natural fill light','Not sure which I need'],
       ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
     ],
     'Portrait Lighting': [
+      ['Studio, full setup','Casual, at home','Outdoor/on-location'],
       ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
     ],
     'Video Production Lighting': [
+      ['Need somewhere to put lights','Need a background setup','Need both'],
       ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
     ],
     'Live Streaming Lighting': [
+      ['Compact, on my desk','Sturdy stand-mounted','Ceiling/wall mounted'],
       ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'],
     ],
     'Lighting': [
@@ -1186,7 +1194,7 @@ function setInputEnabled(enabled) {
 }
 
 function isFreeInputAllowed() {
-  return chatMode === 'SUPPLEMENT_INPUT';
+  return chatMode === 'SUPPLEMENT_INPUT' || (chatMode === 'GUIDE' && selectedCategory === null);
 }
 
 function startChat(brand, category) {
@@ -1195,7 +1203,10 @@ function startChat(brand, category) {
   currentStep = 0;
   chatMode = 'GUIDE';
   supplementRounds = 0;
-  setInputEnabled(false);
+  // category未選択（「カテゴリーを選ばずに質問する」）の場合は固定フローが存在しないため、
+  // チップではなく自由入力そのものが唯一の回答手段になる。ここでロックしてしまうと
+  // チップも出ず入力もできない詰み状態になるため、この場合だけ入力を開放する。
+  setInputEnabled(category === null);
   const w = document.getElementById('welcome');
   if (w) w.remove();
   document.getElementById('reset-btn').classList.add('visible');
@@ -1223,10 +1234,10 @@ function startChat(brand, category) {
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
       'ライティング_リフレクター':  { msg: `${brandLabel ? brandLabel + 'の' : ''}リフレクターをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','屋外ロケ'] },
       'ライティング_背景':          { msg: `${brandLabel ? brandLabel + 'の' : ''}撮影背景をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
-      '商品撮影ライティング':   { msg: `商品撮影用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
-      '人物撮影ライティング':   { msg: `人物撮影用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
-      '動画制作ライティング':   { msg: `動画制作用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
-      'ライブ配信ライティング': { msg: `ライブ配信用のライティングをお探しですね！ご予算感を教えてください。`, opts: ['〜3万円','3〜8万円','8万円以上','こだわらない'] },
+      '商品撮影ライティング':   { msg: `商品撮影用のライティングをお探しですね！何を重視しますか？`, opts: ['背景をきれいに見せたい','被写体に柔らかい光を当てたい','反射光で自然に補光したい','どれが必要かわからない'] },
+      '人物撮影ライティング':   { msg: `人物撮影用のライティングをお探しですね！どのような環境で撮影しますか？`, opts: ['スタジオで本格的に','自宅で手軽に','屋外・ロケで'] },
+      '動画制作ライティング':   { msg: `動画制作用のライティングをお探しですね！何が必要ですか？`, opts: ['ライトを立てる場所が欲しい','背景の準備がしたい','両方欲しい'] },
+      'ライブ配信ライティング': { msg: `ライブ配信用のライティングをお探しですね！設置環境を教えてください。`, opts: ['机の上でコンパクトに','スタンドでしっかり固定','天井・壁に取り付け'] },
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
       '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'] },
@@ -1252,10 +1263,10 @@ function startChat(brand, category) {
       'Lighting_Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting accessories! Where would you like to attach it?`, opts: ['Attach to strobe','Attach to light stand','Attach to camera'] },
       'Lighting_Reflector':   { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}reflectors! What's the main purpose?`, opts: ['Portrait','Product photography','Outdoor location'] },
       'Lighting_Background':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}backgrounds! What's the main purpose?`, opts: ['Portrait','Product photography','Video/YouTube'] },
-      'Product Photography Lighting': { msg: `Looking for product photography lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
-      'Portrait Lighting': { msg: `Looking for portrait lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
-      'Video Production Lighting': { msg: `Looking for video production lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
-      'Live Streaming Lighting': { msg: `Looking for live streaming lighting! What's your budget?`, opts: ['Under ¥30,000','¥30,000-80,000','Over ¥80,000','No preference'] },
+      'Product Photography Lighting': { msg: `Looking for product photography lighting! What matters most to you?`, opts: ['Make the background look great','Soften light on the subject','Add natural fill light','Not sure which I need'] },
+      'Portrait Lighting': { msg: `Looking for portrait lighting! What's your shooting environment?`, opts: ['Studio, full setup','Casual, at home','Outdoor/on-location'] },
+      'Video Production Lighting': { msg: `Looking for video production lighting! What do you need?`, opts: ['Need somewhere to put lights','Need a background setup','Need both'] },
+      'Live Streaming Lighting': { msg: `Looking for live streaming lighting! What's your setup?`, opts: ['Compact, on my desk','Sturdy stand-mounted','Ceiling/wall mounted'] },
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
       'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
       'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Other'] },
