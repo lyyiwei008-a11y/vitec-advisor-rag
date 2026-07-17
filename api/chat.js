@@ -195,7 +195,8 @@ const FLOWS = {
 2. 使用機材の重さ → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
 3. 撮影シーン → options:["旅行・登山","街撮り・日常","スタジオ・室内","スポーツ・野鳥","放送・シネマ"]
 4. 素材のこだわり → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
-5. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
+5. 高さのこだわり → options:["自分の目線まで伸ばしたい（全伸高160cm以上）","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
+6. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
 
     '雲台': `【雲台の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
@@ -208,7 +209,8 @@ const FLOWS = {
 1. 主な用途 → options:["スポーツ・報道","動画・Vlog","登山・旅行","野鳥・超望遠"]
 2. 機材の重さ → options:["〜1.5kg","〜2.5kg","〜5kg","5kg以上"]
 3. 雲台は必要か → options:["一脚のみでよい","雲台セットが欲しい","既に雲台を持っている"]
-4. 素材 → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]`,
+4. 素材 → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
+5. 高さのこだわり → options:["できるだけ高く伸ばしたい（全伸高180cm以上）","標準的な高さで十分","コンパクトに収納したい（携帯性重視）","特にこだわらない"]`,
 
     'カメラバッグ': `【カメラバッグの質問フロー】1つずつ質問：
 1. バッグのスタイル → options:["バックパック","ショルダーバッグ","トップローディング","どれでもよい"]
@@ -228,13 +230,13 @@ const FLOWS = {
 1. 主な用途 → options:["ポートレート","動画・YouTube","商品・物撮り","屋外ロケ"]
 2. スタンドの種類 → options:["ライトスタンド","ブームスタンド","ベイビースタンド","オートポール"]
 3. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
-4. 必要な高さ → options:["〜2m","〜3m","3m以上"]`,
+4. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
 
     'ライティング_ソフトボックス': `【ソフトボックスの質問フロー】1つずつ質問：
 ※実商品はスクエア型S/M/L・オクタ型M/L・マイクロ型、計6形状（+スピードリング等の取付アクセサリー3点）のみ
 1. 主な用途 → options:["ポートレート","商品・物撮り","動画・YouTube"]
 2. 形状 → options:["スクエア（正方形）","オクタ（八角形）","マイクロ（小型・携帯用）"]
-3. サイズ → options:["小型（〜40cm）","中型（50〜80cm）","大型（80cm以上）"]`,
+3. サイズ → options:["小型（〜50cm）","中型（50〜90cm）","大型（90cm以上）"]`,
 
     'ライティング_アクセサリー': `【ライティングアクセサリーの質問フロー】1つずつ質問：
 1. 取り付け場所 → options:["ストロボに取り付けたい","ライトスタンドに固定したい","カメラに取り付けたい"]
@@ -249,7 +251,7 @@ const FLOWS = {
     'ライティング_背景': `【撮影背景の質問フロー】1つずつ質問：
 1. 主な用途 → options:["ポートレート","商品・物撮り","動画・YouTube"]
 2. 種類 → options:["背景布","クロマキー（グリーン・ブルー）","背景サポートシステム"]
-3. サイズ → options:["1.5m以下","2m〜3m","3m以上"]`,
+3. サイズ → options:["〜1.6m","1.6〜2.2m","2.2m以上"]`,
 
     'アクセサリー': `【アクセサリーの質問フロー】1つだけ質問：
 ※実商品はストラップ・レインカバー・ディバイダーキット・ユーティリティーベルト等の残余カテゴリ
@@ -305,12 +307,14 @@ const FLOWS = {
 2. カメラ＋レンズの合計重量 → options:["〜3kg","3〜6kg","6〜10kg","10kg以上"]
 3. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい","既に雲台を持っている"]
 4. 携帯性のこだわり → options:["できるだけ軽く小さく","安定性重視","バランス重視"]
-5. 予算感 → options:["〜5万円","5〜10万円","10〜20万円","20万円以上"]`,
+5. 高さのこだわり → options:["自分の目線まで伸ばしたい","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
+6. 予算感 → options:["〜5万円","5〜10万円","10〜20万円","20万円以上"]`,
 
     '一脚（Gitzo）': `【Gitzo一脚の質問フロー】1つずつ質問：
 1. 撮影シーン → options:["スポーツ・野鳥","風景・旅行","動画・Vlog"]
 2. 機材の重さ → options:["〜3kg","3〜6kg","6kg以上"]
-3. 段数のこだわり → options:["コンパクトに畳みたい","剛性重視","こだわらない"]`,
+3. 段数のこだわり → options:["コンパクトに畳みたい","剛性重視","こだわらない"]
+4. 高さのこだわり → options:["できるだけ高く伸ばしたい","標準的な高さで十分","コンパクトに収納したい（携帯性重視）","特にこだわらない"]`,
 
     '雲台（Gitzo）': `【Gitzo雲台の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影","動画撮影","パノラマ・360°"]
@@ -338,7 +342,8 @@ const FLOWS = {
 2. 使用シーン → options:["日常・街撮り","旅行","スポーツ・アウトドア"]`,
 
     'TLZ・トップローディング': `【Lowepro TLZの質問フロー】1つずつ質問：
-1. 収納したいレンズサイズ → options:["〜24-70mm","〜70-200mm","300mm以上"]
+※実商品8点はコンパクトミラーレス〜大型一眼レフ+標準レンズ対応まで。300mm以上の超望遠専用ケースは扱っていない
+1. お使いの機材 → options:["コンパクトミラーレス","ズームレンズ付き（24-70mm相当）","大型一眼レフ・グリップ付き"]
 2. 重視すること → options:["素早く取り出したい","しっかり保護したい","両方"]
 3. 使い方 → options:["単独で使う","他のバッグのインサートとして"]`,
 
@@ -348,7 +353,7 @@ const FLOWS = {
 
     'レンズ・ハードケース': `【Loweproケースの質問フロー】1つずつ質問：
 1. 収納したいもの → options:["交換レンズ","カメラ+アクセサリー","バッテリー・小物"]
-2. レンズサイズ → options:["小型（〜8cm径）","中型（〜11cm径）","大型（〜13cm径）"]
+2. レンズサイズ → options:["小型（〜9.5cm径）","中型（9.5〜12.5cm径）","大型（12.5cm径以上）"]
 3. 使い方 → options:["バッグのインサート","単独で携帯","スタジオ保管"]`,
 
     'ギアアップ・アクセサリー': `【Loweproギアアップの質問フロー】1つだけ質問：
@@ -380,7 +385,8 @@ const FLOWS = {
 2. Gear weight (camera + lens) → options:["Up to 2kg","2-5kg","5-10kg","10kg+"]
 3. Shooting scene → options:["Travel/hiking","Street/daily","Studio","Sports/wildlife","Cinema/broadcast"]
 4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
-5. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
+5. Height preference → options:["Reach eye level (max height 160cm+)","Standard height is fine","Also want low-angle capability","No preference"]
+6. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
 
     'Head': `[Head Flow] Ask ONE question at a time:
 1. Main purpose → options:["Photography","Video","Both photo & video"]
@@ -393,7 +399,8 @@ const FLOWS = {
 1. Main use → options:["Sports & news","Video & vlog","Hiking & travel","Wildlife & telephoto"]
 2. Gear weight → options:["Up to 1.5kg","Up to 2.5kg","Up to 5kg","5kg+"]
 3. Head needed? → options:["Monopod only","With head set","Already have a head"]
-4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]`,
+4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
+5. Height preference → options:["As tall as possible (max height 180cm+)","Standard height is fine","Compact for travel","No preference"]`,
 
     'Camera Bag': `[Camera Bag Flow] Ask ONE question at a time:
 1. Bag style → options:["Backpack","Shoulder bag","Top loading","Any style"]
@@ -406,13 +413,13 @@ const FLOWS = {
 1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
 2. Stand type → options:["Light stand","Boom stand","Baby stand","Auto pole"]
 3. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
-4. Height needed → options:["Up to 2m","Up to 3m","3m+"]`,
+4. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
 
     'Lighting_Softbox': `[Softbox Flow] Ask ONE question at a time:
 Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mounting accessories (speed ring etc.)
 1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
 2. Shape → options:["Square","Octabox","Micro (compact/travel)"]
-3. Size → options:["Small (~40cm)","Medium (50-80cm)","Large (80cm+)"]`,
+3. Size → options:["Small (~50cm)","Medium (50-90cm)","Large (90cm+)"]`,
 
     'Lighting_Accessories': `[Lighting Accessories Flow] Ask ONE question at a time:
 1. Where to attach → options:["Attach to strobe","Attach to light stand","Attach to camera"]
@@ -427,7 +434,7 @@ Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mountin
     'Lighting_Background': `[Background Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
 2. Type → options:["Backdrop cloth","Chroma key (green/blue)","Background support system"]
-3. Size → options:["1.5m or less","2-3m","3m+"]`,
+3. Size → options:["Up to 1.6m","1.6-2.2m","2.2m+"]`,
 
     'Lighting': `[Lighting Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
@@ -490,12 +497,14 @@ Note: recommends across Stand and Accessories (clamps) categories
 2. Gear weight → options:["Up to 3kg","3-6kg","6-10kg","10kg+"]
 3. Head needed? → options:["Tripod only","Need head too","Already have a head"]
 4. Portability → options:["As light as possible","Stability over weight","Balanced"]
-5. Budget → options:["Under ¥50,000","¥50,000-100,000","¥100,000-200,000","¥200,000+"]`,
+5. Height preference → options:["Reach eye level","Standard height is fine","Also want low-angle capability","No preference"]
+6. Budget → options:["Under ¥50,000","¥50,000-100,000","¥100,000-200,000","¥200,000+"]`,
 
     'Monopod (Gitzo)': `[Gitzo Monopod Flow] Ask ONE question at a time:
 1. Shooting scene → options:["Sports/wildlife","Landscape/travel","Video/vlog"]
 2. Gear weight → options:["Up to 3kg","3-6kg","6kg+"]
-3. Section count → options:["Compact folding (more sections)","Rigidity priority (fewer sections)","No preference"]`,
+3. Section count → options:["Compact folding (more sections)","Rigidity priority (fewer sections)","No preference"]
+4. Height preference → options:["As tall as possible","Standard height is fine","Compact for travel","No preference"]`,
 
     'Head (Gitzo)': `[Gitzo Head Flow] Ask ONE question at a time:
 1. Main purpose → options:["Photography","Video","Panorama/360°"]
@@ -523,7 +532,8 @@ Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — exclud
 2. Main scene → options:["Daily/street","Travel","Sports/outdoor"]`,
 
     'TLZ / Top Loading': `[Lowepro TLZ Flow] Ask ONE question at a time:
-1. Lens size → options:["Up to 24-70mm","Up to 70-200mm","300mm+"]
+Note: the 8 real SKUs range from compact mirrorless up to large DSLR w/ standard lens. No dedicated super-telephoto (300mm+) case in this catalog
+1. What gear → options:["Compact mirrorless","Zoom lens attached (~24-70mm)","Large DSLR w/ grip"]
 2. Priority → options:["Quick access","Solid protection","Both"]
 3. Usage → options:["Standalone use","As bag insert"]`,
 
@@ -533,7 +543,7 @@ Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — exclud
 
     'Lens & Hard Case': `[Lowepro Case Flow] Ask ONE question at a time:
 1. What to store → options:["Interchangeable lens","Camera + accessories","Battery/small items"]
-2. Lens size → options:["Small (~8cm dia.)","Medium (~11cm dia.)","Large (~13cm dia.)"]
+2. Lens size → options:["Small (~9.5cm dia.)","Medium (9.5-12.5cm dia.)","Large (12.5cm+ dia.)"]
 3. Usage → options:["As bag insert","Standalone carry","Studio storage"]`,
 
     'GearUp & Accessories': `[Lowepro GearUp Flow] Ask ONLY ONE question:
