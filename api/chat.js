@@ -604,7 +604,9 @@ export default async function handler(req, res) {
       // 全ブランド選択時のブランド自動絞り込み
       const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','ギアアップ・アクセサリー','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Lens & Hard Case'];
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','バッグ・アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Bag & Accessories'];
-      const manfrottoOnlyCategories = ['アクセサリー','ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Accessories','Lighting'];
+      // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
+      // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
+      const manfrottoOnlyCategories = ['ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Lighting'];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
       let effectiveBrand = brand;
@@ -684,6 +686,17 @@ export default async function handler(req, res) {
     }
 
     console.log('[PARSED]', JSON.stringify(parsed).substring(0, 300));
+
+    // 推薦フェーズの場合、GPTの出力にimage_urlを持たせるのではなく、
+    // RAG検索結果（ragProducts、DBの正しい値）からSKU一致で直接付与する。
+    // （GPTにURLをそのまま出力させると誤って改変・省略されるリスクがあるため）
+    if (parsed && parsed.type === 'products' && Array.isArray(parsed.items) && ragProducts) {
+      const imageBySku = new Map(ragProducts.map(p => [String(p.sku).trim().toUpperCase(), p.image_url || null]));
+      parsed.items = parsed.items.map(item => ({
+        ...item,
+        image_url: imageBySku.get(String(item.sku || '').trim().toUpperCase()) || null
+      }));
+    }
 
     res.status(200).json({
       reply: parsed,
