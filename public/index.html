@@ -1203,6 +1203,12 @@ async function sendMessage() {
 
   // ── 通常のGUIDE構造化フロー（チップ選択のみで進む・自由文は届かない） ──
   try {
+    // 今回の回答がflowの最後の質問に対するものかを事前に判定し、
+    // 最後なら「追加の質問を作らない」専用プロンプトを使うようバックエンドに伝える
+    const flowOptsForCheck = FLOW_OPTIONS[lang]?.[selectedCategory];
+    const totalStepsForCheck = flowOptsForCheck ? flowOptsForCheck.length : 0;
+    const isLastStep = (currentStep + 1) >= totalStepsForCheck;
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1210,7 +1216,8 @@ async function sendMessage() {
         messages: history,
         lang,
         brand: selectedBrand !== 'all' ? selectedBrand : null,
-        category: selectedCategory
+        category: selectedCategory,
+        isLastStep
       })
     });
     const data = await res.json();
