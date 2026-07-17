@@ -44,6 +44,68 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 固定小数展開（指数表記なし）にすることで、DB側のembedding文字列表現と揃える。
   const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
 
+  const catList = categoryFilter ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter]) : [];
+  const sortByPriorityThenSimilarity = (a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return b.similarity - a.similarity;
+  };
+
+  const fetchOneBrand = async (brand, count) => {
+    const { data, error } = await supabase.rpc('match_products', {
+      query_embedding: embeddingForRpc,
+      match_count: count,
+      filter_brand: brand,
+      include_old: false
+    });
+    if (error) { console.log(`[FETCH ${brand}] error:`, error.message); return []; }
+    let r = data || [];
+    if (catList.length) r = r.filter(p => catList.includes(p.category));
+    return r;
+  };
+
+  // ── 三脚・雲台・一脚は元々Manfrotto/Gitzoが混在する統合カテゴリのため、
+  //    全ブランド検索時は「全ブランド共有の類似度上位プール」に頼らず、
+  //    ブランドごとに個別のRPCで候補を取得する。
+  //    （共有プールだと、Manfrotto側の新製品が他の大量の商品に埋もれて
+  //      候補にすら入らないことがあった。ブランドを絞って検索すれば、
+  //      そのブランド内での相対的な関連性で正しく浮上できる ——
+  //      「無関係な商品を無理に混ぜる」のではなく「検索範囲を広げて
+  //      本来当てはまるはずの商品を正しく拾えるようにする」という考え方）
+  const multiCategories = ['三脚', '雲台', '一脚'];
+  const needsGitzoCategory = catList.some(c => multiCategories.includes(c));
+
+  if (!brandFilter && needsGitzoCategory) {
+    const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
+    const excludeGitzo = (
+      /アルミ|aluminum/i.test(allMessages) ||
+      /Manfrotto三脚と合わせたい/i.test(allMessages) ||
+      /他社三脚を持っている/i.test(allMessages)
+    );
+
+    // Manfrottoは候補母数が大きいので広めに、Gitzoは最終採用上限(4)より少し余裕を持たせて取得
+    const manfrottoResults = await fetchOneBrand('Manfrotto', 20);
+    console.log(`[BRAND BALANCE v2] Manfrotto候補: ${manfrottoResults.length}件 excludeGitzo:${excludeGitzo}`);
+
+    if (excludeGitzo) {
+      const sorted = [...manfrottoResults].sort(sortByPriorityThenSimilarity);
+      return sorted.slice(0, 12);
+    }
+
+    const gitzoResults = await fetchOneBrand('Gitzo', 15);
+    console.log(`[BRAND BALANCE v2] Gitzo候補: ${gitzoResults.length}件`);
+
+    const gitzoCount = Math.min(4, gitzoResults.length);
+    const manfrottoCount = 12 - gitzoCount;
+    const balanced = [
+      ...[...manfrottoResults].sort(sortByPriorityThenSimilarity).slice(0, manfrottoCount),
+      ...[...gitzoResults].sort(sortByPriorityThenSimilarity).slice(0, gitzoCount),
+    ];
+    balanced.sort(sortByPriorityThenSimilarity);
+    console.log(`[BRAND BALANCE v2] 最終候補: Manfrotto${Math.min(manfrottoResults.length, manfrottoCount)}件 + Gitzo${gitzoCount}件`);
+    return balanced.slice(0, 12);
+  }
+
+  // ── それ以外（単一ブランド指定、またはカメラバッグ等の複数ブランド混在カテゴリ）は従来通り ──
   // ブランド指定時も、そのブランド内でカテゴリの偏りなく候補が拾えるよう
   // 十分な件数を取得する（品目数が少ないと目的のカテゴリが候補に入らないことがあるため）
   const fetchLimit = brandFilter ? Math.max(limit * 3, 45) : limit * 3;
@@ -60,9 +122,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // カテゴリフィルター（必須）
   console.log(`[DEBUG] results before filter: ${results.length}件`);
   if (categoryFilter) {
-    const filters = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
-    console.log(`[DEBUG] categoryFilter: ${JSON.stringify(filters)}`);
-    const filtered = results.filter(p => filters.includes(p.category));
+    const filtered = results.filter(p => catList.includes(p.category));
     console.log(`[DEBUG] filtered: ${filtered.length}件, categories in results: ${[...new Set(results.map(p=>p.category))].join(',')}`);
     // カテゴリに一致する商品が1件もない場合、無関係な商品にフォールバックせず
     // 空配列のまま返す（呼び出し元で「該当製品なし」として正しく扱われる）
@@ -70,41 +130,9 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   }
   console.log(`[DEBUG] results after filter: ${results.length}件`);
 
-  // priority=1（新製品・優先表示）は、通常の類似度上位${fetchLimit}件に
-  // たまたま入らなかった場合でも「優先表示」の意味が実際に機能するよう、
-  // 該当ブランド・カテゴリのpriority=1商品を追加で必ず候補に含める。
-  // （以前あった「無条件の強制挿入」はカテゴリ無視のバグだったため削除された経緯があるが、
-  //   今回はbrand/categoryフィルターを維持したまま、候補プールに漏れなく入れるだけに留める）
-  try {
-    const catListForNew = categoryFilter
-      ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter])
-      : null;
-    let newProductQuery = supabase
-      .from('products')
-      .select('id, sku, name, brand, category, priority, content, image_url')
-      .eq('priority', 1);
-    if (brandFilter) newProductQuery = newProductQuery.eq('brand', brandFilter);
-    if (catListForNew) newProductQuery = newProductQuery.in('category', catListForNew);
-    const { data: newProducts, error: newProductsError } = await newProductQuery;
-    if (newProductsError) {
-      console.log('[NEW PRODUCT BOOST] クエリエラー（無視して続行）:', newProductsError.message);
-    } else if (newProducts && newProducts.length > 0) {
-      const existingIds = new Set(results.map(p => p.id));
-      let addedCount = 0;
-      for (const np of newProducts) {
-        if (!existingIds.has(np.id)) {
-          // similarityは仮値。priorityが最優先ソートキーなので最終順位への影響は小さい
-          results.push({ ...np, similarity: 0.5 });
-          addedCount++;
-        }
-      }
-      console.log(`[NEW PRODUCT BOOST] priority=1該当${newProducts.length}件中、候補プールに無かった${addedCount}件を追加`);
-    }
-  } catch (e) {
-    console.log('[NEW PRODUCT BOOST] エラー（無視して続行）:', e.message);
-  }
-
   // 全ブランド検索かつ複数ブランドが混在する場合、ブランドごとに均等にバランス
+  // （カメラバッグ等、三脚/雲台/一脚以外の複数ブランド混在カテゴリ用。
+  //   ここは従来通り共有プールからのグルーピング方式のまま）
   if (!brandFilter && results.length > 0) {
     const brandGroups = {};
     for (const p of results) {
@@ -114,92 +142,27 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     const brands = Object.keys(brandGroups);
     console.log(`[BRAND BALANCE] brands found: ${brands.join(',')} total:${results.length}`);
 
-    // Gitzoを別途取得するか判断
-    // 除外条件：アルミ素材指定・Manfrotto三脚と合わせたい・他社三脚を持っている
-    const multiCategories = ['三脚', '雲台', '一脚'];
-    const catList = Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter];
-    const needsGitzoCategory = catList.some(c => multiCategories.includes(c));
-
-    // 会話内容からGitzo除外条件を確認
-    const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
-    const excludeGitzo = (
-      /アルミ|aluminum/i.test(allMessages) ||           // アルミ指定
-      /Manfrotto三脚と合わせたい/i.test(allMessages) || // Manfrotto三脚と合わせたい
-      /他社三脚を持っている/i.test(allMessages)         // 他社三脚（雲台の場合）
-    );
-
-    console.log(`[BRAND BALANCE] needsGitzo:${needsGitzoCategory} excludeGitzo:${excludeGitzo}`);
-
-    if (needsGitzoCategory && !excludeGitzo && !brandGroups['Gitzo']) {
-      console.log('[BRAND BALANCE] Gitzo not found, fetching separately...');
-      const { data: gitzoData } = await supabase.rpc('match_products', {
-        query_embedding: embeddingForRpc,
-        match_count: 10,
-        filter_brand: 'Gitzo',
-        include_old: false
-      });
-      if (gitzoData && gitzoData.length > 0) {
-        const gitzoFiltered = categoryFilter
-          ? gitzoData.filter(p => catList.includes(p.category))
-          : gitzoData;
-        if (gitzoFiltered.length > 0) {
-          brandGroups['Gitzo'] = gitzoFiltered;
-          brands.push('Gitzo');
-          console.log(`[BRAND BALANCE] Gitzo added: ${gitzoFiltered.length}件`);
-        }
-      }
-    }
-
-    // アルミ指定の場合はManfrottoのみに絞る
-    if (excludeGitzo) {
-      const mfOnly = results.filter(p => p.brand === 'Manfrotto');
-      if (mfOnly.length > 0) {
-        mfOnly.sort((a, b) => {
-          if (a.priority !== b.priority) return a.priority - b.priority;
-          return b.similarity - a.similarity;
-        });
-        return mfOnly.slice(0, 12);
-      }
-    }
-
     if (brands.length > 1) {
-      // ManfrottoとGitzoをバランスよく選ぶ（Manfrotto優先・Gitzoは最低3件）
       const gitzoCount = Math.min(4, brandGroups['Gitzo']?.length || 0);
       const manfrottoCount = 12 - gitzoCount;
       let balanced = [];
 
-      // Manfrotto
       if (brandGroups['Manfrotto']) {
-        const sorted = [...brandGroups['Manfrotto']].sort((a, b) => {
-          if (a.priority !== b.priority) return a.priority - b.priority;
-          return b.similarity - a.similarity;
-        });
+        const sorted = [...brandGroups['Manfrotto']].sort(sortByPriorityThenSimilarity);
         balanced.push(...sorted.slice(0, manfrottoCount));
       }
-
-      // Gitzo
       if (brandGroups['Gitzo']) {
-        const sorted = [...brandGroups['Gitzo']].sort((a, b) => {
-          if (a.priority !== b.priority) return a.priority - b.priority;
-          return b.similarity - a.similarity;
-        });
+        const sorted = [...brandGroups['Gitzo']].sort(sortByPriorityThenSimilarity);
         balanced.push(...sorted.slice(0, gitzoCount));
       }
 
-      // priority→similarity順で最終ソート
-      balanced.sort((a, b) => {
-        if (a.priority !== b.priority) return a.priority - b.priority;
-        return b.similarity - a.similarity;
-      });
+      balanced.sort(sortByPriorityThenSimilarity);
       return balanced.slice(0, 12);
     }
   }
 
   // priority順→similarity順でソート
-  results.sort((a, b) => {
-    if (a.priority !== b.priority) return a.priority - b.priority;
-    return b.similarity - a.similarity;
-  });
+  results.sort(sortByPriorityThenSimilarity);
 
   return results.slice(0, 12);
 }
