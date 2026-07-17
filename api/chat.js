@@ -262,8 +262,9 @@ const FLOWS = {
 2. 携帯方法 → options:["肩掛けストラップ","バックパックへの装着","手持ち"]`,
 
     'アクセサリー（Gitzo）': `【Gitzoアクセサリーの質問フロー】1つだけ質問：
-※実商品は6点のみ：GC2560/GC5560/GC5160F（三脚レッグウォーマー）、GCB100NS/GCB100SS（カメラストラップ）、GSLBRSY（Sony専用L型ブラケット）
-1. どのようなアクセサリーをお探しか → options:["三脚レッグウォーマー（保護カバー）","カメラストラップ","L型ブラケット（Sony用）"]`,
+※実商品は4点：GC2560/GC5560/GC5160F（三脚レッグウォーマー）、GSLBRSY（Sony専用L型ブラケット）
+※カメラストラップ（GCB100NS/GCB100SS）はpriority=4（廃盤）のためRAG検索対象外・選択肢からも除外
+1. どのようなアクセサリーをお探しか → options:["三脚レッグウォーマー（保護カバー）","L型ブラケット（Sony用）"]`,
 
     'バックパック': `【Loweproバックパックの質問フロー】1つずつ質問：
 1. 収納したい機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材複数"]
@@ -368,8 +369,9 @@ const FLOWS = {
 2. Carry method → options:["Shoulder strap","Attach to backpack","Hand carry"]`,
 
     'Accessories (Gitzo)': `[Gitzo Accessories Flow] Ask ONLY ONE question:
-Note: only 6 real SKUs exist: GC2560/GC5560/GC5160F (tripod leg warmers), GCB100NS/GCB100SS (camera straps), GSLBRSY (Sony-only L-bracket)
-1. What kind of accessory → options:["Tripod leg warmer","Camera strap","L-bracket (Sony only)"]`,
+Note: only 4 active SKUs exist: GC2560/GC5560/GC5160F (tripod leg warmers), GSLBRSY (Sony-only L-bracket)
+Note: camera straps (GCB100NS/GCB100SS) are priority=4 (discontinued) — excluded from search and from the options
+1. What kind of accessory → options:["Tripod leg warmer","L-bracket (Sony only)"]`,
 
     'Backpack': `[Lowepro Backpack Flow] Ask ONE question at a time:
 1. Gear to carry → options:["Mirrorless + 2-3 lenses","DSLR + 3-4 lenses","Large gear + accessories"]
