@@ -231,19 +231,20 @@ const FLOWS = {
 4. 必要な高さ → options:["〜2m","〜3m","3m以上"]`,
 
     'ライティング_ソフトボックス': `【ソフトボックスの質問フロー】1つずつ質問：
+※実商品はスクエア型S/M/L・オクタ型M/L・マイクロ型、計6形状（+スピードリング等の取付アクセサリー3点）のみ
 1. 主な用途 → options:["ポートレート","商品・物撮り","動画・YouTube"]
-2. 形状 → options:["オクタボックス","長方形ソフトボックス","ストリップボックス"]
-3. サイズ → options:["小型（〜60cm）","中型（60〜100cm）","大型（100cm以上）"]`,
+2. 形状 → options:["スクエア（正方形）","オクタ（八角形）","マイクロ（小型・携帯用）"]
+3. サイズ → options:["小型（〜40cm）","中型（50〜80cm）","大型（80cm以上）"]`,
 
     'ライティング_アクセサリー': `【ライティングアクセサリーの質問フロー】1つずつ質問：
 1. 取り付け場所 → options:["ストロボに取り付けたい","ライトスタンドに固定したい","カメラに取り付けたい"]
-2. 欲しいアクセサリー → options:["クランプ・アーム","スピードリング","バーンドア・グリッド","その他"]
+2. 欲しいアクセサリー → options:["クランプ・アーム","スピゴット・アダプター","フック・ウェイト（背景紙用）","フラッグ・遮光板"]
 3. 撮影環境 → options:["スタジオ","ロケ撮影","自宅"]`,
 
     'ライティング_リフレクター': `【リフレクターの質問フロー】1つずつ質問：
 1. 主な用途 → options:["ポートレート","商品・物撮り","屋外ロケ"]
-2. 種類 → options:["丸型リフレクター","大型レフ板","リフレクタースタンド"]
-3. カラー → options:["白・シルバー","ゴールド","トランスルーセント"]`,
+2. 種類 → options:["丸型リフレクター","大型パネル・スクリーン","リフレクタースタンド"]
+3. カラー → options:["白・シルバー","ゴールド","ディフューザー（半透明）"]`,
 
     'ライティング_背景': `【撮影背景の質問フロー】1つずつ質問：
 1. 主な用途 → options:["ポートレート","商品・物撮り","動画・YouTube"]
@@ -259,8 +260,8 @@ const FLOWS = {
 1. どのような機能が必要か → options:["水平調整（レベリング）","ローアングル撮影","安定性向上（スパイク）","その他"]`,
 
     'クイックリリースプレート': `【クイックリリースプレートの質問フロー】1つだけ質問：
-※200PL系・501PL系・Arcaタイプ・Xchangeシステム・Lブラケット等
-1. お使いの雲台のシステム → options:["200PL系（一般的な雲台）","501PL系（ビデオ雲台）","Arcaタイプ","わからない"]`,
+※実商品は200PL系・501PL系・Xchangeシステム・六角プレート・Lブラケット等。Arca-Swissタイプは取り扱いなし
+1. お使いの雲台のシステム → options:["200PL系（一般的な雲台）","501PL系（ビデオ雲台）","Xchangeシステム","わからない"]`,
 
     'モニター・PC設置': `【モニター・PC設置の質問フロー】1つだけ質問：
 ※183モニター/プロジェクターホルダー、MLTSA系（VESAマウント・タブレットホルダー・ラップトップデッキ・マウスデッキ）
@@ -408,19 +409,20 @@ const FLOWS = {
 4. Height needed → options:["Up to 2m","Up to 3m","3m+"]`,
 
     'Lighting_Softbox': `[Softbox Flow] Ask ONE question at a time:
+Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mounting accessories (speed ring etc.)
 1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
-2. Shape → options:["Octabox","Rectangular softbox","Strip box"]
-3. Size → options:["Small (~60cm)","Medium (60-100cm)","Large (100cm+)"]`,
+2. Shape → options:["Square","Octabox","Micro (compact/travel)"]
+3. Size → options:["Small (~40cm)","Medium (50-80cm)","Large (80cm+)"]`,
 
     'Lighting_Accessories': `[Lighting Accessories Flow] Ask ONE question at a time:
 1. Where to attach → options:["Attach to strobe","Attach to light stand","Attach to camera"]
-2. What you need → options:["Clamp/arm","Speed ring","Barn door/grid","Other"]
+2. What you need → options:["Clamp/arm","Spigot/adapter","Hook/counterweight (backdrop)","Flag/gobo"]
 3. Shooting environment → options:["Studio","On-location","Home"]`,
 
     'Lighting_Reflector': `[Reflector Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Product photography","Outdoor location"]
-2. Type → options:["Round reflector","Large panel","Reflector stand"]
-3. Color → options:["White/silver","Gold","Translucent"]`,
+2. Type → options:["Round reflector","Large panel/scrim","Reflector stand"]
+3. Color → options:["White/silver","Gold","Diffuser (translucent)"]`,
 
     'Lighting_Background': `[Background Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
@@ -443,8 +445,8 @@ Note: leveling, low-angle, spikes (055LC/190LC/BFRLVLC/338/438/055XSCC/190XSCC/s
 1. What feature is needed → options:["Leveling","Low-angle shooting","Stability (spikes)","Other"]`,
 
     'Quick Release Plate': `[Quick Release Plate Flow] Ask ONLY ONE question:
-Note: 200PL series, 501PL series, Arca type, Xchange system, L-brackets
-1. What head system → options:["200PL series (standard heads)","501PL series (video heads)","Arca type","Not sure"]`,
+Note: 200PL series, 501PL series, Xchange system, hex plates, L-brackets. No Arca-Swiss compatible plates in this catalog
+1. What head system → options:["200PL series (standard heads)","501PL series (video heads)","Xchange system","Not sure"]`,
 
     'Monitor/PC Mount': `[Monitor/PC Mount Flow] Ask ONLY ONE question:
 Note: 183 monitor/projector holder, MLTSA series (VESA mount, tablet holder, laptop deck, mouse deck)
