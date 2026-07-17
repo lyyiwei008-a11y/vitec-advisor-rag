@@ -466,13 +466,16 @@ const FLOW_OPTIONS = {
     ],
     'ショルダーバッグ': [
       ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'],
-      ['斜めがけショルダー','スリング','トップローディング'],
       ['日常・街撮り','旅行','スポーツ・アウトドア'],
     ],
     'TLZ・トップローディング': [
       ['〜24-70mm','〜70-200mm','300mm以上'],
       ['素早く取り出したい','しっかり保護したい','両方'],
       ['単独で使う','他のバッグのインサートとして'],
+    ],
+    'スリング': [
+      ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'],
+      ['斜めがけ（クロスボディ）','ヒップ・ウエスト','どちらも使いたい'],
     ],
     'レンズ・ハードケース': [
       ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'],
@@ -482,6 +485,9 @@ const FLOW_OPTIONS = {
     'ギアアップ・アクセサリー': [
       ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'],
       ['バッグのインサート','単独で使う','整理収納'],
+    ],
+    'アクセサリーケース': [
+      ['カメラ本体','レンズ','メモリーカード・小物','スマートフォン','その他'],
     ],
     'ローラーバッグ': [
       ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'],
@@ -573,13 +579,16 @@ const FLOW_OPTIONS = {
     ],
     'Shoulder Bag': [
       ['Compact camera only','Camera + 1 lens','Camera + multiple lenses'],
-      ['Shoulder bag','Sling','Top loading'],
       ['Daily/street','Travel','Sports/outdoor'],
     ],
     'TLZ / Top Loading': [
       ['Up to 24-70mm','Up to 70-200mm','300mm+'],
       ['Quick access','Solid protection','Both'],
       ['Standalone use','As bag insert'],
+    ],
+    'Sling': [
+      ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'],
+      ['Cross-body sling','Hip/waist','Both'],
     ],
     'Lens & Hard Case': [
       ['Interchangeable lens','Camera + accessories','Battery/small items'],
@@ -589,6 +598,9 @@ const FLOW_OPTIONS = {
     'GearUp & Accessories': [
       ['Cables/batteries','Camera body','Lens','Memory cards'],
       ['As bag insert','Standalone use','Organization'],
+    ],
+    'Accessory Case': [
+      ['Camera body','Lens','Memory cards/small items','Smartphone','Other'],
     ],
     'Roller Bag': [
       ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'],
@@ -853,41 +865,70 @@ function selectCategory(cat) {
     const w = document.getElementById('welcome');
     if (!w) return;
 
-    // Loweproには三脚バッグ・ローラーバッグの実商品がないため、Lowepro選択時はボタンを非表示にする
+    // ブランドごとに表示するバッグ種類のボタンを明示的に定義する。
+    // { key: 実際に渡すカテゴリキー（内部的にstartChatへ渡る値）,
+    //   label: 画面に表示するボタン文言,
+    //   picker: trueの場合はstartChatではなく専用のサブ選択画面を開く }
+    // Loweproには三脚バッグ・ローラーバッグの実商品がないため含めない
     // （ローラーバッグは2026/07/15確認：該当category商品は誤分類のアクセサリー類のみで実際のローラーバッグ商品は存在しない）
-    // レンズ・ハードケース、ギアアップ・アクセサリーはLowepro専用の製品ライン（プロタクティック/TLZ/GearUp等）のため、Manfrotto/Gitzo選択時は非表示にする
-    // （ギアアップ・アクセサリーは2026/07/15確認：Manfrotto側の該当4件は本来「アクセサリー」に属する背負い・携行系パーツで'アクセサリー'へ再分類済み）
-    // アクセサリーはLoweproの商品も含まれるようになったため、Loweproフローにも入口として追加
-    // （Manfrotto/Gitzoは既に独自のトップレベル「アクセサリー」カテゴリボタンを持つため、この画面では二重表示を避けて除外）
-    const allBagCatsJa = ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','アクセサリー'];
-    const allBagCatsEn = ['Backpack','Shoulder Bag','Roller Bag','Tripod Bag','Lens & Hard Case','GearUp & Accessories','Accessories'];
-
-    let bagCatsJa, bagCatsEn;
+    // レンズ・ハードケース、ギアアップ、アクセサリーケースはLowepro専用の製品ラインのため、Manfrotto/Gitzo選択時は非表示にする
+    // ショルダー・TLZ・スリングは3種の質問フローが別物なので、ここではサブ選択画面を挟む
+    // アクセサリーケースは2026/07/xx、GearUp内のポーチ類・レンズハードケース内のプロタクティックCS等を横断して再分類した新設カテゴリ
+    let bagChips;
     if (selectedBrand === 'Lowepro') {
-      bagCatsJa = allBagCatsJa.filter(c => !['三脚バッグ','ローラーバッグ'].includes(c));
-      bagCatsEn = allBagCatsEn.filter(c => !['Tripod Bag','Roller Bag'].includes(c));
+      bagChips = lang === 'ja' ? [
+        { key: 'バックパック',              label: 'バックパック' },
+        { key: 'ショルダー・TLZ・スリング', label: 'ショルダー・TLZ・スリング', picker: true },
+        { key: 'レンズ・ハードケース',      label: 'レンズ・ハードケース' },
+        { key: 'ギアアップ・アクセサリー',  label: 'ギアアップ' },
+        { key: 'アクセサリーケース',        label: 'アクセサリーケース' },
+        { key: 'アクセサリー（Lowepro）',   label: 'アクセサリー' },
+      ] : [
+        { key: 'Backpack',              label: 'Backpack' },
+        { key: 'Shoulder/TLZ/Sling',    label: 'Shoulder / TLZ / Sling', picker: true },
+        { key: 'Lens & Hard Case',      label: 'Lens & Hard Case' },
+        { key: 'GearUp & Accessories',  label: 'GearUp' },
+        { key: 'Accessory Case',        label: 'Accessory Case' },
+        { key: 'Accessories (Lowepro)', label: 'Accessories' },
+      ];
     } else if (selectedBrand === 'Manfrotto' || selectedBrand === 'Gitzo') {
-      bagCatsJa = allBagCatsJa.filter(c => !['レンズ・ハードケース','ギアアップ・アクセサリー','アクセサリー'].includes(c));
-      bagCatsEn = allBagCatsEn.filter(c => !['Lens & Hard Case','GearUp & Accessories','Accessories'].includes(c));
+      bagChips = lang === 'ja' ? [
+        { key: 'バックパック', label: 'バックパック' },
+        { key: 'ショルダーバッグ', label: 'ショルダーバッグ' },
+        { key: 'ローラーバッグ', label: 'ローラーバッグ' },
+        { key: '三脚バッグ', label: '三脚バッグ' },
+      ] : [
+        { key: 'Backpack', label: 'Backpack' },
+        { key: 'Shoulder Bag', label: 'Shoulder Bag' },
+        { key: 'Roller Bag', label: 'Roller Bag' },
+        { key: 'Tripod Bag', label: 'Tripod Bag' },
+      ];
     } else {
-      // 全ブランドから探す場合は全カテゴリを表示（各カテゴリに対応するブランドの商品が検索される）
-      bagCatsJa = allBagCatsJa;
-      bagCatsEn = allBagCatsEn;
+      // 全ブランドから探す場合は全カテゴリを表示
+      bagChips = lang === 'ja' ? [
+        { key: 'バックパック', label: 'バックパック' },
+        { key: 'ショルダーバッグ', label: 'ショルダーバッグ' },
+        { key: 'ローラーバッグ', label: 'ローラーバッグ' },
+        { key: '三脚バッグ', label: '三脚バッグ' },
+        { key: 'レンズ・ハードケース', label: 'レンズ・ハードケース' },
+        { key: 'ギアアップ・アクセサリー', label: 'ギアアップ' },
+        { key: 'アクセサリーケース', label: 'アクセサリーケース' },
+        { key: 'アクセサリー', label: 'アクセサリー' },
+      ] : [
+        { key: 'Backpack', label: 'Backpack' },
+        { key: 'Shoulder Bag', label: 'Shoulder Bag' },
+        { key: 'Roller Bag', label: 'Roller Bag' },
+        { key: 'Tripod Bag', label: 'Tripod Bag' },
+        { key: 'Lens & Hard Case', label: 'Lens & Hard Case' },
+        { key: 'GearUp & Accessories', label: 'GearUp' },
+        { key: 'Accessory Case', label: 'Accessory Case' },
+        { key: 'Accessories', label: 'Accessories' },
+      ];
     }
-    const bagCats = lang === 'ja' ? bagCatsJa : bagCatsEn;
 
-    // Loweproの「アクセサリー」ボタンは、表示ラベルは他と揃えつつ、
-    // 実際に渡すカテゴリキーだけ 'アクセサリー（Lowepro）' に変える。
-    // これによりDB検索先（アクセサリーカテゴリ、2026/07/15の再分類でLowepro商品も含まれるようになった）はそのまま維持しつつ、
-    // 質問内容だけLoweproに合わせた専用フローに差し替える
-    // （Manfrotto向けの「クイックリリース・プレート」「三脚強化・スパイク」等をLowepro客に聞くのは不適切だったため）
-    // ※質問の選択肢はいったん汎用的な文言にしてあるので、実際のLowepro側アクセサリー商品構成に合わせて要調整
-    const chips = bagCats.map(c => {
-      const key = (selectedBrand === 'Lowepro' && (c === 'アクセサリー' || c === 'Accessories'))
-        ? (lang === 'ja' ? 'アクセサリー（Lowepro）' : 'Accessories (Lowepro)')
-        : c;
-      return `<button class="category-chip" onclick="selectBagCategory('${key}')">${c}</button>`;
-    }).join('');
+    const chips = bagChips.map(({key, label, picker}) =>
+      `<button class="category-chip" onclick="${picker ? 'selectShoulderTlzSlingScreen()' : `selectBagCategory('${key}')`}">${label}</button>`
+    ).join('');
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
@@ -903,8 +944,39 @@ function selectCategory(cat) {
     return;
   }
 
+  // ショルダー・TLZ・スリング のサブ選択画面（Loweproのみ）
+  if (cat === 'ショルダー・TLZ・スリング' || cat === 'Shoulder/TLZ/Sling') {
+    const w = document.getElementById('welcome');
+    if (!w) return;
+    return selectShoulderTlzSlingScreen();
+  }
+
   selectedCategory = cat;
   startChat(selectedBrand, cat);
+}
+
+// ショルダー / TLZ / スリング の3択サブ選択画面
+function selectShoulderTlzSlingScreen() {
+  const w = document.getElementById('welcome');
+  if (!w) return;
+
+  const subCats = lang === 'ja'
+    ? [{key:'ショルダーバッグ',label:'ショルダー'},{key:'TLZ・トップローディング',label:'TLZ（トップローディング）'},{key:'スリング',label:'スリング'}]
+    : [{key:'Shoulder Bag',label:'Shoulder'},{key:'TLZ / Top Loading',label:'TLZ (Top Loading)'},{key:'Sling',label:'Sling'}];
+
+  const chips = subCats.map(({key,label}) =>
+    `<button class="category-chip" onclick="selectBagCategory('${key}')">${label}</button>`
+  ).join('');
+
+  const logoSrc = LOGOS.lowepro;
+
+  w.innerHTML = `
+    <div class="category-header">
+      <img class="selected-brand-logo" src="${logoSrc}" alt="Lowepro" style="height:28px;width:auto;object-fit:contain;">
+      <span class="category-label">${lang === 'ja' ? 'タイプを選択' : 'Select type'}</span>
+    </div>
+    <div class="category-grid">${chips}</div>
+    <button class="back-link" onclick="selectCategory(${lang === 'ja' ? "'カメラバッグ'" : "'Camera Bag'"})">${lang === 'ja' ? 'バッグの種類選択に戻る' : 'Back to bag types'}</button>`;
 }
 
 function selectLightingCategory(cat) {
@@ -984,6 +1056,8 @@ function startChat(brand, category) {
       'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
+      'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
+      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['カメラ本体','レンズ','メモリーカード・小物','スマートフォン','その他'] },
       'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
@@ -1018,6 +1092,8 @@ function startChat(brand, category) {
       'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What lens size do you need?`, opts: ['Up to 24-70mm','Up to 70-200mm','300mm+'] },
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp accessories! What would you like to store?`, opts: ['Cables/batteries','Camera body','Lens','Memory cards'] },
+      'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
+      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Camera body','Lens','Memory cards/small items','Smartphone','Other'] },
       // Legacy Japanese keys fallback
       '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       '雲台':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
