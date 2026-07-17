@@ -246,7 +246,7 @@ const FLOWS = {
     'ライティング_リフレクター': `【リフレクターの質問フロー】1つずつ質問：
 1. 主な用途 → options:["ポートレート","商品・物撮り","屋外ロケ"]
 2. 種類 → options:["丸型リフレクター","大型パネル・スクリーン","リフレクタースタンド"]
-3. カラー → options:["白・シルバー","ゴールド","ディフューザー（半透明）"]`,
+3. カラー → options:["白・シルバー","ディフューザー（半透明）"]`,
 
     'ライティング_背景': `【撮影背景の質問フロー】1つずつ質問：
 1. 主な用途 → options:["ポートレート","商品・物撮り","動画・YouTube"]
@@ -429,7 +429,7 @@ Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mountin
     'Lighting_Reflector': `[Reflector Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Product photography","Outdoor location"]
 2. Type → options:["Round reflector","Large panel/scrim","Reflector stand"]
-3. Color → options:["White/silver","Gold","Diffuser (translucent)"]`,
+3. Color → options:["White/silver","Diffuser (translucent)"]`,
 
     'Lighting_Background': `[Background Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
@@ -879,8 +879,8 @@ export default async function handler(req, res) {
         'ライティング_リフレクター':  'ライティング_リフレクター',
         'ライティング_背景':          'ライティング_背景',
         // 撮影内容から探す（Copilot提案の「わからない」導線、複数サブカテゴリを横断）
-        '商品撮影ライティング':   ['ライティング_背景','ライティング_ソフトボックス','ライティング_リフレクター'],
-        '人物撮影ライティング':   ['ライティング_ソフトボックス','ライティング_リフレクター','ライティング_スタンド'],
+        '商品撮影ライティング':   ['ライティング_背景','ライティング_リフレクター'],
+        '人物撮影ライティング':   ['ライティング_リフレクター','ライティング_スタンド'],
         '動画制作ライティング':   ['ライティング_スタンド','ライティング_背景'],
         'ライブ配信ライティング': ['ライティング_スタンド','ライティング_アクセサリー'],
         // Gitzo専用カテゴリ（UIから選んだ場合）
@@ -914,8 +914,8 @@ export default async function handler(req, res) {
         'Lighting_Softbox':    'ライティング_ソフトボックス',
         'Lighting_Reflector':  'ライティング_リフレクター',
         'Lighting_Background': 'ライティング_背景',
-        'Product Photography Lighting': ['ライティング_背景','ライティング_ソフトボックス','ライティング_リフレクター'],
-        'Portrait Lighting':            ['ライティング_ソフトボックス','ライティング_リフレクター','ライティング_スタンド'],
+        'Product Photography Lighting': ['ライティング_背景','ライティング_リフレクター'],
+        'Portrait Lighting':            ['ライティング_リフレクター','ライティング_スタンド'],
         'Video Production Lighting':    ['ライティング_スタンド','ライティング_背景'],
         'Live Streaming Lighting':      ['ライティング_スタンド','ライティング_アクセサリー'],
         'Tripod (Gitzo)':      '三脚',
