@@ -483,11 +483,10 @@ const FLOW_OPTIONS = {
       ['バッグのインサート','単独で携帯','スタジオ保管'],
     ],
     'ギアアップ・アクセサリー': [
-      ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'],
-      ['バッグのインサート','単独で使う','整理収納'],
+      ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'],
     ],
     'アクセサリーケース': [
-      ['カメラ本体','レンズ','メモリーカード・小物','スマートフォン','その他'],
+      ['メモリーカード・小物','スマートフォン','その他'],
     ],
     'ローラーバッグ': [
       ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'],
@@ -622,11 +621,10 @@ const FLOW_OPTIONS = {
       ['As bag insert','Standalone carry','Studio storage'],
     ],
     'GearUp & Accessories': [
-      ['Cables/batteries','Camera body','Lens','Memory cards'],
-      ['As bag insert','Standalone use','Organization'],
+      ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'],
     ],
     'Accessory Case': [
-      ['Camera body','Lens','Memory cards/small items','Smartphone','Other'],
+      ['Memory cards/small items','Smartphone','Other'],
     ],
     'Roller Bag': [
       ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'],
@@ -1081,9 +1079,9 @@ function startChat(brand, category) {
       '三脚バッグ':              { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。`, opts: ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'] },
       'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
-      'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップアクセサリーをお探しですね！何を収納したいですか？`, opts: ['ケーブル・バッテリー','カメラ本体','レンズ','メモリーカード'] },
+      'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
-      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['カメラ本体','レンズ','メモリーカード・小物','スマートフォン','その他'] },
+      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
       'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
@@ -1122,9 +1120,9 @@ function startChat(brand, category) {
       'Tripod Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod bag! What size tripod do you need to store?`, opts: ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'] },
       'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What lens size do you need?`, opts: ['Up to 24-70mm','Up to 70-200mm','300mm+'] },
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
-      'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp accessories! What would you like to store?`, opts: ['Cables/batteries','Camera body','Lens','Memory cards'] },
+      'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
-      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Camera body','Lens','Memory cards/small items','Smartphone','Other'] },
+      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Other'] },
       // Legacy Japanese keys fallback
       '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       '雲台':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
