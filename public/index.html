@@ -449,9 +449,12 @@ const FLOW_OPTIONS = {
       ['〜5kg','5〜10kg','10〜25kg'],
       ['Gitzo三脚と合わせたい','他社三脚を持っている','三脚もこれから購入'],
     ],
-    'バッグ・アクセサリー（Gitzo）': [
-      ['三脚バッグ','カメラバッグ','アクセサリー'],
+    '三脚バッグ（Gitzo）': [
       ['コンパクト（トラベラー相当）','中型','大型'],
+      ['肩掛けストラップ','バックパックへの装着','手持ち'],
+    ],
+    'アクセサリー（Gitzo）': [
+      ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'],
     ],
     'バックパック': [
       ['ミラーレス+レンズ2〜3本','一眼+レンズ3〜4本','大型機材複数'],
@@ -484,6 +487,10 @@ const FLOW_OPTIONS = {
       ['飛行機（機内持ち込み）','車での移動','徒歩・電車'],
       ['13インチ以下','15インチ以上','不要'],
       ['出張・旅行','プロ撮影現場','スタジオ間の機材移動'],
+    ],
+    'アクセサリー（Lowepro）': [
+      // TODO: 実際のLowepro側アクセサリー商品構成を確認して選択肢を調整してください
+      ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'],
     ],
     '三脚バッグ': [
       ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'],
@@ -548,9 +555,12 @@ const FLOW_OPTIONS = {
       ['Up to 5kg','5-10kg','10-25kg'],
       ['With Gitzo tripod','With other brand','Need tripod too'],
     ],
-    'Bag & Accessories': [
-      ['Tripod bag','Camera bag','Accessories'],
+    'Tripod Bag (Gitzo)': [
       ['Compact (Traveler size)','Medium','Large'],
+      ['Shoulder strap','Attach to backpack','Hand carry'],
+    ],
+    'Accessories (Gitzo)': [
+      ['Quick release plate','Magic arm/clamp','Tethering/VR shooting','Remote control','Tripod spike'],
     ],
     'Backpack': [
       ['Mirrorless + 2-3 lenses','DSLR + 3-4 lenses','Large gear + accessories'],
@@ -584,6 +594,10 @@ const FLOW_OPTIONS = {
       ['13-inch or smaller','15-inch or larger','Not needed'],
       ['Business travel','Professional shoots','Moving gear between studios'],
     ],
+    'Accessories (Lowepro)': [
+      // TODO: verify against actual Lowepro accessory catalog
+      ['Strap/grip','Rain cover/protection','Organization/storage','Other'],
+    ],
     'Tripod Bag': [
       ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'],
       ['Shoulder strap','Attach to backpack','Hand carry'],
@@ -593,6 +607,15 @@ const FLOW_OPTIONS = {
 }
 
 let currentStep = 0; // 現在の質問ステップ
+
+// ── 補足入力フェーズの状態管理 ──
+// chatMode: 'GUIDE'（固定フロー、チップのみ）→ 'GATE'（補足の有無を確認）
+//           → 'SUPPLEMENT_INPUT'（自由入力を1回だけ受け付ける）
+//           → 'SUPPLEMENT_FOLLOWUP'（続けて1問だけ聞く場合のチップ回答）→ 'GATE' に戻る、を繰り返す
+// これにより固定フローの間は自由入力を一切受け付けず、currentStepの進行を自由入力に一切依存させない
+let chatMode = 'GUIDE';
+let supplementRounds = 0;
+const MAX_SUPPLEMENT_ROUNDS = 3; // 無限ループ防止の安全上限
 
 // ── カテゴリ定義 ──
 const CATEGORIES = {
@@ -690,6 +713,8 @@ function setLang(l) {
 }
 
 function renderWelcome() {
+  chatMode = 'GUIDE';
+  setInputEnabled(false);
   const t = i18n[lang];
   const w = document.getElementById('welcome');
   if (!w) return;
@@ -790,6 +815,36 @@ function selectCategory(cat) {
     return;
   }
 
+  // Gitzoのバッグ・アクセサリーを選んだ場合は「三脚バッグ」「アクセサリー」で
+  // 質問内容もDB検索カテゴリも別物なので、専用の選択画面を挟んで明確に分岐させる
+  // （Gitzoのカメラバッグ/リュックは全て廃番のため選択肢に含めない）
+  if (cat === 'バッグ・アクセサリー（Gitzo）' || cat === 'Bag & Accessories') {
+    const w = document.getElementById('welcome');
+    if (!w) return;
+
+    const gitzoBagCats = lang === 'ja'
+      ? ['三脚バッグ（Gitzo）','アクセサリー（Gitzo）']
+      : ['Tripod Bag (Gitzo)','Accessories (Gitzo)'];
+    const gitzoBagLabels = lang === 'ja'
+      ? ['三脚バッグ','アクセサリー']
+      : ['Tripod Bag','Accessories'];
+
+    const logoSrc = LOGOS.gitzo;
+
+    const chips = gitzoBagCats.map((c, i) =>
+      `<button class="category-chip" onclick="selectGitzoBagCategory('${c}')">${gitzoBagLabels[i]}</button>`
+    ).join('');
+
+    w.innerHTML = `
+      <div class="category-header">
+        <img class="selected-brand-logo gitzo" src="${logoSrc}" alt="Gitzo" style="height:28px;width:auto;object-fit:contain;">
+        <span class="category-label">${lang === 'ja' ? '何をお探しか選択' : 'What are you looking for?'}</span>
+      </div>
+      <div class="category-grid">${chips}</div>
+      <button class="back-link" onclick="showCategoryScreen('Gitzo')">${lang === 'ja' ? 'カテゴリ選択に戻る' : 'Back to categories'}</button>`;
+    return;
+  }
+
   // カメラバッグを選んだ場合はさらに細分化
   if (cat === 'カメラバッグ' || cat === 'Camera Bag') {
     const t = i18n[lang];
@@ -819,9 +874,18 @@ function selectCategory(cat) {
     }
     const bagCats = lang === 'ja' ? bagCatsJa : bagCatsEn;
 
-    const chips = bagCats.map(c =>
-      `<button class="category-chip" onclick="selectBagCategory('${c}')">${c}</button>`
-    ).join('');
+    // Loweproの「アクセサリー」ボタンは、表示ラベルは他と揃えつつ、
+    // 実際に渡すカテゴリキーだけ 'アクセサリー（Lowepro）' に変える。
+    // これによりDB検索先（アクセサリーカテゴリ、2026/07/15の再分類でLowepro商品も含まれるようになった）はそのまま維持しつつ、
+    // 質問内容だけLoweproに合わせた専用フローに差し替える
+    // （Manfrotto向けの「クイックリリース・プレート」「三脚強化・スパイク」等をLowepro客に聞くのは不適切だったため）
+    // ※質問の選択肢はいったん汎用的な文言にしてあるので、実際のLowepro側アクセサリー商品構成に合わせて要調整
+    const chips = bagCats.map(c => {
+      const key = (selectedBrand === 'Lowepro' && (c === 'アクセサリー' || c === 'Accessories'))
+        ? (lang === 'ja' ? 'アクセサリー（Lowepro）' : 'Accessories (Lowepro)')
+        : c;
+      return `<button class="category-chip" onclick="selectBagCategory('${key}')">${c}</button>`;
+    }).join('');
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
@@ -851,10 +915,53 @@ function selectBagCategory(cat) {
   startChat(selectedBrand, cat);
 }
 
+function selectGitzoBagCategory(cat) {
+  selectedCategory = cat;
+  startChat(selectedBrand, cat);
+}
+
+// ── 補足フェーズ用の文言 ──
+const SUPPLEMENT_TEXT = {
+  ja: {
+    gateMsg: '他に何かご要望はありますか？',
+    gateYes: 'はい、他にもあります',
+    gateNo: 'いいえ、このまま提案してください',
+    inputPrompt: '追加のご要望を入力してください。',
+    inputPlaceholder: '追加のご要望を入力...',
+    lockedPlaceholder: '上の選択肢からお選びください',
+  },
+  en: {
+    gateMsg: 'Anything else you\'d like to add?',
+    gateYes: 'Yes, I have more',
+    gateNo: 'No, please recommend now',
+    inputPrompt: 'Please type your additional request.',
+    inputPlaceholder: 'Type your additional request...',
+    lockedPlaceholder: 'Please choose an option above',
+  }
+};
+
+// 固定フロー中は自由入力を封じ、補足フェーズでのみ開放する
+function setInputEnabled(enabled) {
+  const field = document.getElementById('input-field');
+  if (!field) return;
+  field.disabled = !enabled;
+  field.style.opacity = enabled ? '1' : '0.5';
+  field.placeholder = enabled
+    ? (SUPPLEMENT_TEXT[lang]?.inputPlaceholder || i18n[lang].placeholder)
+    : (SUPPLEMENT_TEXT[lang]?.lockedPlaceholder || '');
+}
+
+function isFreeInputAllowed() {
+  return chatMode === 'SUPPLEMENT_INPUT';
+}
+
 function startChat(brand, category) {
   selectedBrand = brand;
   selectedCategory = category;
   currentStep = 0;
+  chatMode = 'GUIDE';
+  supplementRounds = 0;
+  setInputEnabled(false);
   const w = document.getElementById('welcome');
   if (w) w.remove();
   document.getElementById('reset-btn').classList.add('visible');
@@ -882,10 +989,12 @@ function startChat(brand, category) {
       'ライティング_背景':          { msg: `${brandLabel ? brandLabel + 'の' : ''}撮影背景をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'] },
+      'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
       '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
-      'バッグ・アクセサリー（Gitzo）': { msg: 'Gitzoのバッグ・アクセサリーをお探しですね！何を収納したいですか？', opts: ['三脚バッグ','カメラバッグ','アクセサリー'] },
+      '三脚バッグ（Gitzo）':      { msg: 'Gitzoの三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。', opts: ['コンパクト（トラベラー相当）','中型','大型'] },
+      'アクセサリー（Gitzo）':    { msg: 'Gitzoのアクセサリーをお探しですね！どのようなアクセサリーをお探しですか？', opts: ['クイックリリース・プレート','マジックアーム・クランプ','テザー撮影・VR撮影','リモートコントロール','三脚強化・スパイク'] },
     },
     en: {
       'Tripod':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
@@ -894,10 +1003,12 @@ function startChat(brand, category) {
       'Camera Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}camera bag! What style are you looking for?`, opts: ['Backpack','Shoulder bag','Top loading','Any style'] },
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
       'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Camera support','Tethered shooting','Lighting support','Other'] },
+      'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
       'Tripod (Gitzo)':   { msg: `Looking for a Gitzo tripod! What's your shooting scene?`, opts: ['Travel/hiking','Landscape/long exposure','Wildlife/telephoto','Video/cinema'] },
       'Monopod (Gitzo)':  { msg: `Looking for a Gitzo monopod! What's the main use?`, opts: ['Sports/wildlife','Landscape/travel','Video/vlog'] },
       'Head (Gitzo)':     { msg: `Looking for a Gitzo head! What's the main purpose?`, opts: ['Photography','Video','Panorama/360°'] },
-      'Bag & Accessories': { msg: `Looking for Gitzo bags or accessories! What would you like to store?`, opts: ['Tripod bag','Camera bag','Accessories'] },
+      'Tripod Bag (Gitzo)': { msg: `Looking for a Gitzo tripod bag! What size tripod do you need to store?`, opts: ['Compact (Traveler size)','Medium','Large'] },
+      'Accessories (Gitzo)': { msg: `Looking for Gitzo accessories! What kind of accessory are you looking for?`, opts: ['Quick release plate','Magic arm/clamp','Tethering/VR shooting','Remote control','Tripod spike'] },
       'Backpack':     { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}backpack! What gear do you need to carry?`, opts: ['Mirrorless + 2-3 lenses','DSLR + 3-4 lenses','Large gear + accessories'] },
       'Shoulder Bag': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}shoulder bag! What gear do you need to carry?`, opts: ['Compact camera only','Camera + 1 lens','Camera + multiple lenses'] },
       'Roller Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}roller bag! How much gear do you need to carry?`, opts: ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'] },
@@ -956,6 +1067,8 @@ function showOptions(options) {
 
 function resetChat() {
   history = []; isLoading = false; selectedBrand = null; selectedCategory = null; currentStep = 0;
+  chatMode = 'GUIDE'; supplementRounds = 0;
+  setInputEnabled(false);
   document.getElementById('send-btn').disabled = false;
   document.getElementById('reset-btn').classList.remove('visible');
   showOptions([]);
@@ -1060,6 +1173,20 @@ async function sendMessage() {
   const field = document.getElementById('input-field');
   const text = field.value.trim();
   if (!text) return;
+
+  // GATE（補足の有無を聞いている段階）はチップ選択のみ。バックエンドを呼ばずクライアント側で完結させる
+  if (chatMode === 'GATE') {
+    field.value = ''; field.style.height = 'auto';
+    return handleGateChoice(text);
+  }
+
+  // SUPPLEMENT_FOLLOWUP（補足後の1問だけのフォローアップ質問への回答）も
+  // バックエンドを呼ばず、回答を履歴に積んだらすぐGATEに戻る
+  if (chatMode === 'SUPPLEMENT_FOLLOWUP') {
+    field.value = ''; field.style.height = 'auto';
+    return handleSupplementFollowupAnswer(text);
+  }
+
   field.value = ''; field.style.height = 'auto';
   isLoading = true;
   document.getElementById('send-btn').disabled = true;
@@ -1068,6 +1195,13 @@ async function sendMessage() {
   showOptions([]);
   showTyping();
 
+  // SUPPLEMENT_INPUT（補足の自由入力）は専用エンドポイントで
+  // 「続けて1問だけ聞くか／もう推薦してよいか」だけを判定させる
+  if (chatMode === 'SUPPLEMENT_INPUT') {
+    return handleSupplementInput();
+  }
+
+  // ── 通常のGUIDE構造化フロー（チップ選択のみで進む・自由文は届かない） ──
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -1099,47 +1233,9 @@ async function sendMessage() {
       const totalSteps = flowOpts ? flowOpts.length : 0;
 
       if (currentStep >= totalSteps) {
-        // 全ステップ完了 → 推薦フェーズへ（自動でもう一度送信）
+        // 全ステップ完了 → いきなり推薦せず、まず補足の有無を確認するゲートを挟む
         showOptions([]);
-        const finalMsg = lang === 'ja'
-          ? 'おすすめの製品を探しています...'
-          : 'Finding the best products for you...';
-        appendMsg('bot', finalMsg);
-        history.push({ role: 'assistant', content: finalMsg });
-        // 少し待ってから推薦リクエスト送信
-        setTimeout(async () => {
-          isLoading = true;
-          document.getElementById('send-btn').disabled = true;
-          showTyping();
-          try {
-            const res = await fetch('/api/chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                messages: history,
-                lang,
-                brand: selectedBrand !== 'all' ? selectedBrand : null,
-                category: selectedCategory,
-                forceRecommend: true
-              })
-            });
-            const data = await res.json();
-            removeTyping();
-            const r = data.reply;
-            if (r && r.type === 'products') {
-              history.push({ role: 'assistant', content: JSON.stringify(r) });
-              appendMsg('bot', r);
-            } else if (r && r.message) {
-              history.push({ role: 'assistant', content: r.message });
-              appendMsg('bot', r.message);
-            }
-          } catch(e) {
-            removeTyping();
-            appendMsg('bot', lang === 'ja' ? 'エラーが発生しました。' : 'An error occurred.');
-          }
-          isLoading = false;
-          document.getElementById('send-btn').disabled = false;
-        }, 800);
+        setTimeout(() => showSupplementGate(), 150);
       } else {
         // 次のステップの選択肢を表示
         const nextOpts = flowOpts[currentStep];
@@ -1159,7 +1255,132 @@ async function sendMessage() {
   document.getElementById('input-field').focus();
 }
 
+// ── 補足フェーズ：GATE（他に要望はありますか？）を表示 ──
+function showSupplementGate() {
+  chatMode = 'GATE';
+  setInputEnabled(false);
+  const t = SUPPLEMENT_TEXT[lang];
+  appendMsg('bot', t.gateMsg);
+  history.push({ role: 'assistant', content: t.gateMsg });
+  // 上限に達していたら「補足あり」の選択肢自体を出さず、そのまま推薦に進める
+  const opts = supplementRounds >= MAX_SUPPLEMENT_ROUNDS ? [t.gateNo] : [t.gateYes, t.gateNo];
+  setTimeout(() => showOptions(opts), 150);
+}
+
+// ── 補足フェーズ：GATEでの選択を処理 ──
+function handleGateChoice(text) {
+  const t = SUPPLEMENT_TEXT[lang];
+  appendMsg('user', text);
+  history.push({ role: 'user', content: text });
+  showOptions([]);
+
+  if (text === t.gateYes) {
+    supplementRounds++;
+    chatMode = 'SUPPLEMENT_INPUT';
+    setInputEnabled(true);
+    appendMsg('bot', t.inputPrompt);
+    history.push({ role: 'assistant', content: t.inputPrompt });
+    document.getElementById('input-field').focus();
+  } else {
+    triggerRecommend();
+  }
+}
+
+// ── 補足フェーズ：自由入力を送信し、続けて質問すべきか推薦に進むべきかを判定させる ──
+async function handleSupplementInput() {
+  setInputEnabled(false);
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: history,
+        lang,
+        brand: selectedBrand !== 'all' ? selectedBrand : null,
+        category: selectedCategory,
+        supplementCheck: true
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (!res.ok) throw new Error(data.error || 'Error');
+    const reply = data.reply || {};
+
+    if (reply.continueGuiding && reply.options && reply.options.length > 0 && supplementRounds < MAX_SUPPLEMENT_ROUNDS) {
+      chatMode = 'SUPPLEMENT_FOLLOWUP';
+      appendMsg('bot', reply.message || '');
+      history.push({ role: 'assistant', content: reply.message || '' });
+      setTimeout(() => showOptions(reply.options), 150);
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+      return;
+    } else {
+      if (reply.message) {
+        appendMsg('bot', reply.message);
+        history.push({ role: 'assistant', content: reply.message });
+      }
+      return triggerRecommend(); // isLoading管理はtriggerRecommend側に任せる
+    }
+  } catch(e) {
+    removeTyping();
+    appendMsg('bot', i18n[lang].errorText);
+    return triggerRecommend(); // isLoading管理はtriggerRecommend側に任せる
+  }
+}
+
+// ── 補足フェーズ：フォローアップ質問へのチップ回答 → 再度GATEへ戻る ──
+function handleSupplementFollowupAnswer(text) {
+  appendMsg('user', text);
+  history.push({ role: 'user', content: text });
+  showOptions([]);
+  setTimeout(() => showSupplementGate(), 150);
+}
+
+// ── 推薦リクエストを送信（GATE「補足なし」／補足判定「もう十分」の両方から呼ばれる） ──
+async function triggerRecommend() {
+  chatMode = 'RECOMMEND';
+  setInputEnabled(false);
+  showOptions([]);
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  const finalMsg = lang === 'ja'
+    ? 'おすすめの製品を探しています...'
+    : 'Finding the best products for you...';
+  appendMsg('bot', finalMsg);
+  history.push({ role: 'assistant', content: finalMsg });
+  showTyping();
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: history,
+        lang,
+        brand: selectedBrand !== 'all' ? selectedBrand : null,
+        category: selectedCategory,
+        forceRecommend: true
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    const r = data.reply;
+    if (r && r.type === 'products') {
+      history.push({ role: 'assistant', content: JSON.stringify(r) });
+      appendMsg('bot', r);
+    } else if (r && r.message) {
+      history.push({ role: 'assistant', content: r.message });
+      appendMsg('bot', r.message);
+    }
+  } catch(e) {
+    removeTyping();
+    appendMsg('bot', lang === 'ja' ? 'エラーが発生しました。' : 'An error occurred.');
+  }
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
 function toggleVoice() {
+  if (!isFreeInputAllowed()) return; // GUIDE/GATE/フォローアップ中は音声入力も無効
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     alert(i18n[lang].noSpeech); return;
   }
