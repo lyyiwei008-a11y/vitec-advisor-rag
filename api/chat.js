@@ -55,9 +55,12 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       query_embedding: embeddingForRpc,
       match_count: count,
       filter_brand: brand,
-      include_old: false
+      include_old: false,
+      filter_category: catList.length ? catList : null
     });
     if (error) { console.log(`[FETCH ${brand}] error:`, error.message); return []; }
+    // filter_category対応前のmatch_products関数がまだ残っている環境向けの保険として、
+    // クライアント側でも念のためカテゴリを再チェックする（二重フィルターでも副作用は無い）
     let r = data || [];
     if (catList.length) r = r.filter(p => catList.includes(p.category));
     return r;
@@ -114,12 +117,15 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     query_embedding: embeddingForRpc,
     match_count: fetchLimit,
     filter_brand: brandFilter,
-    include_old: false
+    include_old: false,
+    filter_category: catList.length ? catList : null
   });
   if (error) throw new Error(`Supabase error: ${error.message}`);
   let results = data || [];
 
-  // カテゴリフィルター（必須）
+  // カテゴリフィルター（DB側のfilter_categoryが効いていれば通常は既に絞られているはずだが、
+  // filter_category未対応の古いmatch_products関数が残っている場合の保険として、
+  // クライアント側でも念のため再チェックする）
   console.log(`[DEBUG] results before filter: ${results.length}件`);
   if (categoryFilter) {
     const filtered = results.filter(p => catList.includes(p.category));
