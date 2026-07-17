@@ -8,9 +8,21 @@ const supabase = createClient(
 );
 
 // ────────────────────────────────────────────────
-// カテゴリ検出
-// フロントから brand / category が渡される場合はそちらを優先
+// カテゴリのグループ定義（唯一の真相源）
 // ────────────────────────────────────────────────
+// 「バッグ全部」「ライティング全部」のような横断検索・ブランド推論のために、
+// どのDBカテゴリがどの大分類グループに属するかをここに一箇所だけ定義する。
+// 新しい細分カテゴリを追加するときはここに1行足すだけでよく、
+// categorySheetMapの集約エントリやブランド推論配列に個別に追記する必要がなくなる
+// （過去に何度も「新カテゴリを追加したのに集約用の配列に足し忘れる」バグが起きたための対策）。
+const CATEGORY_GROUPS = {
+  'バッグ': ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
+  'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+  // Manfrotto専用のアクセサリー群（2026/07/17、旧「アクセサリー」単一カテゴリを目的別に分割）
+  'Manfrottoアクセサリー': ['アクセサリー','三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影'],
+};
+
+
 function detectCategory(messages, categoryHint) {
   if (categoryHint) return categoryHint;
 
@@ -238,10 +250,50 @@ const FLOWS = {
 2. 種類 → options:["背景布","クロマキー（グリーン・ブルー）","背景サポートシステム"]
 3. サイズ → options:["1.5m以下","2m〜3m","3m以上"]`,
 
-    'アクセサリー': `【アクセサリーの質問フロー】1つずつ質問：
-1. 用途 → options:["クイックリリース・プレート","マジックアーム・クランプ","テザー撮影・VR撮影","リモートコントロール","三脚強化・スパイク"]
-2. 取り付け先 → options:["三脚・雲台に取り付ける","ライトスタンドに固定する","カメラ本体に取り付ける"]
-3. 具体的に欲しいもの → options:["プレート・アダプター","マジックアーム","クランプ・ナノクランプ","タブレット・PCホルダー"]`,
+    'アクセサリー': `【アクセサリーの質問フロー】1つだけ質問：
+※実商品はストラップ・レインカバー・ディバイダーキット・ユーティリティーベルト等の残余カテゴリ
+1. 用途 → options:["ストラップ・グリップ","レインカバー・保護","収納・整理","その他"]`,
+
+    '三脚雲台アクセサリー': `【三脚・雲台アクセサリーの質問フロー】1つだけ質問：
+※水平調整・ローアングル・スパイク等（055LC/190LC/BFRLVLC/338/438/055XSCC/190XSCC/スパイク類など）
+1. どのような機能が必要か → options:["水平調整（レベリング）","ローアングル撮影","安定性向上（スパイク）","その他"]`,
+
+    'クイックリリースプレート': `【クイックリリースプレートの質問フロー】1つだけ質問：
+※200PL系・501PL系・Arcaタイプ・Xchangeシステム・Lブラケット等
+1. お使いの雲台のシステム → options:["200PL系（一般的な雲台）","501PL系（ビデオ雲台）","Arcaタイプ","わからない"]`,
+
+    'モニター・PC設置': `【モニター・PC設置の質問フロー】1つだけ質問：
+※183モニター/プロジェクターホルダー、MLTSA系（VESAマウント・タブレットホルダー・ラップトップデッキ・マウスデッキ）
+1. 何を設置したいか → options:["モニター","タブレット","ノートPC","マウス"]`,
+
+    '固定クランプ・アーム': `【固定クランプ・アームの質問フロー】1つずつ質問：
+※244系フリクションアーム・386系ナノクランプ・143系マジックアーム・GimBoom等
+1. 何を固定したいか → options:["カメラ","LED・照明機材","モニター","マイク"]
+2. どこに固定するか → options:["三脚・スタンドに固定","机・棚に固定","パイプ・レールに固定"]`,
+
+    'リモートコントロール': `【リモートコントロールの質問フロー】1つだけ質問：
+※MVR901系（LANC対応）・522系リモートケーブル
+1. お使いのカメラ → options:["Sony（LANC対応）","Panasonic","その他のカメラ"]`,
+
+    'VR・360°撮影': `【VR・360°撮影の質問フロー】1つだけ質問：
+※MKPROVR等VRベース・MBOOMAVR等エクステンションブーム
+1. 何をお探しか → options:["VR撮影用ベース・スタンド","エクステンションブーム","セットで探したい"]`,
+
+    '商品撮影ライティング': `【商品撮影ライティングの質問フロー】1つだけ質問：
+※背景・ソフトボックス・リフレクターを横断して提案する
+1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+
+    '人物撮影ライティング': `【人物撮影ライティングの質問フロー】1つだけ質問：
+※ソフトボックス・リフレクター・スタンドを横断して提案する
+1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+
+    '動画制作ライティング': `【動画制作ライティングの質問フロー】1つだけ質問：
+※スタンド・背景を横断して提案する
+1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
+
+    'ライブ配信ライティング': `【ライブ配信ライティングの質問フロー】1つだけ質問：
+※スタンド・アクセサリー（クランプ類）を横断して提案する
+1. 予算感 → options:["〜3万円","3〜8万円","8万円以上","こだわらない"]`,
 
     '三脚（Gitzo）': `【Gitzo三脚の質問フロー】1つずつ質問：
 1. 撮影シーン → options:["旅行・登山","風景・長時間露光","野鳥・超望遠","動画・映像制作"]
@@ -378,10 +430,50 @@ const FLOWS = {
 4. Location → options:["Studio fixed","Home/small space","Outdoor mobile","Desktop"]
 5. Arm needed? → options:["Needed","Not needed","Not sure"]`,
 
-    'Accessories': `[Accessories Flow] Ask ONE question at a time:
-1. Main use → options:["Camera support","Tethered shooting","Lighting support","Other"]
-2. Mount point → options:["Tripod","Light stand","Camera body","Wall/ceiling"]
-3. Type needed → options:["Magic arm","Clamp","Plate","Strap"]`,
+    'Accessories': `[Accessories Flow] Ask ONLY ONE question:
+Note: residual category — straps, rain covers, divider kits, utility belts
+1. Main use → options:["Strap/grip","Rain cover/protection","Organization/storage","Other"]`,
+
+    'Tripod/Head Accessories': `[Tripod/Head Accessories Flow] Ask ONLY ONE question:
+Note: leveling, low-angle, spikes (055LC/190LC/BFRLVLC/338/438/055XSCC/190XSCC/spike feet)
+1. What feature is needed → options:["Leveling","Low-angle shooting","Stability (spikes)","Other"]`,
+
+    'Quick Release Plate': `[Quick Release Plate Flow] Ask ONLY ONE question:
+Note: 200PL series, 501PL series, Arca type, Xchange system, L-brackets
+1. What head system → options:["200PL series (standard heads)","501PL series (video heads)","Arca type","Not sure"]`,
+
+    'Monitor/PC Mount': `[Monitor/PC Mount Flow] Ask ONLY ONE question:
+Note: 183 monitor/projector holder, MLTSA series (VESA mount, tablet holder, laptop deck, mouse deck)
+1. What to mount → options:["Monitor","Tablet","Laptop","Mouse"]`,
+
+    'Clamps & Arms': `[Clamps & Arms Flow] Ask ONE question at a time:
+Note: 244 series friction arms, 386 series nano clamps, 143 series magic arms, GimBoom
+1. What to attach → options:["Camera","LED/lighting gear","Monitor","Microphone"]
+2. Where to mount → options:["Mount to tripod/stand","Mount to desk/shelf","Mount to pipe/rail"]`,
+
+    'Remote Control': `[Remote Control Flow] Ask ONLY ONE question:
+Note: MVR901 series (LANC), 522 series remote cables
+1. What camera → options:["Sony (LANC)","Panasonic","Other camera"]`,
+
+    'VR & 360°': `[VR & 360° Flow] Ask ONLY ONE question:
+Note: MKPROVR etc. VR bases, MBOOMAVR etc. extension booms
+1. What are you looking for → options:["VR shooting base/stand","Extension boom","Looking for a full set"]`,
+
+    'Product Photography Lighting': `[Product Photography Lighting Flow] Ask ONLY ONE question:
+Note: recommends across Background, Softbox, and Reflector categories
+1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+
+    'Portrait Lighting': `[Portrait Lighting Flow] Ask ONLY ONE question:
+Note: recommends across Softbox, Reflector, and Stand categories
+1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+
+    'Video Production Lighting': `[Video Production Lighting Flow] Ask ONLY ONE question:
+Note: recommends across Stand and Background categories
+1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
+
+    'Live Streaming Lighting': `[Live Streaming Lighting Flow] Ask ONLY ONE question:
+Note: recommends across Stand and Accessories (clamps) categories
+1. Budget → options:["Under ¥30,000","¥30,000-80,000","Over ¥80,000","No preference"]`,
 
     'Tripod (Gitzo)': `[Gitzo Tripod Flow] Ask ONE question at a time:
 1. Shooting scene → options:["Travel/hiking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
@@ -741,7 +833,7 @@ export default async function handler(req, res) {
         '雲台':      '雲台',
         '一脚':      '一脚',
         // バッグ（全ブランド統合）
-        'カメラバッグ':            ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
+        'カメラバッグ':            CATEGORY_GROUPS['バッグ'],
         'バックパック':            'バックパック',
         'ショルダーバッグ':        'ショルダーバッグ',
         'ローラーバッグ':          'ローラーバッグ',
@@ -753,13 +845,24 @@ export default async function handler(req, res) {
         'アクセサリーケース':      'アクセサリーケース',
         // アクセサリー
         'アクセサリー': 'アクセサリー',
+        '三脚雲台アクセサリー': '三脚雲台アクセサリー',
+        'クイックリリースプレート': 'クイックリリースプレート',
+        'モニター・PC設置': 'モニター・PC設置',
+        '固定クランプ・アーム': '固定クランプ・アーム',
+        'リモートコントロール': 'リモートコントロール',
+        'VR・360°撮影': 'VR・360°撮影',
         // ライティング（細分化）
-        'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+        'ライティング': CATEGORY_GROUPS['ライティング'],
         'ライティング_スタンド':      'ライティング_スタンド',
         'ライティング_アクセサリー':  'ライティング_アクセサリー',
         'ライティング_ソフトボックス': 'ライティング_ソフトボックス',
         'ライティング_リフレクター':  'ライティング_リフレクター',
         'ライティング_背景':          'ライティング_背景',
+        // 撮影内容から探す（Copilot提案の「わからない」導線、複数サブカテゴリを横断）
+        '商品撮影ライティング':   ['ライティング_背景','ライティング_ソフトボックス','ライティング_リフレクター'],
+        '人物撮影ライティング':   ['ライティング_ソフトボックス','ライティング_リフレクター','ライティング_スタンド'],
+        '動画制作ライティング':   ['ライティング_スタンド','ライティング_背景'],
+        'ライブ配信ライティング': ['ライティング_スタンド','ライティング_アクセサリー'],
         // Gitzo専用カテゴリ（UIから選んだ場合）
         '三脚（Gitzo）':             '三脚',
         '一脚（Gitzo）':             '一脚',
@@ -772,19 +875,29 @@ export default async function handler(req, res) {
         'Tripod':              '三脚',
         'Head':                '雲台',
         'Monopod':             '一脚',
-        'Camera Bag':          ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
+        'Camera Bag':          CATEGORY_GROUPS['バッグ'],
         'Backpack':            'バックパック',
         'Shoulder Bag':        'ショルダーバッグ',
         'Roller Bag':          'ローラーバッグ',
         'Tripod Bag':          '三脚バッグ',
         'GearUp & Accessories': 'ギアアップ・アクセサリー',
         'Accessories':         'アクセサリー',
-        'Lighting':            ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+        'Tripod/Head Accessories': '三脚雲台アクセサリー',
+        'Quick Release Plate':     'クイックリリースプレート',
+        'Monitor/PC Mount':        'モニター・PC設置',
+        'Clamps & Arms':           '固定クランプ・アーム',
+        'Remote Control':          'リモートコントロール',
+        'VR & 360°':               'VR・360°撮影',
+        'Lighting':            CATEGORY_GROUPS['ライティング'],
         'Lighting_Stand':      'ライティング_スタンド',
         'Lighting_Accessories': 'ライティング_アクセサリー',
         'Lighting_Softbox':    'ライティング_ソフトボックス',
         'Lighting_Reflector':  'ライティング_リフレクター',
         'Lighting_Background': 'ライティング_背景',
+        'Product Photography Lighting': ['ライティング_背景','ライティング_ソフトボックス','ライティング_リフレクター'],
+        'Portrait Lighting':            ['ライティング_ソフトボックス','ライティング_リフレクター','ライティング_スタンド'],
+        'Video Production Lighting':    ['ライティング_スタンド','ライティング_背景'],
+        'Live Streaming Lighting':      ['ライティング_スタンド','ライティング_アクセサリー'],
         'Tripod (Gitzo)':      '三脚',
         'Monopod (Gitzo)':     '一脚',
         'Head (Gitzo)':        '雲台',
@@ -803,7 +916,22 @@ export default async function handler(req, res) {
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','三脚バッグ（Gitzo）','アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Tripod Bag (Gitzo)','Accessories (Gitzo)'];
       // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
       // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
-      const manfrottoOnlyCategories = ['ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background'];
+      //
+      // 日本語のDBカテゴリ名（CATEGORY_GROUPSのメンバー）は自動生成されるため、
+      // 新しいライティング/Manfrottoアクセサリーの細分カテゴリをCATEGORY_GROUPSに追加すれば
+      // ここは自動的に更新される。ただし英語キーや「〇〇から探す」系の集約キーは
+      // categorySheetMapでしか対応関係を持たないため、新規追加時はこの配列にも手動で足すこと。
+      const manfrottoOnlyCategories = [
+        ...CATEGORY_GROUPS['ライティング'],
+        // 'アクセサリー'自体はGitzo/Loweproと共用のDBカテゴリなので除外し、
+        // Manfrotto専用の細分カテゴリだけを展開する
+        ...CATEGORY_GROUPS['Manfrottoアクセサリー'].filter(c => c !== 'アクセサリー'),
+        // 集約キー・英語キー（自動導出不可、手動維持）
+        'ライティング','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background',
+        '商品撮影ライティング','人物撮影ライティング','動画制作ライティング','ライブ配信ライティング',
+        'Product Photography Lighting','Portrait Lighting','Video Production Lighting','Live Streaming Lighting',
+        'Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°',
+      ];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
       let effectiveBrand = brand;
