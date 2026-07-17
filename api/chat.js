@@ -262,7 +262,8 @@ const FLOWS = {
 2. 携帯方法 → options:["肩掛けストラップ","バックパックへの装着","手持ち"]`,
 
     'アクセサリー（Gitzo）': `【Gitzoアクセサリーの質問フロー】1つだけ質問：
-1. どのようなアクセサリーをお探しか → options:["クイックリリース・プレート","マジックアーム・クランプ","テザー撮影・VR撮影","リモートコントロール","三脚強化・スパイク"]`,
+※実商品は6点のみ：GC2560/GC5560/GC5160F（三脚レッグウォーマー）、GCB100NS/GCB100SS（カメラストラップ）、GSLBRSY（Sony専用L型ブラケット）
+1. どのようなアクセサリーをお探しか → options:["三脚レッグウォーマー（保護カバー）","カメラストラップ","L型ブラケット（Sony用）"]`,
 
     'バックパック': `【Loweproバックパックの質問フロー】1つずつ質問：
 1. 収納したい機材 → options:["ミラーレス+レンズ2〜3本","一眼+レンズ3〜4本","大型機材複数"]
@@ -367,7 +368,8 @@ const FLOWS = {
 2. Carry method → options:["Shoulder strap","Attach to backpack","Hand carry"]`,
 
     'Accessories (Gitzo)': `[Gitzo Accessories Flow] Ask ONLY ONE question:
-1. What kind of accessory → options:["Quick release plate","Magic arm/clamp","Tethering/VR shooting","Remote control","Tripod spike"]`,
+Note: only 6 real SKUs exist: GC2560/GC5560/GC5160F (tripod leg warmers), GCB100NS/GCB100SS (camera straps), GSLBRSY (Sony-only L-bracket)
+1. What kind of accessory → options:["Tripod leg warmer","Camera strap","L-bracket (Sony only)"]`,
 
     'Backpack': `[Lowepro Backpack Flow] Ask ONE question at a time:
 1. Gear to carry → options:["Mirrorless + 2-3 lenses","DSLR + 3-4 lenses","Large gear + accessories"]
@@ -525,6 +527,14 @@ Do NOT invent or hallucinate any product. Return an empty items array exactly as
     similarity: Math.round(p.similarity * 100) + '%'
   }));
 
+  // 検索結果の件数に応じて推薦数のルールを動的に変える。
+  // 「必ず5〜7件」を固定にすると、Gitzoのアクセサリー（実質6点のみ）のように
+  // 母数が少ないカテゴリで関連性の薄い商品まで無理に混ぜて数合わせしてしまう問題があった。
+  const maxAvail = products.length;
+  const recommendCountRule = maxAvail <= 7
+    ? `- Recommend ONLY the genuinely relevant products from the list (up to ${maxAvail} available) — do NOT pad the recommendations with unrelated items just to reach a target count. If only 1-2 products truly match what the customer asked for, recommend only those.`
+    : `- Recommend 5-7 of the MOST relevant products from the list — do not include items that are a poor match just to fill the count.`;
+
   return `You are a Vitec Japan product advisor. Recommend products from the search results below.
 ${langRule}
 ${brandRule}
@@ -533,7 +543,7 @@ SEARCH RESULTS (priority 1=new, 2=current — already filtered by category):
 ${JSON.stringify(productList, null, 2)}
 
 INSTRUCTIONS:
-- Recommend 5-7 products from the list ONLY
+${recommendCountRule}
 - Never invent products not in the list
 - Give specific reasons based on the customer's stated needs
 - Mention brand name in each recommendation
@@ -547,7 +557,7 @@ INSTRUCTIONS:
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
 
-Recommend 5-7 products from the list above. Do not fabricate products beyond this list.`;
+Do not fabricate products beyond the list above, and do not recommend irrelevant products merely to reach a higher count.`;
 }
 
 // ────────────────────────────────────────────────
