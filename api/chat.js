@@ -344,6 +344,32 @@ const FLOWS = {
 4. Laptop/tablet → options:["Up to 13\"","15\"","Not needed"]
 5. Main scene → options:["Travel/hiking","Street/daily","Professional","Drone transport"]`,
 
+    'Lighting_Stand': `[Light Stand/Boom Flow] Ask ONE question at a time:
+1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
+2. Stand type → options:["Light stand","Boom stand","Baby stand","Auto pole"]
+3. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
+4. Height needed → options:["Up to 2m","Up to 3m","3m+"]`,
+
+    'Lighting_Softbox': `[Softbox Flow] Ask ONE question at a time:
+1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
+2. Shape → options:["Octabox","Rectangular softbox","Strip box"]
+3. Size → options:["Small (~60cm)","Medium (60-100cm)","Large (100cm+)"]`,
+
+    'Lighting_Accessories': `[Lighting Accessories Flow] Ask ONE question at a time:
+1. Where to attach → options:["Attach to strobe","Attach to light stand","Attach to camera"]
+2. What you need → options:["Clamp/arm","Speed ring","Barn door/grid","Other"]
+3. Shooting environment → options:["Studio","On-location","Home"]`,
+
+    'Lighting_Reflector': `[Reflector Flow] Ask ONE question at a time:
+1. Main purpose → options:["Portrait","Product photography","Outdoor location"]
+2. Type → options:["Round reflector","Large panel","Reflector stand"]
+3. Color → options:["White/silver","Gold","Translucent"]`,
+
+    'Lighting_Background': `[Background Flow] Ask ONE question at a time:
+1. Main purpose → options:["Portrait","Product photography","Video/YouTube"]
+2. Type → options:["Backdrop cloth","Chroma key (green/blue)","Background support system"]
+3. Size → options:["1.5m or less","2-3m","3m+"]`,
+
     'Lighting': `[Lighting Flow] Ask ONE question at a time:
 1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
 2. Light source → options:["Strobe","LED","Ring light","Large monoblock"]
@@ -752,6 +778,11 @@ export default async function handler(req, res) {
         'GearUp & Accessories': 'ギアアップ・アクセサリー',
         'Accessories':         'アクセサリー',
         'Lighting':            ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+        'Lighting_Stand':      'ライティング_スタンド',
+        'Lighting_Accessories': 'ライティング_アクセサリー',
+        'Lighting_Softbox':    'ライティング_ソフトボックス',
+        'Lighting_Reflector':  'ライティング_リフレクター',
+        'Lighting_Background': 'ライティング_背景',
         'Tripod (Gitzo)':      '三脚',
         'Monopod (Gitzo)':     '一脚',
         'Head (Gitzo)':        '雲台',
@@ -770,7 +801,7 @@ export default async function handler(req, res) {
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','三脚バッグ（Gitzo）','アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Tripod Bag (Gitzo)','Accessories (Gitzo)'];
       // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
       // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
-      const manfrottoOnlyCategories = ['ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Lighting'];
+      const manfrottoOnlyCategories = ['ライティング','ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background'];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
       let effectiveBrand = brand;
