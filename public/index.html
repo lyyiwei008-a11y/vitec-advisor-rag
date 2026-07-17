@@ -402,18 +402,18 @@ const FLOW_OPTIONS = {
     ],
     'ライティング_ソフトボックス': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
-      ['オクタボックス','長方形ソフトボックス','ストリップボックス'],
-      ['小型（〜60cm）','中型（60〜100cm）','大型（100cm以上）'],
+      ['スクエア（正方形）','オクタ（八角形）','マイクロ（小型・携帯用）'],
+      ['小型（〜40cm）','中型（50〜80cm）','大型（80cm以上）'],
     ],
     'ライティング_アクセサリー': [
       ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'],
-      ['クランプ・アーム','スピードリング','バーンドア・グリッド','その他'],
+      ['クランプ・アーム','スピゴット・アダプター','フック・ウェイト（背景紙用）','フラッグ・遮光板'],
       ['スタジオ','ロケ撮影','自宅'],
     ],
     'ライティング_リフレクター': [
       ['ポートレート','商品・物撮り','屋外ロケ'],
-      ['丸型リフレクター','大型レフ板','リフレクタースタンド'],
-      ['白・シルバー','ゴールド','トランスルーセント'],
+      ['丸型リフレクター','大型パネル・スクリーン','リフレクタースタンド'],
+      ['白・シルバー','ゴールド','ディフューザー（半透明）'],
     ],
     'ライティング_背景': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
@@ -450,7 +450,7 @@ const FLOW_OPTIONS = {
       ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'],
     ],
     'クイックリリースプレート': [
-      ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Arcaタイプ','わからない'],
+      ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'],
     ],
     'モニター・PC設置': [
       ['モニター','タブレット','ノートPC','マウス'],
@@ -573,18 +573,18 @@ const FLOW_OPTIONS = {
     ],
     'Lighting_Softbox': [
       ['Portrait','Product photography','Video/YouTube'],
-      ['Octabox','Rectangular softbox','Strip box'],
-      ['Small (~60cm)','Medium (60-100cm)','Large (100cm+)'],
+      ['Square','Octabox','Micro (compact/travel)'],
+      ['Small (~40cm)','Medium (50-80cm)','Large (80cm+)'],
     ],
     'Lighting_Accessories': [
       ['Attach to strobe','Attach to light stand','Attach to camera'],
-      ['Clamp/arm','Speed ring','Barn door/grid','Other'],
+      ['Clamp/arm','Spigot/adapter','Hook/counterweight (backdrop)','Flag/gobo'],
       ['Studio','On-location','Home'],
     ],
     'Lighting_Reflector': [
       ['Portrait','Product photography','Outdoor location'],
-      ['Round reflector','Large panel','Reflector stand'],
-      ['White/silver','Gold','Translucent'],
+      ['Round reflector','Large panel/scrim','Reflector stand'],
+      ['White/silver','Gold','Diffuser (translucent)'],
     ],
     'Lighting_Background': [
       ['Portrait','Product photography','Video/YouTube'],
@@ -621,7 +621,7 @@ const FLOW_OPTIONS = {
       ['Leveling','Low-angle shooting','Stability (spikes)','Other'],
     ],
     'Quick Release Plate': [
-      ['200PL series (standard heads)','501PL series (video heads)','Arca type','Not sure'],
+      ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'],
     ],
     'Monitor/PC Mount': [
       ['Monitor','Tablet','Laptop','Mouse'],
@@ -1241,7 +1241,7 @@ function startChat(brand, category) {
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
       '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'] },
-      'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Arcaタイプ','わからない'] },
+      'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'] },
       'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
       '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
       'リモートコントロール':    { msg: `${brandLabel ? brandLabel + 'の' : ''}リモートコントロールをお探しですね！お使いのカメラは？`, opts: ['Sony（LANC対応）','Panasonic','その他のカメラ'] },
@@ -1270,7 +1270,7 @@ function startChat(brand, category) {
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
       'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
       'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Other'] },
-      'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Arca type','Not sure'] },
+      'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'] },
       'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
       'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
       'Remote Control': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}remote control! What camera are you using?`, opts: ['Sony (LANC)','Panasonic','Other camera'] },
