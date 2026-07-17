@@ -372,6 +372,7 @@ const FLOW_OPTIONS = {
       ['〜2kg','2〜5kg','5〜10kg','10kg以上'],
       ['旅行・登山','街撮り・日常','スタジオ・室内','スポーツ・野鳥','放送・シネマ'],
       ['カーボン（軽量優先）','アルミ（コスパ優先）','こだわらない'],
+      ['自分の目線まで伸ばしたい（全伸高160cm以上）','標準的な高さで十分','ローアングル撮影も重視（最低高が低い）','特にこだわらない'],
       ['〜3万円','3〜8万円','8〜15万円','15万円以上'],
     ],
     '雲台': [
@@ -386,6 +387,7 @@ const FLOW_OPTIONS = {
       ['〜1.5kg','〜2.5kg','〜5kg','5kg以上'],
       ['一脚のみでよい','雲台セットが欲しい','既に雲台を持っている'],
       ['カーボン（軽量優先）','アルミ（コスパ優先）','こだわらない'],
+      ['できるだけ高く伸ばしたい（全伸高180cm以上）','標準的な高さで十分','コンパクトに収納したい（携帯性重視）','特にこだわらない'],
     ],
     'カメラバッグ': [
       ['バックパック','ショルダーバッグ','トップローディング','どれでもよい'],
@@ -398,12 +400,12 @@ const FLOW_OPTIONS = {
       ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
       ['ライトスタンド','ブームスタンド','ベイビースタンド','オートポール'],
       ['スタジオ固定','自宅・小スペース','屋外移動'],
-      ['〜2m','〜3m','3m以上'],
+      ['〜150cm','150〜305cm','305cm以上'],
     ],
     'ライティング_ソフトボックス': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
       ['スクエア（正方形）','オクタ（八角形）','マイクロ（小型・携帯用）'],
-      ['小型（〜40cm）','中型（50〜80cm）','大型（80cm以上）'],
+      ['小型（〜50cm）','中型（50〜90cm）','大型（90cm以上）'],
     ],
     'ライティング_アクセサリー': [
       ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'],
@@ -418,7 +420,7 @@ const FLOW_OPTIONS = {
     'ライティング_背景': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
       ['背景布','クロマキー（グリーン・ブルー）','背景サポートシステム'],
-      ['1.5m以下','2m〜3m','3m以上'],
+      ['〜1.6m','1.6〜2.2m','2.2m以上'],
     ],
     '商品撮影ライティング': [
       ['背景をきれいに見せたい','被写体に柔らかい光を当てたい','反射光で自然に補光したい','どれが必要かわからない'],
@@ -470,12 +472,14 @@ const FLOW_OPTIONS = {
       ['〜3kg','3〜6kg','6〜10kg','10kg以上'],
       ['三脚のみ','雲台もセットで欲しい','既に雲台を持っている'],
       ['できるだけ軽く小さく','安定性重視','バランス重視'],
+      ['自分の目線まで伸ばしたい','標準的な高さで十分','ローアングル撮影も重視（最低高が低い）','特にこだわらない'],
       ['〜5万円','5〜10万円','10〜20万円','20万円以上'],
     ],
     '一脚（Gitzo）': [
       ['スポーツ・野鳥','風景・旅行','動画・Vlog'],
       ['〜3kg','3〜6kg','6kg以上'],
       ['コンパクトに畳みたい','剛性重視','こだわらない'],
+      ['できるだけ高く伸ばしたい','標準的な高さで十分','コンパクトに収納したい（携帯性重視）','特にこだわらない'],
     ],
     '雲台（Gitzo）': [
       ['写真撮影','動画撮影','パノラマ・360°'],
@@ -502,7 +506,7 @@ const FLOW_OPTIONS = {
       ['日常・街撮り','旅行','スポーツ・アウトドア'],
     ],
     'TLZ・トップローディング': [
-      ['〜24-70mm','〜70-200mm','300mm以上'],
+      ['コンパクトミラーレス','ズームレンズ付き（24-70mm相当）','大型一眼レフ・グリップ付き'],
       ['素早く取り出したい','しっかり保護したい','両方'],
       ['単独で使う','他のバッグのインサートとして'],
     ],
@@ -512,7 +516,7 @@ const FLOW_OPTIONS = {
     ],
     'レンズ・ハードケース': [
       ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'],
-      ['小型（〜8cm径）','中型（〜11cm径）','大型（〜13cm径）'],
+      ['小型（〜9.5cm径）','中型（9.5〜12.5cm径）','大型（12.5cm径以上）'],
       ['バッグのインサート','単独で携帯','スタジオ保管'],
     ],
     'ギアアップ・アクセサリー': [
@@ -543,6 +547,7 @@ const FLOW_OPTIONS = {
       ['Up to 2kg','2-5kg','5-10kg','10kg+'],
       ['Travel/hiking','Street/daily','Studio','Sports/wildlife','Cinema/broadcast'],
       ['Carbon (lightweight)','Aluminum (value)','No preference'],
+      ['Reach eye level (max height 160cm+)','Standard height is fine','Also want low-angle capability','No preference'],
       ['Under ¥30,000','¥30,000-80,000','¥80,000-150,000','¥150,000+'],
     ],
     'Head': [
@@ -557,6 +562,7 @@ const FLOW_OPTIONS = {
       ['Up to 1.5kg','Up to 2.5kg','Up to 5kg','5kg+'],
       ['Monopod only','With head set','Already have a head'],
       ['Carbon (lightweight)','Aluminum (value)','No preference'],
+      ['As tall as possible (max height 180cm+)','Standard height is fine','Compact for travel','No preference'],
     ],
     'Camera Bag': [
       ['Backpack','Shoulder bag','Top loading','Any style'],
@@ -569,12 +575,12 @@ const FLOW_OPTIONS = {
       ['Portrait','Video/YouTube','Product photography','Outdoor location'],
       ['Light stand','Boom stand','Baby stand','Auto pole'],
       ['Studio fixed','Home/small space','Outdoor mobile'],
-      ['Up to 2m','Up to 3m','3m+'],
+      ['Up to 150cm','150-305cm','305cm+'],
     ],
     'Lighting_Softbox': [
       ['Portrait','Product photography','Video/YouTube'],
       ['Square','Octabox','Micro (compact/travel)'],
-      ['Small (~40cm)','Medium (50-80cm)','Large (80cm+)'],
+      ['Small (~50cm)','Medium (50-90cm)','Large (90cm+)'],
     ],
     'Lighting_Accessories': [
       ['Attach to strobe','Attach to light stand','Attach to camera'],
@@ -589,7 +595,7 @@ const FLOW_OPTIONS = {
     'Lighting_Background': [
       ['Portrait','Product photography','Video/YouTube'],
       ['Backdrop cloth','Chroma key (green/blue)','Background support system'],
-      ['1.5m or less','2-3m','3m+'],
+      ['Up to 1.6m','1.6-2.2m','2.2m+'],
     ],
     'Product Photography Lighting': [
       ['Make the background look great','Soften light on the subject','Add natural fill light','Not sure which I need'],
@@ -641,12 +647,14 @@ const FLOW_OPTIONS = {
       ['Up to 3kg','3-6kg','6-10kg','10kg+'],
       ['Tripod only','Need head too','Already have a head'],
       ['As light as possible','Stability over weight','Balanced'],
+      ['Reach eye level','Standard height is fine','Also want low-angle capability','No preference'],
       ['Under ¥50,000','¥50,000-100,000','¥100,000-200,000','¥200,000+'],
     ],
     'Monopod (Gitzo)': [
       ['Sports/wildlife','Landscape/travel','Video/vlog'],
       ['Up to 3kg','3-6kg','6kg+'],
       ['Compact folding','Rigidity priority','No preference'],
+      ['As tall as possible','Standard height is fine','Compact for travel','No preference'],
     ],
     'Head (Gitzo)': [
       ['Photography','Video','Panorama/360°'],
@@ -673,7 +681,7 @@ const FLOW_OPTIONS = {
       ['Daily/street','Travel','Sports/outdoor'],
     ],
     'TLZ / Top Loading': [
-      ['Up to 24-70mm','Up to 70-200mm','300mm+'],
+      ['Compact mirrorless','Zoom lens attached (~24-70mm)','Large DSLR w/ grip'],
       ['Quick access','Solid protection','Both'],
       ['Standalone use','As bag insert'],
     ],
@@ -683,7 +691,7 @@ const FLOW_OPTIONS = {
     ],
     'Lens & Hard Case': [
       ['Interchangeable lens','Camera + accessories','Battery/small items'],
-      ['Small (~8cm dia.)','Medium (~11cm dia.)','Large (~13cm dia.)'],
+      ['Small (~9.5cm dia.)','Medium (9.5-12.5cm dia.)','Large (12.5cm+ dia.)'],
       ['As bag insert','Standalone carry','Studio storage'],
     ],
     'GearUp & Accessories': [
@@ -1224,7 +1232,7 @@ function startChat(brand, category) {
       'ショルダーバッグ':        { msg: `${brandLabel ? brandLabel + 'の' : ''}ショルダーバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクト1台のみ','カメラ1台+レンズ1本','カメラ+レンズ複数'] },
       'ローラーバッグ':          { msg: `${brandLabel ? brandLabel + 'の' : ''}ローラーバッグをお探しですね！どのくらいの機材を収納したいですか？`, opts: ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'] },
       '三脚バッグ':              { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。`, opts: ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'] },
-      'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！収納したいレンズサイズを教えてください。`, opts: ['〜24-70mm','〜70-200mm','300mm以上'] },
+      'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！お使いの機材を教えてください。`, opts: ['コンパクトミラーレス','ズームレンズ付き（24-70mm相当）','大型一眼レフ・グリップ付き'] },
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
@@ -1285,7 +1293,7 @@ function startChat(brand, category) {
       'Shoulder Bag': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}shoulder bag! What gear do you need to carry?`, opts: ['Compact camera only','Camera + 1 lens','Camera + multiple lenses'] },
       'Roller Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}roller bag! How much gear do you need to carry?`, opts: ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'] },
       'Tripod Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod bag! What size tripod do you need to store?`, opts: ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'] },
-      'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What lens size do you need?`, opts: ['Up to 24-70mm','Up to 70-200mm','300mm+'] },
+      'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What gear are you using?`, opts: ['Compact mirrorless','Zoom lens attached (~24-70mm)','Large DSLR w/ grip'] },
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
