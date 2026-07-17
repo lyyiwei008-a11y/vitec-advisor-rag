@@ -70,6 +70,40 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   }
   console.log(`[DEBUG] results after filter: ${results.length}件`);
 
+  // priority=1（新製品・優先表示）は、通常の類似度上位${fetchLimit}件に
+  // たまたま入らなかった場合でも「優先表示」の意味が実際に機能するよう、
+  // 該当ブランド・カテゴリのpriority=1商品を追加で必ず候補に含める。
+  // （以前あった「無条件の強制挿入」はカテゴリ無視のバグだったため削除された経緯があるが、
+  //   今回はbrand/categoryフィルターを維持したまま、候補プールに漏れなく入れるだけに留める）
+  try {
+    const catListForNew = categoryFilter
+      ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter])
+      : null;
+    let newProductQuery = supabase
+      .from('products')
+      .select('id, sku, name, brand, category, priority, content, image_url')
+      .eq('priority', 1);
+    if (brandFilter) newProductQuery = newProductQuery.eq('brand', brandFilter);
+    if (catListForNew) newProductQuery = newProductQuery.in('category', catListForNew);
+    const { data: newProducts, error: newProductsError } = await newProductQuery;
+    if (newProductsError) {
+      console.log('[NEW PRODUCT BOOST] クエリエラー（無視して続行）:', newProductsError.message);
+    } else if (newProducts && newProducts.length > 0) {
+      const existingIds = new Set(results.map(p => p.id));
+      let addedCount = 0;
+      for (const np of newProducts) {
+        if (!existingIds.has(np.id)) {
+          // similarityは仮値。priorityが最優先ソートキーなので最終順位への影響は小さい
+          results.push({ ...np, similarity: 0.5 });
+          addedCount++;
+        }
+      }
+      console.log(`[NEW PRODUCT BOOST] priority=1該当${newProducts.length}件中、候補プールに無かった${addedCount}件を追加`);
+    }
+  } catch (e) {
+    console.log('[NEW PRODUCT BOOST] エラー（無視して続行）:', e.message);
+  }
+
   // 全ブランド検索かつ複数ブランドが混在する場合、ブランドごとに均等にバランス
   if (!brandFilter && results.length > 0) {
     const brandGroups = {};
@@ -551,6 +585,18 @@ Do NOT invent or hallucinate any product. Return an empty items array exactly as
     ? `- Recommend ONLY the genuinely relevant products from the list (up to ${maxAvail} available) — do NOT pad the recommendations with unrelated items just to reach a target count. If only 1-2 products truly match what the customer asked for, recommend only those.`
     : `- Recommend 5-7 of the MOST relevant products from the list — do not include items that are a poor match just to fill the count.`;
 
+  // 候補プール自体は searchProducts 側で Manfrotto/Gitzo の比率をコントロール済み（例: 最大8:4）。
+  // しかしその比率が最終推薦に反映されるかはGPTの関連性判断まかせになっており、
+  // 特定ブランドの一部シリーズ（例: Gitzo Traveler）が「軽量・旅行」等の語彙と強く一致するケースで
+  // そのブランドに極端に偏ってしまう実例が確認された。候補プールの構成比を明示し、
+  // 極端な偏りをGPTの自由選択だけに委ねないようにする。
+  const brandCounts = {};
+  for (const p of products) brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
+  const brandsInPool = Object.keys(brandCounts);
+  const brandBalanceRule = brandsInPool.length > 1
+    ? `- The candidate list intentionally contains a brand mix of ${brandsInPool.map(b => `${b}:${brandCounts[b]}`).join(', ')}. Your final picks should roughly reflect this same brand proportion — do NOT let one brand dominate the recommendations just because a few of its items scored well on relevance, unless the customer explicitly asked for that brand or excluded another.`
+    : '';
+
   return `You are a Vitec Japan product advisor. Recommend products from the search results below.
 ${langRule}
 ${brandRule}
@@ -560,6 +606,7 @@ ${JSON.stringify(productList, null, 2)}
 
 INSTRUCTIONS:
 ${recommendCountRule}
+${brandBalanceRule}
 - Never invent products not in the list
 - Give specific reasons based on the customer's stated needs
 - Mention brand name in each recommendation
