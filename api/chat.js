@@ -194,9 +194,10 @@ const FLOWS = {
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
 2. 使用機材の重さ → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
 3. 撮影シーン → options:["旅行・登山","街撮り・日常","スタジオ・室内","スポーツ・野鳥","放送・シネマ"]
-4. 素材のこだわり → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
-5. 高さのこだわり → options:["自分の目線まで伸ばしたい（全伸高160cm以上）","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
-6. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
+4. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい","既に雲台を持っている"]
+5. 素材のこだわり → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
+6. 高さのこだわり → options:["自分の目線まで伸ばしたい（全伸高160cm以上）","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
+7. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
 
     '雲台': `【雲台の質問フロー】1つずつ質問：
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
@@ -365,7 +366,8 @@ const FLOWS = {
 1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","その他"]`,
 
     'アクセサリー（Lowepro）': `【Loweproアクセサリーの質問フロー】1つだけ質問：
-1. どのような用途か → options:["ストラップ・グリップ","レインカバー・保護","収納・整理","その他"]`,
+※レインカバー3点・ディバイダーキット2点は全てpriority4のため実質選択対象外
+1. どのような用途か → options:["ストラップ・グリップ","その他"]`,
 
     'ローラーバッグ': `【ローラーバッグの質問フロー】1つずつ質問：
 1. 収納したい機材量 → options:["ミラーレス+レンズ数本","一眼+レンズ複数+アクセサリー","スタジオ機材一式"]
@@ -384,9 +386,10 @@ const FLOWS = {
 1. Main purpose → options:["Photography","Video","Both photo & video"]
 2. Gear weight (camera + lens) → options:["Up to 2kg","2-5kg","5-10kg","10kg+"]
 3. Shooting scene → options:["Travel/hiking","Street/daily","Studio","Sports/wildlife","Cinema/broadcast"]
-4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
-5. Height preference → options:["Reach eye level (max height 160cm+)","Standard height is fine","Also want low-angle capability","No preference"]
-6. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
+4. Head needed? → options:["Tripod only","Need head too","Already have a head"]
+5. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
+6. Height preference → options:["Reach eye level (max height 160cm+)","Standard height is fine","Also want low-angle capability","No preference"]
+7. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
 
     'Head': `[Head Flow] Ask ONE question at a time:
 1. Main purpose → options:["Photography","Video","Both photo & video"]
@@ -555,7 +558,8 @@ Note: camera/lens sizing is handled by GearUp, don't ask about that here
 1. What to store → options:["Memory cards/small items","Smartphone","Other"]`,
 
     'Accessories (Lowepro)': `[Lowepro Accessories Flow] Ask ONLY ONE question:
-1. What's it for → options:["Strap/grip","Rain cover/protection","Organization/storage","Other"]`,
+Note: rain covers (3 SKUs) and divider kits (2 SKUs) are all priority=4, effectively unavailable
+1. What's it for → options:["Strap/grip","Other"]`,
 
     'Roller Bag': `[Roller Bag Flow] Ask ONE question at a time:
 1. Amount of gear → options:["Mirrorless + a few lenses","DSLR + multiple lenses + accessories","Full studio kit"]
@@ -725,6 +729,14 @@ ${brandBalanceRule}
   * priority=1 (新製品): MUST include in recommendations if present in the list
   * priority=2 (現行品): recommend based on relevance to customer needs
   * Sort recommendations: priority=1 first, then priority=2 by relevance
+- STRICT REQUIREMENT MATCHING: if the customer explicitly stated they need a capability
+  (e.g. "写真・動画両方"/"both photo and video"), do NOT recommend a product whose name,
+  series (シリーズ), or content explicitly signals it is limited to a single purpose
+  (e.g. a product line named "...Photo" with no fluid/video head, vs. a "...Hybrid" line
+  that explicitly supports both) — even if that product otherwise scores well on similarity.
+  Read the content field's "シリーズ" and "付属雲台" fields carefully for this signal.
+  When in doubt, prefer a product whose content does NOT contradict a stated requirement
+  over one that scores higher on generic similarity but conflicts with it.
 
 RESPONSE FORMAT — strict JSON only:
 {"type":"products","message":"intro text","items":[{"name":"製品名","sku":"型番","brand":"ブランド","reason":"推薦理由2〜3文","price":数値orNull}]}
