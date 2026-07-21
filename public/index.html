@@ -447,10 +447,12 @@ const FLOW_OPTIONS = {
       ['必要','不要','わからない'],
     ],
     'アクセサリー': [
-      ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'],
+      // 2026/07確認：レインカバーは全ブランドpriority4のため除外。さらに「その他」5件中3件がGitzoレッグウォーマーで同一テーマだったため独立
+      ['ストラップ・グリップ','収納・整理','三脚脚部保護カバー','その他'],
     ],
     '三脚雲台アクセサリー': [
-      ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'],
+      // 2026/07確認：14件全て4区分に振り分け完了（166はAI用途説明で安定性向上用と判明、273/324/358はサーベイ機器用で統一）のため「その他」は不要
+      ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'],
     ],
     'クイックリリースプレート': [
       ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'],
@@ -524,7 +526,8 @@ const FLOW_OPTIONS = {
       ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'],
     ],
     'アクセサリーケース': [
-      ['メモリーカード・小物','スマートフォン','その他'],
+      // 2026/07確認：14件中12件が「その他」に集中していたため、CS系ハードケース(7件)とギアアップ系ポーチ(4件)を独立させて分散
+      ['メモリーカード・小物','スマートフォン','ハードケース（カメラ・レンズ用）','ポーチ・収納整理用','その他'],
     ],
     'ローラーバッグ': [
       ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'],
@@ -533,8 +536,8 @@ const FLOW_OPTIONS = {
       ['出張・旅行','プロ撮影現場','スタジオ間の機材移動'],
     ],
     'アクセサリー（Lowepro）': [
-      // 2026/07確認：レインカバー(3件)・収納整理用ディバイダーキット(2件)は全てpriority4のため選択肢から除外
-      ['ストラップ・グリップ','その他'],
+      // 2026/07確認：実商品はクイックストラップ(携帯用)・ユーティリティーベルト(装着用)の2点のみ
+      ['ストラップ（携帯用）','ベルト（アクセサリー装着用）'],
     ],
     '三脚バッグ': [
       ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'],
@@ -623,10 +626,12 @@ const FLOW_OPTIONS = {
       ['Needed','Not needed','Not sure'],
     ],
     'Accessories': [
-      ['Strap/grip','Rain cover/protection','Organization/storage','Other'],
+      // Confirmed 2026/07: rain covers priority=4 across brands, removed. Also 3 of 5 "Other" items were Gitzo leg warmers (same theme), split out
+      ['Strap/grip','Organization/storage','Tripod leg protective cover','Other'],
     ],
     'Tripod/Head Accessories': [
-      ['Leveling','Low-angle shooting','Stability (spikes)','Other'],
+      // Confirmed 2026/07: all 14 SKUs fully sorted into 4 categories, "Other" no longer needed
+      ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'],
     ],
     'Quick Release Plate': [
       ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'],
@@ -700,7 +705,8 @@ const FLOW_OPTIONS = {
       ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'],
     ],
     'Accessory Case': [
-      ['Memory cards/small items','Smartphone','Other'],
+      // Confirmed 2026/07: 12 of 14 SKUs were falling into "Other" — split out CS hard cases (7) and GearUp pouches (4)
+      ['Memory cards/small items','Smartphone','Hard case (camera/lens)','Pouch/organizer','Other'],
     ],
     'Roller Bag': [
       ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'],
@@ -709,8 +715,8 @@ const FLOW_OPTIONS = {
       ['Business travel','Professional shoots','Moving gear between studios'],
     ],
     'Accessories (Lowepro)': [
-      // Confirmed 2026/07: rain covers (3 SKUs) and organizer divider kits (2 SKUs) are all priority=4, removed from options
-      ['Strap/grip','Other'],
+      // Confirmed 2026/07: only 2 real SKUs exist — quick strap (carry) and utility belt (mounting)
+      ['Strap (for carrying)','Belt (for mounting accessories)'],
     ],
     'Tripod Bag': [
       ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'],
@@ -1243,7 +1249,7 @@ function startChat(brand, category) {
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
-      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
+      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','ハードケース（カメラ・レンズ用）','ポーチ・収納整理用','その他'] },
       'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
@@ -1254,14 +1260,14 @@ function startChat(brand, category) {
       '動画制作ライティング':   { msg: `動画制作用のライティングをお探しですね！何が必要ですか？`, opts: ['ライトを立てる場所が欲しい','背景の準備がしたい','両方欲しい'] },
       'ライブ配信ライティング': { msg: `ライブ配信用のライティングをお探しですね！設置環境を教えてください。`, opts: ['机の上でコンパクトに','スタンドでしっかり固定','天井・壁に取り付け'] },
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
-      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
-      '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','その他'] },
+      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','収納・整理','三脚脚部保護カバー','その他'] },
+      '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'] },
       'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'] },
       'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
       '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
       'リモートコントロール':    { msg: `${brandLabel ? brandLabel + 'の' : ''}リモートコントロールをお探しですね！お使いのカメラは？`, opts: ['Sony（LANC対応）','Panasonic','その他のカメラ'] },
       'VR・360°撮影':           { msg: `${brandLabel ? brandLabel + 'の' : ''}VR・360°撮影機材をお探しですね！何をお探しですか？`, opts: ['VR撮影用ベース・スタンド','エクステンションブーム','セットで探したい'] },
-      'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ・グリップ','その他'] },
+      'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ（携帯用）','ベルト（アクセサリー装着用）'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
       '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
@@ -1283,14 +1289,14 @@ function startChat(brand, category) {
       'Video Production Lighting': { msg: `Looking for video production lighting! What do you need?`, opts: ['Need somewhere to put lights','Need a background setup','Need both'] },
       'Live Streaming Lighting': { msg: `Looking for live streaming lighting! What's your setup?`, opts: ['Compact, on my desk','Sturdy stand-mounted','Ceiling/wall mounted'] },
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
-      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
-      'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Other'] },
+      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Organization/storage','Tripod leg protective cover','Other'] },
+      'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'] },
       'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'] },
       'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
       'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
       'Remote Control': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}remote control! What camera are you using?`, opts: ['Sony (LANC)','Panasonic','Other camera'] },
       'VR & 360°': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}VR/360° shooting gear! What are you looking for?`, opts: ['VR shooting base/stand','Extension boom','Looking for a full set'] },
-      'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap/grip','Other'] },
+      'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap (for carrying)','Belt (for mounting accessories)'] },
       'Tripod (Gitzo)':   { msg: `Looking for a Gitzo tripod! What's your shooting scene?`, opts: ['Travel/hiking','Landscape/long exposure','Wildlife/telephoto','Video/cinema'] },
       'Monopod (Gitzo)':  { msg: `Looking for a Gitzo monopod! What's the main use?`, opts: ['Sports/wildlife','Landscape/travel','Video/vlog'] },
       'Head (Gitzo)':     { msg: `Looking for a Gitzo head! What's the main purpose?`, opts: ['Photography','Video','Panorama/360°'] },
@@ -1304,7 +1310,7 @@ function startChat(brand, category) {
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
-      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Other'] },
+      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Hard case (camera/lens)','Pouch/organizer','Other'] },
       // Legacy Japanese keys fallback
       '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       '雲台':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
