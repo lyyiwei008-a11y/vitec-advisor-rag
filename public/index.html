@@ -371,6 +371,7 @@ const FLOW_OPTIONS = {
       ['写真撮影メイン','動画撮影メイン','写真・動画両方'],
       ['〜2kg','2〜5kg','5〜10kg','10kg以上'],
       ['旅行・登山','街撮り・日常','スタジオ・室内','スポーツ・野鳥','放送・シネマ'],
+      ['三脚のみ','雲台もセットで欲しい','既に雲台を持っている'],
       ['カーボン（軽量優先）','アルミ（コスパ優先）','こだわらない'],
       ['自分の目線まで伸ばしたい（全伸高160cm以上）','標準的な高さで十分','ローアングル撮影も重視（最低高が低い）','特にこだわらない'],
       ['〜3万円','3〜8万円','8〜15万円','15万円以上'],
@@ -532,8 +533,8 @@ const FLOW_OPTIONS = {
       ['出張・旅行','プロ撮影現場','スタジオ間の機材移動'],
     ],
     'アクセサリー（Lowepro）': [
-      // TODO: 実際のLowepro側アクセサリー商品構成を確認して選択肢を調整してください
-      ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'],
+      // 2026/07確認：レインカバー(3件)・収納整理用ディバイダーキット(2件)は全てpriority4のため選択肢から除外
+      ['ストラップ・グリップ','その他'],
     ],
     '三脚バッグ': [
       ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'],
@@ -546,6 +547,7 @@ const FLOW_OPTIONS = {
       ['Photography','Video','Both photo & video'],
       ['Up to 2kg','2-5kg','5-10kg','10kg+'],
       ['Travel/hiking','Street/daily','Studio','Sports/wildlife','Cinema/broadcast'],
+      ['Tripod only','Need head too','Already have a head'],
       ['Carbon (lightweight)','Aluminum (value)','No preference'],
       ['Reach eye level (max height 160cm+)','Standard height is fine','Also want low-angle capability','No preference'],
       ['Under ¥30,000','¥30,000-80,000','¥80,000-150,000','¥150,000+'],
@@ -707,8 +709,8 @@ const FLOW_OPTIONS = {
       ['Business travel','Professional shoots','Moving gear between studios'],
     ],
     'Accessories (Lowepro)': [
-      // TODO: verify against actual Lowepro accessory catalog
-      ['Strap/grip','Rain cover/protection','Organization/storage','Other'],
+      // Confirmed 2026/07: rain covers (3 SKUs) and organizer divider kits (2 SKUs) are all priority=4, removed from options
+      ['Strap/grip','Other'],
     ],
     'Tripod Bag': [
       ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'],
@@ -1259,7 +1261,7 @@ function startChat(brand, category) {
       '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
       'リモートコントロール':    { msg: `${brandLabel ? brandLabel + 'の' : ''}リモートコントロールをお探しですね！お使いのカメラは？`, opts: ['Sony（LANC対応）','Panasonic','その他のカメラ'] },
       'VR・360°撮影':           { msg: `${brandLabel ? brandLabel + 'の' : ''}VR・360°撮影機材をお探しですね！何をお探しですか？`, opts: ['VR撮影用ベース・スタンド','エクステンションブーム','セットで探したい'] },
-      'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ・グリップ','レインカバー・保護','収納・整理','その他'] },
+      'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ・グリップ','その他'] },
       '三脚（Gitzo）':           { msg: 'Gitzoの三脚をお探しですね！どのような撮影シーンで使いますか？', opts: ['旅行・登山','風景・長時間露光','野鳥・超望遠','動画・映像制作'] },
       '一脚（Gitzo）':           { msg: 'Gitzoの一脚をお探しですね！主な用途を教えてください。', opts: ['スポーツ・野鳥','風景・旅行','動画・Vlog'] },
       '雲台（Gitzo）':           { msg: 'Gitzoの雲台をお探しですね！主な用途を教えてください。', opts: ['写真撮影','動画撮影','パノラマ・360°'] },
@@ -1288,7 +1290,7 @@ function startChat(brand, category) {
       'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
       'Remote Control': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}remote control! What camera are you using?`, opts: ['Sony (LANC)','Panasonic','Other camera'] },
       'VR & 360°': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}VR/360° shooting gear! What are you looking for?`, opts: ['VR shooting base/stand','Extension boom','Looking for a full set'] },
-      'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap/grip','Rain cover/protection','Organization/storage','Other'] },
+      'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap/grip','Other'] },
       'Tripod (Gitzo)':   { msg: `Looking for a Gitzo tripod! What's your shooting scene?`, opts: ['Travel/hiking','Landscape/long exposure','Wildlife/telephoto','Video/cinema'] },
       'Monopod (Gitzo)':  { msg: `Looking for a Gitzo monopod! What's the main use?`, opts: ['Sports/wildlife','Landscape/travel','Video/vlog'] },
       'Head (Gitzo)':     { msg: `Looking for a Gitzo head! What's the main purpose?`, opts: ['Photography','Video','Panorama/360°'] },
