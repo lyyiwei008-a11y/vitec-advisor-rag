@@ -19,7 +19,7 @@ const CATEGORY_GROUPS = {
   'バッグ': ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
   'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
   // Manfrotto専用のアクセサリー群（2026/07/17、旧「アクセサリー」単一カテゴリを目的別に分割）
-  'Manfrottoアクセサリー': ['アクセサリー','三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影'],
+  'Manfrottoアクセサリー': ['アクセサリー','ストラップ・グリップ','三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影'],
 };
 
 
@@ -255,8 +255,12 @@ const FLOWS = {
 3. サイズ → options:["〜1.6m","1.6〜2.2m","2.2m以上"]`,
 
     'アクセサリー': `【アクセサリーの質問フロー】1つだけ質問：
-※実商品はストラップ・ディバイダーキット・ユーティリティーベルト・Gitzoレッグウォーマー・Lブラケット等の残余カテゴリ。レインカバーは全ブランドpriority4のため実質選択対象外
-1. 用途 → options:["ストラップ・グリップ","収納・整理","三脚脚部保護カバー","その他"]`,
+※実商品はディバイダーキット・ハーネス・一脚用パーツ等の残余カテゴリ（ストラップは「ストラップ・グリップ」として独立、レインカバーは全ブランドpriority4のため実質選択対象外）
+1. 用途 → options:["収納・整理","その他"]`,
+
+    'ストラップ・グリップ': `【ストラップ・グリップの質問フロー】1つだけ質問：
+※実商品はショルダーキャリングストラップ・PLカメラストラップの2点のみで明確な機能差は無いため、確認のみ
+1. ご希望はありますか → options:["特にこだわらない","デザイン重視","クッション性重視"]`,
 
     '三脚雲台アクセサリー': `【三脚・雲台アクセサリーの質問フロー】1つだけ質問：
 ※水平調整=055LC/190LC/BFRLVLC/553/338/438、ローアングル=055XSCC/190XSCC、安定性向上=116SPK3/12SPK3/166(エプロンサポート)、測量機器用=273/324/358（サーベイアダプター系）
@@ -447,8 +451,12 @@ Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mountin
 5. Arm needed? → options:["Needed","Not needed","Not sure"]`,
 
     'Accessories': `[Accessories Flow] Ask ONLY ONE question:
-Note: residual category — straps, divider kits, utility belts, Gitzo leg warmers, L-bracket. Rain covers are priority=4 across all brands, effectively unavailable
-1. Main use → options:["Strap/grip","Organization/storage","Tripod leg protective cover","Other"]`,
+Note: residual category — divider kits, harnesses, monopod parts (straps split out as "Strap/Grip"; rain covers priority=4 across all brands, effectively unavailable)
+1. Main use → options:["Organization/storage","Other"]`,
+
+    'Strap/Grip': `[Strap/Grip Flow] Ask ONLY ONE question:
+Note: only 2 real SKUs (shoulder carrying strap, PL camera strap) with no clear functional difference — this is just a confirmation step
+1. Any preference → options:["No preference","Design-focused","Cushioning-focused"]`,
 
     'Tripod/Head Accessories': `[Tripod/Head Accessories Flow] Ask ONLY ONE question:
 Note: Leveling=055LC/190LC/BFRLVLC/553/338/438, Low-angle=055XSCC/190XSCC, Stability=116SPK3/12SPK3/166(apron support), Survey adapter=273/324/358
@@ -877,6 +885,7 @@ export default async function handler(req, res) {
         'アクセサリーケース':      'アクセサリーケース',
         // アクセサリー
         'アクセサリー': 'アクセサリー',
+        'ストラップ・グリップ': 'ストラップ・グリップ',
         '三脚雲台アクセサリー': '三脚雲台アクセサリー',
         'クイックリリースプレート': 'クイックリリースプレート',
         'モニター・PC設置': 'モニター・PC設置',
@@ -914,6 +923,7 @@ export default async function handler(req, res) {
         'Tripod Bag':          '三脚バッグ',
         'GearUp & Accessories': 'ギアアップ・アクセサリー',
         'Accessories':         'アクセサリー',
+        'Strap/Grip':          'ストラップ・グリップ',
         'Tripod/Head Accessories': '三脚雲台アクセサリー',
         'Quick Release Plate':     'クイックリリースプレート',
         'Monitor/PC Mount':        'モニター・PC設置',
@@ -962,7 +972,7 @@ export default async function handler(req, res) {
         'ライティング','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background',
         '商品撮影ライティング','人物撮影ライティング','動画制作ライティング','ライブ配信ライティング',
         'Product Photography Lighting','Portrait Lighting','Video Production Lighting','Live Streaming Lighting',
-        'Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°',
+        'Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Strap/Grip',
       ];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
