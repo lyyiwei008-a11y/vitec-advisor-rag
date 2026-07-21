@@ -366,8 +366,16 @@ const FLOWS = {
 1. 収納したい機材の量 → options:["カメラ+レンズ1本","カメラ+レンズ2〜3本","カメラ+レンズ複数+アクセサリー"]`,
 
     'アクセサリーケース': `【Loweproアクセサリーケースの質問フロー】1つだけ質問：
-※CS系(タホCS20/ハードサイドCS20-80/プロタクティックCS120・60)=ハードケース7点、ギアアップ系(ポーチミニ/ミディアム/ラップ/ケースラージ)=ポーチ・収納整理用4点、ボトルポーチのみその他
-1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","ハードケース（カメラ・レンズ用）","ポーチ・収納整理用","その他"]`,
+※実商品はメモリーカードウォレット・スマートフォンケース・ボトルポーチの3点の残余カテゴリ（ハードケース・ポーチ類は別カテゴリとして独立済み）
+1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","その他"]`,
+
+    'ハードケース（カメラ・レンズ用）': `【Loweproハードケースの質問フロー】1つだけ質問：
+※実商品7点：タホCS20、ハードサイドCS20/40/60/80、プロタクティックCS120/60
+1. どのくらいのサイズが必要か → options:["小型（コンパクト機材用）","中型","大型（レンズ・複数機材用）"]`,
+
+    'ポーチ・収納整理用': `【Loweproポーチ・収納整理の質問フロー】1つだけ質問：
+※実商品4点：ギアアップ ポーチミニ/ミディアム/ラップ/ケースラージ
+1. どのくらいのサイズが必要か → options:["ミニ（小物のみ）","ミディアム","ラージ（複数アイテム）"]`,
 
     'アクセサリー（Lowepro）': `【Loweproアクセサリーの質問フロー】1つだけ質問：
 ※実商品はクイックストラップ(携帯用)・ユーティリティーベルト(装着用)の2点のみ
@@ -562,8 +570,16 @@ Note: only 5 real SKUs exist (camera box L/XL, creator box M/L/XL — insert cas
 1. Gear volume → options:["Camera + 1 lens","Camera + 2-3 lenses","Camera + multiple lenses + accessories"]`,
 
     'Accessory Case': `[Lowepro Accessory Case Flow] Ask ONLY ONE question:
-Note: CS series (Tahoe CS20/HardSide CS20-80/ProTactic CS120,60)=7 hard cases, GearUp series (pouch mini/medium/wrap/case large)=4 pouches, only bottle pouch is genuinely "Other"
-1. What to store → options:["Memory cards/small items","Smartphone","Hard case (camera/lens)","Pouch/organizer","Other"]`,
+Note: residual category — memory card wallet, smartphone case, bottle pouch (hard cases and pouches now split into their own categories)
+1. What to store → options:["Memory cards/small items","Smartphone","Other"]`,
+
+    'Hard Case (Camera/Lens)': `[Lowepro Hard Case Flow] Ask ONLY ONE question:
+Note: 7 real SKUs — Tahoe CS20, HardSide CS20/40/60/80, ProTactic CS120/60
+1. What size is needed → options:["Small (compact gear)","Medium","Large (lens/multiple items)"]`,
+
+    'Pouch/Organizer': `[Lowepro Pouch/Organizer Flow] Ask ONLY ONE question:
+Note: 4 real SKUs — GearUp pouch mini/medium/wrap/case large
+1. What size is needed → options:["Mini (small items only)","Medium","Large (multiple items)"]`,
 
     'Accessories (Lowepro)': `[Lowepro Accessories Flow] Ask ONLY ONE question:
 Note: only 2 real SKUs exist — quick strap (carry) and utility belt (mounting)
@@ -603,6 +619,8 @@ function buildGuidancePrompt(lang, category, brand) {
     'TLZ / Top Loading': 'TLZ・トップローディング',
     'Sling': 'スリング',
     'Accessory Case': 'アクセサリーケース',
+    'Hard Case (Camera/Lens)': 'ハードケース（カメラ・レンズ用）',
+    'Pouch/Organizer': 'ポーチ・収納整理用',
     'Lens & Hard Case': 'レンズ・ハードケース',
     'GearUp & Accessories': 'ギアアップ・アクセサリー',
     'Accessories (Lowepro)': 'アクセサリー（Lowepro）'
@@ -883,6 +901,8 @@ export default async function handler(req, res) {
         'TLZ・トップローディング': 'TLZ・トップローディング',
         'スリング':                'スリング',
         'アクセサリーケース':      'アクセサリーケース',
+        'ハードケース（カメラ・レンズ用）': 'ハードケース（カメラ・レンズ用）',
+        'ポーチ・収納整理用':      'ポーチ・収納整理用',
         // アクセサリー
         'アクセサリー': 'アクセサリー',
         'ストラップ・グリップ': 'ストラップ・グリップ',
@@ -949,12 +969,14 @@ export default async function handler(req, res) {
         'TLZ / Top Loading':   'TLZ・トップローディング',
         'Sling':               'スリング',
         'Accessory Case':      'アクセサリーケース',
+        'Hard Case (Camera/Lens)': 'ハードケース（カメラ・レンズ用）',
+        'Pouch/Organizer':     'ポーチ・収納整理用',
         'Lens & Hard Case':    'レンズ・ハードケース',
       };
       const categoryFilter = categorySheetMap[detectedCategory];
 
       // 全ブランド選択時のブランド自動絞り込み
-      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','スリング','アクセサリーケース','ギアアップ・アクセサリー','アクセサリー（Lowepro）','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Sling','Accessory Case','Lens & Hard Case','Accessories (Lowepro)'];
+      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','スリング','アクセサリーケース','ハードケース（カメラ・レンズ用）','ポーチ・収納整理用','ギアアップ・アクセサリー','アクセサリー（Lowepro）','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Sling','Accessory Case','Hard Case (Camera/Lens)','Pouch/Organizer','Lens & Hard Case','Accessories (Lowepro)'];
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','三脚バッグ（Gitzo）','アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Tripod Bag (Gitzo)','Accessories (Gitzo)'];
       // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
       // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
