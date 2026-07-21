@@ -91,10 +91,13 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
 
   if (!brandFilter && needsGitzoCategory) {
     const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
+    // 「Manfrotto三脚と合わせたい」はManfrotto専用に絞る。
+    // 「他社三脚を持っている」は逆に「手持ちの三脚のブランドを問わず対応できる雲台を探している」という意味なので、
+    // ブランドを絞ってはいけない（以前はここも誤ってexcludeGitzoに含まれ、Gitzoの雲台が除外されてしまっていた）
     const excludeGitzo = (
       /アルミ|aluminum/i.test(allMessages) ||
       /Manfrotto三脚と合わせたい/i.test(allMessages) ||
-      /他社三脚を持っている/i.test(allMessages)
+      /With Manfrotto tripod/i.test(allMessages)
     );
 
     // Manfrottoは候補母数が大きいので広めに、Gitzoは最終採用上限(4)より少し余裕を持たせて取得
@@ -357,7 +360,8 @@ const FLOWS = {
 2. 携帯スタイル → options:["斜めがけ（クロスボディ）","ヒップ・ウエスト","どちらも使いたい"]`,
 
     'レンズ・ハードケース': `【Loweproケースの質問フロー】1つずつ質問：
-1. 収納したいもの → options:["交換レンズ","カメラ+アクセサリー","バッテリー・小物"]
+※実商品10点はLowepro交換レンズケース6点(サイズ違い)とManfrottoビデオ/シネマ機材ケース4点(PLシネローダーS/M/L+フォーム)の2系統のみ。バッテリー専用商品は無い
+1. 収納したいもの → options:["交換レンズ（単体収納）","ビデオ・シネマ機材収納"]
 2. レンズサイズ → options:["小型（〜9.5cm径）","中型（9.5〜12.5cm径）","大型（12.5cm径以上）"]
 3. 使い方 → options:["バッグのインサート","単独で携帯","スタジオ保管"]`,
 
@@ -561,7 +565,8 @@ Note: the 8 real SKUs range from compact mirrorless up to large DSLR w/ standard
 2. Carry style → options:["Cross-body sling","Hip/waist","Both"]`,
 
     'Lens & Hard Case': `[Lowepro Case Flow] Ask ONE question at a time:
-1. What to store → options:["Interchangeable lens","Camera + accessories","Battery/small items"]
+Note: 10 real SKUs are only lens cases (6, Lowepro, by size) and video/cinema equipment cases (4, Manfrotto: PL Cineloader S/M/L + foam). No battery-specific product exists
+1. What to store → options:["Interchangeable lens (single)","Video/cinema equipment"]
 2. Lens size → options:["Small (~9.5cm dia.)","Medium (9.5-12.5cm dia.)","Large (12.5cm+ dia.)"]
 3. Usage → options:["As bag insert","Standalone carry","Studio storage"]`,
 
