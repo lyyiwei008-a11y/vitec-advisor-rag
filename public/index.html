@@ -467,8 +467,10 @@ const FLOW_OPTIONS = {
       ['モニター','タブレット','ノートPC','マウス'],
     ],
     '固定クランプ・アーム': [
-      ['カメラ','LED・照明機材','モニター','マイク'],
-      ['三脚・スタンドに固定','机・棚に固定','パイプ・レールに固定'],
+      // 2026/07再確認：全21件は244(フリクションアーム)/143(マジックアーム)/386(ナノクランプ)/GimBoomの
+      // 4系列にはっきり分かれており、「装着対象」「装着場所」という軸では実データに区別が無かったため、
+      // シリーズ選択に問いを差し替え
+      ['フリクションアーム（244シリーズ・軽量〜中量向け）','マジックアーム（143シリーズ・自由な角度調整）','ナノクランプ（386シリーズ・小型アクセサリー用）','GimBoom（ジンバル用ブーム）'],
     ],
     'リモートコントロール': [
       ['Sony（LANC対応）','Panasonic','その他のカメラ'],
@@ -661,8 +663,9 @@ const FLOW_OPTIONS = {
       ['Monitor','Tablet','Laptop','Mouse'],
     ],
     'Clamps & Arms': [
-      ['Camera','LED/lighting gear','Monitor','Microphone'],
-      ['Mount to tripod/stand','Mount to desk/shelf','Mount to pipe/rail'],
+      // Re-confirmed 2026/07: 21 SKUs split cleanly into 4 product families (244 friction arm / 143 magic arm /
+      // 386 nano clamp / GimBoom); "what to mount" / "where to mount" had no real product distinction
+      ['Friction arm (244 series, light-medium duty)','Magic arm (143 series, flexible angle)','Nano clamp (386 series, small accessories)','GimBoom (gimbal boom)'],
     ],
     'Remote Control': [
       ['Sony (LANC)','Panasonic','Other camera'],
@@ -1336,7 +1339,7 @@ function startChat(brand, category) {
       '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台・一脚アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'] },
       'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'] },
       'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
-      '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
+      '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！どのタイプをお探しですか？`, opts: ['フリクションアーム（244シリーズ・軽量〜中量向け）','マジックアーム（143シリーズ・自由な角度調整）','ナノクランプ（386シリーズ・小型アクセサリー用）','GimBoom（ジンバル用ブーム）'] },
       'リモートコントロール':    { msg: `${brandLabel ? brandLabel + 'の' : ''}リモートコントロールをお探しですね！お使いのカメラは？`, opts: ['Sony（LANC対応）','Panasonic','その他のカメラ'] },
       'VR・360°撮影':           { msg: `${brandLabel ? brandLabel + 'の' : ''}VR・360°撮影機材をお探しですね！何をお探しですか？`, opts: ['VR撮影用ベース・スタンド','エクステンションブーム','セットで探したい'] },
       'アクセサリー（Lowepro）': { msg: 'Loweproのアクセサリーをお探しですね！どのような用途ですか？', opts: ['ストラップ（携帯用）','ベルト（アクセサリー装着用）'] },
@@ -1366,7 +1369,7 @@ function startChat(brand, category) {
       'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head/monopod accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'] },
       'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'] },
       'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
-      'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
+      'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What type do you need?`, opts: ['Friction arm (244 series, light-medium duty)','Magic arm (143 series, flexible angle)','Nano clamp (386 series, small accessories)','GimBoom (gimbal boom)'] },
       'Remote Control': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}remote control! What camera are you using?`, opts: ['Sony (LANC)','Panasonic','Other camera'] },
       'VR & 360°': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}VR/360° shooting gear! What are you looking for?`, opts: ['VR shooting base/stand','Extension boom','Looking for a full set'] },
       'Accessories (Lowepro)': { msg: `Looking for Lowepro accessories! What would you like to use them for?`, opts: ['Strap (for carrying)','Belt (for mounting accessories)'] },
