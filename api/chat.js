@@ -56,7 +56,21 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 固定小数展開（指数表記なし）にすることで、DB側のembedding文字列表現と揃える。
   const embeddingForRpc = `[${embedding.map(v => v.toFixed(8)).join(',')}]`;
 
-  const catList = categoryFilter ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter]) : [];
+  let catList = categoryFilter ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter]) : [];
+
+  // 「雲台もセットで欲しい」等の回答は、以前は文言としてクエリに含まれるだけで、
+  // 実際に検索するDBカテゴリは「三脚」のまま変わらなかった（三脚+雲台の複合商品は
+  // 別カテゴリ「三脚+雲台キット」に分離済みのため、これでは検索されなかった）。
+  // ここで回答内容を検出し、実際に検索するカテゴリを動的に切り替える。
+  const allMessagesForKit = messages ? messages.map(m => m.content || '').join(' ') : '';
+  if (catList.includes('三脚') && /雲台もセットで欲しい|Need head too/i.test(allMessagesForKit)) {
+    catList = catList.map(c => c === '三脚' ? '三脚+雲台キット' : c);
+  } else if (catList.includes('雲台') && /三脚もこれから購入|Need tripod too/i.test(allMessagesForKit)) {
+    catList = [...catList, '三脚+雲台キット'];
+  } else if (catList.includes('一脚') && /雲台セットが欲しい|With head set/i.test(allMessagesForKit)) {
+    catList = catList.map(c => c === '一脚' ? '一脚+雲台キット' : c);
+  }
+
   const sortByPriorityThenSimilarity = (a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
     return b.similarity - a.similarity;
@@ -86,7 +100,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   //      そのブランド内での相対的な関連性で正しく浮上できる ——
   //      「無関係な商品を無理に混ぜる」のではなく「検索範囲を広げて
   //      本来当てはまるはずの商品を正しく拾えるようにする」という考え方）
-  const multiCategories = ['三脚', '雲台', '一脚'];
+  const multiCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット'];
   const needsGitzoCategory = catList.some(c => multiCategories.includes(c));
 
   if (!brandFilter && needsGitzoCategory) {
@@ -265,7 +279,7 @@ const FLOWS = {
 ※実商品はショルダーキャリングストラップ・PLカメラストラップの2点のみで明確な機能差は無いため、確認のみ
 1. ご希望はありますか → options:["特にこだわらない","デザイン重視","クッション性重視"]`,
 
-    '三脚雲台アクセサリー': `【三脚・雲台アクセサリーの質問フロー】1つだけ質問：
+    '三脚雲台アクセサリー': `【三脚・雲台・一脚アクセサリーの質問フロー】1つだけ質問：
 ※水平調整=055LC/190LC/BFRLVLC/553/338/438、ローアングル=055XSCC/190XSCC、安定性向上=116SPK3/12SPK3/166(エプロンサポート)、測量機器用=273/324/358（サーベイアダプター系）
 1. どのような機能が必要か → options:["水平調整（レベリング）","ローアングル撮影","安定性向上（スパイク）","測量機器用アダプター"]`,
 
