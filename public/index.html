@@ -532,8 +532,15 @@ const FLOW_OPTIONS = {
       ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'],
     ],
     'アクセサリーケース': [
-      // 2026/07確認：14件中12件が「その他」に集中していたため、CS系ハードケース(7件)とギアアップ系ポーチ(4件)を独立させて分散
-      ['メモリーカード・小物','スマートフォン','ハードケース（カメラ・レンズ用）','ポーチ・収納整理用','その他'],
+      // 2026/07再確認：チップ選択だけでは同一DBカテゴリ内で絞り込みが効かない問題があったため、
+      // ハードケース(7件)とポーチ・収納整理用(4件)を実際に別カテゴリとして分離（サブ選択画面で入口を分ける）
+      ['メモリーカード・小物','スマートフォン','その他'],
+    ],
+    'ハードケース（カメラ・レンズ用）': [
+      ['小型（コンパクト機材用）','中型','大型（レンズ・複数機材用）'],
+    ],
+    'ポーチ・収納整理用': [
+      ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'],
     ],
     'ローラーバッグ': [
       ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'],
@@ -717,8 +724,15 @@ const FLOW_OPTIONS = {
       ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'],
     ],
     'Accessory Case': [
-      // Confirmed 2026/07: 12 of 14 SKUs were falling into "Other" — split out CS hard cases (7) and GearUp pouches (4)
-      ['Memory cards/small items','Smartphone','Hard case (camera/lens)','Pouch/organizer','Other'],
+      // Re-confirmed 2026/07: chip text alone didn't restrict the search within the shared DB category,
+      // so hard cases (7) and pouches (4) were split into their own real categories with a picker screen
+      ['Memory cards/small items','Smartphone','Other'],
+    ],
+    'Hard Case (Camera/Lens)': [
+      ['Small (compact gear)','Medium','Large (lens/multiple items)'],
+    ],
+    'Pouch/Organizer': [
+      ['Mini (small items only)','Medium','Large (multiple items)'],
     ],
     'Roller Bag': [
       ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'],
@@ -1044,17 +1058,17 @@ function selectCategory(cat) {
     if (selectedBrand === 'Lowepro') {
       bagChips = lang === 'ja' ? [
         { key: 'バックパック',              label: 'バックパック' },
-        { key: 'ショルダー・TLZ・スリング', label: 'ショルダー・TLZ・スリング', picker: true },
+        { key: 'ショルダー・TLZ・スリング', label: 'ショルダー・TLZ・スリング', picker: 'selectShoulderTlzSlingScreen' },
         { key: 'レンズ・ハードケース',      label: 'レンズ・ハードケース' },
         { key: 'ギアアップ・アクセサリー',  label: 'ギアアップ' },
-        { key: 'アクセサリーケース',        label: 'アクセサリーケース' },
+        { key: 'アクセサリーケース',        label: 'アクセサリーケース', picker: 'selectAccessoryCaseScreen' },
         { key: 'アクセサリー（Lowepro）',   label: 'アクセサリー' },
       ] : [
         { key: 'Backpack',              label: 'Backpack' },
-        { key: 'Shoulder/TLZ/Sling',    label: 'Shoulder / TLZ / Sling', picker: true },
+        { key: 'Shoulder/TLZ/Sling',    label: 'Shoulder / TLZ / Sling', picker: 'selectShoulderTlzSlingScreen' },
         { key: 'Lens & Hard Case',      label: 'Lens & Hard Case' },
         { key: 'GearUp & Accessories',  label: 'GearUp' },
-        { key: 'Accessory Case',        label: 'Accessory Case' },
+        { key: 'Accessory Case',        label: 'Accessory Case', picker: 'selectAccessoryCaseScreen' },
         { key: 'Accessories (Lowepro)', label: 'Accessories' },
       ];
     } else if (selectedBrand === 'Manfrotto' || selectedBrand === 'Gitzo') {
@@ -1093,7 +1107,7 @@ function selectCategory(cat) {
     }
 
     const chips = bagChips.map(({key, label, picker}) =>
-      `<button class="category-chip" onclick="${picker ? 'selectShoulderTlzSlingScreen()' : `selectBagCategory('${key}')`}">${label}</button>`
+      `<button class="category-chip" onclick="${picker ? picker + '()' : `selectBagCategory('${key}')`}">${label}</button>`
     ).join('');
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
@@ -1115,6 +1129,13 @@ function selectCategory(cat) {
     const w = document.getElementById('welcome');
     if (!w) return;
     return selectShoulderTlzSlingScreen();
+  }
+
+  // アクセサリーケース のサブ選択画面（Loweproのみ）
+  if (cat === 'アクセサリーケース' || cat === 'Accessory Case') {
+    const w = document.getElementById('welcome');
+    if (!w) return;
+    return selectAccessoryCaseScreen();
   }
 
   selectedCategory = cat;
@@ -1140,6 +1161,33 @@ function selectShoulderTlzSlingScreen() {
     <div class="category-header">
       <img class="selected-brand-logo" src="${logoSrc}" alt="Lowepro" style="height:28px;width:auto;object-fit:contain;">
       <span class="category-label">${lang === 'ja' ? 'タイプを選択' : 'Select type'}</span>
+    </div>
+    <div class="category-grid">${chips}</div>
+    <button class="back-link" onclick="selectCategory(${lang === 'ja' ? "'カメラバッグ'" : "'Camera Bag'"})">${lang === 'ja' ? 'バッグの種類選択に戻る' : 'Back to bag types'}</button>`;
+}
+
+// アクセサリーケースのサブ選択画面（Loweproのみ）
+// 2026/07確認：14件中12件が単一の「その他」チップに集中し、選んでも同一カテゴリ内の
+// 全商品から検索されてしまう（絞り込みが効かない）問題があったため、
+// ハードケース系・ポーチ系を実際に別のDBカテゴリとして分離し、専用の選択画面を設けた
+function selectAccessoryCaseScreen() {
+  const w = document.getElementById('welcome');
+  if (!w) return;
+
+  const subCats = lang === 'ja'
+    ? [{key:'アクセサリーケース',label:'メモリーカード・スマホ等'},{key:'ハードケース（カメラ・レンズ用）',label:'ハードケース（カメラ・レンズ用）'},{key:'ポーチ・収納整理用',label:'ポーチ・収納整理用'}]
+    : [{key:'Accessory Case',label:'Memory cards / phone, etc.'},{key:'Hard Case (Camera/Lens)',label:'Hard case (camera/lens)'},{key:'Pouch/Organizer',label:'Pouch/organizer'}];
+
+  const chips = subCats.map(({key,label}) =>
+    `<button class="category-chip" onclick="selectBagCategory('${key}')">${label}</button>`
+  ).join('');
+
+  const logoSrc = LOGOS.lowepro;
+
+  w.innerHTML = `
+    <div class="category-header">
+      <img class="selected-brand-logo" src="${logoSrc}" alt="Lowepro" style="height:28px;width:auto;object-fit:contain;">
+      <span class="category-label">${lang === 'ja' ? '何を収納したいですか？' : 'What would you like to store?'}</span>
     </div>
     <div class="category-grid">${chips}</div>
     <button class="back-link" onclick="selectCategory(${lang === 'ja' ? "'カメラバッグ'" : "'Camera Bag'"})">${lang === 'ja' ? 'バッグの種類選択に戻る' : 'Back to bag types'}</button>`;
@@ -1261,7 +1309,9 @@ function startChat(brand, category) {
       'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
-      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','ハードケース（カメラ・レンズ用）','ポーチ・収納整理用','その他'] },
+      'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
+      'ハードケース（カメラ・レンズ用）': { msg: `${brandLabel ? brandLabel + 'の' : ''}ハードケースをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['小型（コンパクト機材用）','中型','大型（レンズ・複数機材用）'] },
+      'ポーチ・収納整理用':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ポーチ・収納整理用アイテムをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'] },
       'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
@@ -1324,7 +1374,9 @@ function startChat(brand, category) {
       'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
-      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Hard case (camera/lens)','Pouch/organizer','Other'] },
+      'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Other'] },
+      'Hard Case (Camera/Lens)': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}hard case! What size do you need?`, opts: ['Small (compact gear)','Medium','Large (lens/multiple items)'] },
+      'Pouch/Organizer': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}pouch/organizer! What size do you need?`, opts: ['Mini (small items only)','Medium','Large (multiple items)'] },
       // Legacy Japanese keys fallback
       '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       '雲台':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
