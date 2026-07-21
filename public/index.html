@@ -524,7 +524,9 @@ const FLOW_OPTIONS = {
       ['斜めがけ（クロスボディ）','ヒップ・ウエスト','どちらも使いたい'],
     ],
     'レンズ・ハードケース': [
-      ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'],
+      // 2026/07確認：実商品10点は交換レンズケース(Lowepro6点)とビデオ/シネマ機材ケース(Manfrotto4点)の2系統のみ。
+      // バッテリー専用の商品は存在しないため「バッテリー・小物」を削除
+      ['交換レンズ（単体収納）','ビデオ・シネマ機材収納'],
       ['小型（〜9.5cm径）','中型（9.5〜12.5cm径）','大型（12.5cm径以上）'],
       ['バッグのインサート','単独で携帯','スタジオ保管'],
     ],
@@ -716,7 +718,9 @@ const FLOW_OPTIONS = {
       ['Cross-body sling','Hip/waist','Both'],
     ],
     'Lens & Hard Case': [
-      ['Interchangeable lens','Camera + accessories','Battery/small items'],
+      // Confirmed 2026/07: 10 real SKUs are only lens cases (6, Lowepro) and video/cinema cases (4, Manfrotto).
+      // No battery-specific product exists, "Battery/small items" removed
+      ['Interchangeable lens (single)','Video/cinema equipment'],
       ['Small (~9.5cm dia.)','Medium (9.5-12.5cm dia.)','Large (12.5cm+ dia.)'],
       ['As bag insert','Standalone carry','Studio storage'],
     ],
@@ -1072,16 +1076,21 @@ function selectCategory(cat) {
         { key: 'Accessories (Lowepro)', label: 'Accessories' },
       ];
     } else if (selectedBrand === 'Manfrotto' || selectedBrand === 'Gitzo') {
+      // 2026/07確認：レンズ・ハードケースは当初Lowepro専用ラインと想定していたが、
+      // 実際にはManfrotto商品（PL TOUGH H-47フォーム、PLシネローダーS/M/L）が4件含まれており、
+      // Manfrottoブランド画面に入口が無いと到達不可能だったため追加（Gitzoは該当0件のため追加しない）
       bagChips = lang === 'ja' ? [
         { key: 'バックパック', label: 'バックパック' },
         { key: 'ショルダーバッグ', label: 'ショルダーバッグ' },
         { key: 'ローラーバッグ', label: 'ローラーバッグ' },
         { key: '三脚バッグ', label: '三脚バッグ' },
+        ...(selectedBrand === 'Manfrotto' ? [{ key: 'レンズ・ハードケース', label: 'ハードケース（ビデオ・シネマ機材用）' }] : []),
       ] : [
         { key: 'Backpack', label: 'Backpack' },
         { key: 'Shoulder Bag', label: 'Shoulder Bag' },
         { key: 'Roller Bag', label: 'Roller Bag' },
         { key: 'Tripod Bag', label: 'Tripod Bag' },
+        ...(selectedBrand === 'Manfrotto' ? [{ key: 'Lens & Hard Case', label: 'Hard Case (video/cinema gear)' }] : []),
       ];
     } else {
       // 全ブランドから探す場合は全カテゴリを表示
@@ -1306,7 +1315,7 @@ function startChat(brand, category) {
       'ローラーバッグ':          { msg: `${brandLabel ? brandLabel + 'の' : ''}ローラーバッグをお探しですね！どのくらいの機材を収納したいですか？`, opts: ['ミラーレス+レンズ数本','一眼+レンズ複数+アクセサリー','スタジオ機材一式'] },
       '三脚バッグ':              { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚バッグをお探しですね！収納したい三脚のサイズを教えてください。`, opts: ['トラベル三脚（小型）','一般的な三脚（中型）','大型・重量三脚'] },
       'TLZ・トップローディング': { msg: `${brandLabel ? brandLabel + 'の' : ''}トップローディングバッグをお探しですね！お使いの機材を教えてください。`, opts: ['コンパクトミラーレス','ズームレンズ付き（24-70mm相当）','大型一眼レフ・グリップ付き'] },
-      'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ','カメラ+アクセサリー','バッテリー・小物'] },
+      'レンズ・ハードケース':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ケースをお探しですね！何を収納したいですか？`, opts: ['交換レンズ（単体収納）','ビデオ・シネマ機材収納'] },
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
       'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
@@ -1371,7 +1380,7 @@ function startChat(brand, category) {
       'Roller Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}roller bag! How much gear do you need to carry?`, opts: ['Mirrorless + a few lenses','DSLR + multiple lenses + accessories','Full studio kit'] },
       'Tripod Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod bag! What size tripod do you need to store?`, opts: ['Travel tripod (compact)','Standard tripod (medium)','Large/heavy tripod'] },
       'TLZ / Top Loading': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}top loading bag! What gear are you using?`, opts: ['Compact mirrorless','Zoom lens attached (~24-70mm)','Large DSLR w/ grip'] },
-      'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens','Camera + accessories','Battery/small items'] },
+      'Lens & Hard Case':  { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}case! What would you like to store?`, opts: ['Interchangeable lens (single)','Video/cinema equipment'] },
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
       'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Other'] },
