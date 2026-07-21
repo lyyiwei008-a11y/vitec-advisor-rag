@@ -291,10 +291,11 @@ const FLOWS = {
 ※183モニター/プロジェクターホルダー、MLTSA系（VESAマウント・タブレットホルダー・ラップトップデッキ・マウスデッキ）
 1. 何を設置したいか → options:["モニター","タブレット","ノートPC","マウス"]`,
 
-    '固定クランプ・アーム': `【固定クランプ・アームの質問フロー】1つずつ質問：
-※244系フリクションアーム・386系ナノクランプ・143系マジックアーム・GimBoom等
-1. 何を固定したいか → options:["カメラ","LED・照明機材","モニター","マイク"]
-2. どこに固定するか → options:["三脚・スタンドに固定","机・棚に固定","パイプ・レールに固定"]`,
+    '固定クランプ・アーム': `【固定クランプ・アームの質問フロー】1つだけ質問：
+※21件は244系フリクションアーム(13件・軽量〜中量向け、接続ネジ規格違いのアダプター含む)、
+143系マジックアーム(3件・自由な角度調整)、386系ナノクランプ(2件・小型アクセサリー用)、
+GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「装着対象」「装着場所」は実データに区別が無いため聞かない
+1. どのタイプが欲しいか → options:["フリクションアーム（244シリーズ・軽量〜中量向け）","マジックアーム（143シリーズ・自由な角度調整）","ナノクランプ（386シリーズ・小型アクセサリー用）","GimBoom（ジンバル用ブーム）"]`,
 
     'リモートコントロール': `【リモートコントロールの質問フロー】1つだけ質問：
 ※MVR901系（LANC対応）・522系リモートケーブル
@@ -498,8 +499,10 @@ Note: 183 monitor/projector holder, MLTSA series (VESA mount, tablet holder, lap
 
     'Clamps & Arms': `[Clamps & Arms Flow] Ask ONE question at a time:
 Note: 244 series friction arms, 386 series nano clamps, 143 series magic arms, GimBoom
-1. What to attach → options:["Camera","LED/lighting gear","Monitor","Microphone"]
-2. Where to mount → options:["Mount to tripod/stand","Mount to desk/shelf","Mount to pipe/rail"]`,
+Note: 21 SKUs split cleanly into 4 families: 244 friction arm (13, light-medium duty, incl. connector-spec adapters),
+143 magic arm (3, flexible angle), 386 nano clamp (2, small accessories), GimBoom (2, gimbal boom).
+"What to mount" / "where to mount" had no real product distinction, so don't ask that
+1. What type is needed → options:["Friction arm (244 series, light-medium duty)","Magic arm (143 series, flexible angle)","Nano clamp (386 series, small accessories)","GimBoom (gimbal boom)"]`,
 
     'Remote Control': `[Remote Control Flow] Ask ONLY ONE question:
 Note: MVR901 series (LANC), 522 series remote cables
