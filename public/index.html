@@ -994,8 +994,8 @@ function selectCategory(cat) {
       ? ['三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影','ストラップ・グリップ','アクセサリー']
       : ['Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Strap/Grip','Accessories'];
     const accLabels = lang === 'ja'
-      ? ['三脚・雲台を使いやすくしたい','クイックリリースプレートが欲しい','モニター・タブレットを設置したい','カメラや機材を固定したい','リモートで操作したい','VR・360°撮影がしたい','ストラップが欲しい','その他（収納・整理等）']
-      : ['Improve my tripod/head','I need a quick release plate','Mount a monitor/tablet','Clamp/mount my gear','Remote control my camera','VR / 360° shooting','I need a strap','Other (organization, etc.)'];
+      ? ['三脚・雲台・一脚を使いやすくしたい','クイックリリースプレートが欲しい','モニター・タブレットを設置したい','カメラや機材を固定したい','リモートで操作したい','VR・360°撮影がしたい','ストラップが欲しい','その他（収納・整理等）']
+      : ['Improve my tripod/head/monopod','I need a quick release plate','Mount a monitor/tablet','Clamp/mount my gear','Remote control my camera','VR / 360° shooting','I need a strap','Other (organization, etc.)'];
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
@@ -1333,7 +1333,7 @@ function startChat(brand, category) {
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['収納・整理','その他'] },
       'ストラップ・グリップ':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ストラップをお探しですね！ご希望はありますか？`, opts: ['特にこだわらない','デザイン重視','クッション性重視'] },
-      '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'] },
+      '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台・一脚アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'] },
       'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'] },
       'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
       '固定クランプ・アーム':    { msg: `${brandLabel ? brandLabel + 'の' : ''}固定クランプ・アームをお探しですね！何を固定したいですか？`, opts: ['カメラ','LED・照明機材','モニター','マイク'] },
@@ -1363,7 +1363,7 @@ function startChat(brand, category) {
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
       'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Organization/storage','Other'] },
       'Strap/Grip':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a strap! Any preference?`, opts: ['No preference','Design-focused','Cushioning-focused'] },
-      'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'] },
+      'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head/monopod accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'] },
       'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'] },
       'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
       'Clamps & Arms': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}clamps/arms! What would you like to attach?`, opts: ['Camera','LED/lighting gear','Monitor','Microphone'] },
