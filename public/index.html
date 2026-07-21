@@ -447,8 +447,14 @@ const FLOW_OPTIONS = {
       ['必要','不要','わからない'],
     ],
     'アクセサリー': [
-      // 2026/07確認：レインカバーは全ブランドpriority4のため除外。さらに「その他」5件中3件がGitzoレッグウォーマーで同一テーマだったため独立
-      ['ストラップ・グリップ','収納・整理','三脚脚部保護カバー','その他'],
+      // 2026/07再確認：ストラップは別カテゴリ「ストラップ・グリップ」として独立（選んでも同一カテゴリ内検索のため
+      // 他の選択肢の商品が混ざって出てしまう問題があったため）。三脚脚部保護カバー(Gitzoレッグウォーマー)は
+      // Manfrottoブランド検索では0件になるため、Manfrotto専用の入口であるこのフローからは除外
+      ['収納・整理','その他'],
+    ],
+    'ストラップ・グリップ': [
+      // 2026/07確認：実商品2点(ショルダーキャリングストラップ/PLカメラストラップ)に明確な機能差が無いため、確認のみ
+      ['特にこだわらない','デザイン重視','クッション性重視'],
     ],
     '三脚雲台アクセサリー': [
       // 2026/07確認：14件全て4区分に振り分け完了（166はAI用途説明で安定性向上用と判明、273/324/358はサーベイ機器用で統一）のため「その他」は不要
@@ -626,8 +632,14 @@ const FLOW_OPTIONS = {
       ['Needed','Not needed','Not sure'],
     ],
     'Accessories': [
-      // Confirmed 2026/07: rain covers priority=4 across brands, removed. Also 3 of 5 "Other" items were Gitzo leg warmers (same theme), split out
-      ['Strap/grip','Organization/storage','Tripod leg protective cover','Other'],
+      // Re-confirmed 2026/07: strap split into its own "Strap/Grip" category (same-category search was
+      // returning strap items under other options). Tripod leg cover (Gitzo leg warmers) removed —
+      // 0 results when searched under Manfrotto brand filter, since this flow is Manfrotto-only in practice
+      ['Organization/storage','Other'],
+    ],
+    'Strap/Grip': [
+      // Confirmed 2026/07: only 2 real SKUs with no clear functional difference — confirmation only
+      ['No preference','Design-focused','Cushioning-focused'],
     ],
     'Tripod/Head Accessories': [
       // Confirmed 2026/07: all 14 SKUs fully sorted into 4 categories, "Other" no longer needed
@@ -961,11 +973,11 @@ function selectCategory(cat) {
     if (!w) return;
 
     const accCats = lang === 'ja'
-      ? ['三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影','アクセサリー']
-      : ['Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Accessories'];
+      ? ['三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影','ストラップ・グリップ','アクセサリー']
+      : ['Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Strap/Grip','Accessories'];
     const accLabels = lang === 'ja'
-      ? ['三脚・雲台を使いやすくしたい','クイックリリースプレートが欲しい','モニター・タブレットを設置したい','カメラや機材を固定したい','リモートで操作したい','VR・360°撮影がしたい','その他（ストラップ・レインカバー等）']
-      : ['Improve my tripod/head','I need a quick release plate','Mount a monitor/tablet','Clamp/mount my gear','Remote control my camera','VR / 360° shooting','Other (straps, rain covers, etc.)'];
+      ? ['三脚・雲台を使いやすくしたい','クイックリリースプレートが欲しい','モニター・タブレットを設置したい','カメラや機材を固定したい','リモートで操作したい','VR・360°撮影がしたい','ストラップが欲しい','その他（収納・整理等）']
+      : ['Improve my tripod/head','I need a quick release plate','Mount a monitor/tablet','Clamp/mount my gear','Remote control my camera','VR / 360° shooting','I need a strap','Other (organization, etc.)'];
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
@@ -1260,7 +1272,8 @@ function startChat(brand, category) {
       '動画制作ライティング':   { msg: `動画制作用のライティングをお探しですね！何が必要ですか？`, opts: ['ライトを立てる場所が欲しい','背景の準備がしたい','両方欲しい'] },
       'ライブ配信ライティング': { msg: `ライブ配信用のライティングをお探しですね！設置環境を教えてください。`, opts: ['机の上でコンパクトに','スタンドでしっかり固定','天井・壁に取り付け'] },
       'ライティング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティング機材をお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
-      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['ストラップ・グリップ','収納・整理','三脚脚部保護カバー','その他'] },
+      'アクセサリー':            { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーをお探しですね！どのような用途ですか？`, opts: ['収納・整理','その他'] },
+      'ストラップ・グリップ':    { msg: `${brandLabel ? brandLabel + 'の' : ''}ストラップをお探しですね！ご希望はありますか？`, opts: ['特にこだわらない','デザイン重視','クッション性重視'] },
       '三脚雲台アクセサリー':    { msg: `${brandLabel ? brandLabel + 'の' : ''}三脚・雲台アクセサリーをお探しですね！どのような機能が必要ですか？`, opts: ['水平調整（レベリング）','ローアングル撮影','安定性向上（スパイク）','測量機器用アダプター'] },
       'クイックリリースプレート': { msg: `${brandLabel ? brandLabel + 'の' : ''}クイックリリースプレートをお探しですね！お使いの雲台のシステムは？`, opts: ['200PL系（一般的な雲台）','501PL系（ビデオ雲台）','Xchangeシステム','わからない'] },
       'モニター・PC設置':        { msg: `${brandLabel ? brandLabel + 'の' : ''}モニター・PC設置用品をお探しですね！何を設置したいですか？`, opts: ['モニター','タブレット','ノートPC','マウス'] },
@@ -1289,7 +1302,8 @@ function startChat(brand, category) {
       'Video Production Lighting': { msg: `Looking for video production lighting! What do you need?`, opts: ['Need somewhere to put lights','Need a background setup','Need both'] },
       'Live Streaming Lighting': { msg: `Looking for live streaming lighting! What's your setup?`, opts: ['Compact, on my desk','Sturdy stand-mounted','Ceiling/wall mounted'] },
       'Lighting':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting gear! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
-      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Strap/grip','Organization/storage','Tripod leg protective cover','Other'] },
+      'Accessories':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}accessories! What would you like to use them for?`, opts: ['Organization/storage','Other'] },
+      'Strap/Grip':  { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a strap! Any preference?`, opts: ['No preference','Design-focused','Cushioning-focused'] },
       'Tripod/Head Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}tripod/head accessories! What feature do you need?`, opts: ['Leveling','Low-angle shooting','Stability (spikes)','Survey equipment adapter'] },
       'Quick Release Plate': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}quick release plate! What head system are you using?`, opts: ['200PL series (standard heads)','501PL series (video heads)','Xchange system','Not sure'] },
       'Monitor/PC Mount': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}monitor/PC mounting gear! What would you like to mount?`, opts: ['Monitor','Tablet','Laptop','Mouse'] },
