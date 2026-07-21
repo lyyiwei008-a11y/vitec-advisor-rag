@@ -1464,6 +1464,10 @@ function appendMsg(role, content) {
     wrap.className = 'products-wrap';
     content.items.forEach((p, i) => {
       const sku = (p.sku || '').toString().trim();
+      const brand = (p.brand || '').toString().trim();
+      // 外部ショップの検索キーワードはSKU単体だと型番が短すぎて無関係な商品がヒットすることがあるため、
+      // 「ブランド名 + 半角スペース + SKU」を検索語にする
+      const shopQuery = brand ? `${brand} ${sku}` : sku;
       const thumbHtml = p.image_url
         ? `<img class="product-card-thumb" src="${p.image_url}" alt="${p.name || ''}" loading="lazy" onerror="this.style.display='none'">`
         : '';
@@ -1483,15 +1487,15 @@ function appendMsg(role, content) {
         <div class="product-card-body">
           <div class="product-reason">${p.reason}</div>
           <div class="store-links">
-            <a class="store-link" href="https://www.biccamera.com/bc/category/?q=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+            <a class="store-link" href="https://www.biccamera.com/bc/category/?q=${encodeURIComponent(shopQuery)}" target="_blank" rel="noopener">
               <div class="store-link-left"><div class="store-icon bic">B</div><span class="store-name">${t.bic}</span></div>
               <span class="store-arrow">→</span>
             </a>
-            <a class="store-link" href="https://www.yodobashi.com/?word=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+            <a class="store-link" href="https://www.yodobashi.com/?word=${encodeURIComponent(shopQuery)}" target="_blank" rel="noopener">
               <div class="store-link-left"><div class="store-icon yodo">Y</div><span class="store-name">${t.yodo}</span></div>
               <span class="store-arrow">→</span>
             </a>
-            <a class="store-link" href="https://www.amazon.co.jp/s?k=${encodeURIComponent(sku)}" target="_blank" rel="noopener">
+            <a class="store-link" href="https://www.amazon.co.jp/s?k=${encodeURIComponent(shopQuery)}" target="_blank" rel="noopener">
               <div class="store-link-left"><div class="store-icon amazon">A</div><span class="store-name">${t.amazon}</span></div>
               <span class="store-arrow">→</span>
             </a>
