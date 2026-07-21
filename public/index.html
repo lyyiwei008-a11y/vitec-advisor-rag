@@ -536,8 +536,8 @@ const FLOW_OPTIONS = {
       // ハードケース(7件)とポーチ・収納整理用(4件)を実際に別カテゴリとして分離（サブ選択画面で入口を分ける）
       ['メモリーカード・小物','スマートフォン','その他'],
     ],
-    'ハードケース（カメラ・レンズ用）': [
-      ['小型（コンパクト機材用）','中型','大型（レンズ・複数機材用）'],
+    'ハードケース（コンパクト機材用）': [
+      ['小型（コンパクト機材用）','中型','大型（一眼レフ・複数機材用）'],
     ],
     'ポーチ・収納整理用': [
       ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'],
@@ -728,8 +728,8 @@ const FLOW_OPTIONS = {
       // so hard cases (7) and pouches (4) were split into their own real categories with a picker screen
       ['Memory cards/small items','Smartphone','Other'],
     ],
-    'Hard Case (Camera/Lens)': [
-      ['Small (compact gear)','Medium','Large (lens/multiple items)'],
+    'Hard Case (Compact Gear)': [
+      ['Small (compact gear)','Medium','Large (DSLR/multiple items)'],
     ],
     'Pouch/Organizer': [
       ['Mini (small items only)','Medium','Large (multiple items)'],
@@ -1175,8 +1175,8 @@ function selectAccessoryCaseScreen() {
   if (!w) return;
 
   const subCats = lang === 'ja'
-    ? [{key:'アクセサリーケース',label:'メモリーカード・スマホ等'},{key:'ハードケース（カメラ・レンズ用）',label:'ハードケース（カメラ・レンズ用）'},{key:'ポーチ・収納整理用',label:'ポーチ・収納整理用'}]
-    : [{key:'Accessory Case',label:'Memory cards / phone, etc.'},{key:'Hard Case (Camera/Lens)',label:'Hard case (camera/lens)'},{key:'Pouch/Organizer',label:'Pouch/organizer'}];
+    ? [{key:'アクセサリーケース',label:'メモリーカード・スマホ等'},{key:'ハードケース（コンパクト機材用）',label:'ハードケース（コンパクト機材用）'},{key:'ポーチ・収納整理用',label:'ポーチ・収納整理用'}]
+    : [{key:'Accessory Case',label:'Memory cards / phone, etc.'},{key:'Hard Case (Compact Gear)',label:'Hard case (compact gear)'},{key:'Pouch/Organizer',label:'Pouch/organizer'}];
 
   const chips = subCats.map(({key,label}) =>
     `<button class="category-chip" onclick="selectBagCategory('${key}')">${label}</button>`
@@ -1310,7 +1310,7 @@ function startChat(brand, category) {
       'ギアアップ・アクセサリー':{ msg: `${brandLabel ? brandLabel + 'の' : ''}ギアアップをお探しですね！収納したい機材の量を教えてください。`, opts: ['カメラ+レンズ1本','カメラ+レンズ2〜3本','カメラ+レンズ複数+アクセサリー'] },
       'スリング':                { msg: `${brandLabel ? brandLabel + 'の' : ''}スリングバッグをお探しですね！収納したい機材を教えてください。`, opts: ['コンパクトミラーレス','フルサイズ+レンズ1本','フルサイズ+望遠レンズ'] },
       'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
-      'ハードケース（カメラ・レンズ用）': { msg: `${brandLabel ? brandLabel + 'の' : ''}ハードケースをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['小型（コンパクト機材用）','中型','大型（レンズ・複数機材用）'] },
+      'ハードケース（コンパクト機材用）': { msg: `${brandLabel ? brandLabel + 'の' : ''}ハードケースをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['小型（コンパクト機材用）','中型','大型（一眼レフ・複数機材用）'] },
       'ポーチ・収納整理用':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ポーチ・収納整理用アイテムをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'] },
       'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
@@ -1375,7 +1375,7 @@ function startChat(brand, category) {
       'GearUp & Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : 'Lowepro '}GearUp! How much gear do you need to store?`, opts: ['Camera + 1 lens','Camera + 2-3 lenses','Camera + multiple lenses + accessories'] },
       'Sling': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}sling bag! What gear do you need to carry?`, opts: ['Compact mirrorless','Full-frame + 1 lens','Full-frame + telephoto'] },
       'Accessory Case': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}accessory case! What would you like to store?`, opts: ['Memory cards/small items','Smartphone','Other'] },
-      'Hard Case (Camera/Lens)': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}hard case! What size do you need?`, opts: ['Small (compact gear)','Medium','Large (lens/multiple items)'] },
+      'Hard Case (Compact Gear)': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}hard case! What size do you need?`, opts: ['Small (compact gear)','Medium','Large (DSLR/multiple items)'] },
       'Pouch/Organizer': { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : 'Lowepro '}pouch/organizer! What size do you need?`, opts: ['Mini (small items only)','Medium','Large (multiple items)'] },
       // Legacy Japanese keys fallback
       '三脚':       { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}tripod! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
