@@ -114,12 +114,35 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   //    カテゴリごとに「相手ブランド」を定義する汎用的な仕組みに変更する。
   const CATEGORY_SECOND_BRAND = {
     '三脚': 'Gitzo', '雲台': 'Gitzo', '一脚': 'Gitzo', '三脚+雲台キット': 'Gitzo', '三脚バッグ': 'Gitzo',
+    '三脚雲台アクセサリー': 'Gitzo',
     'バックパック': 'Lowepro', 'ショルダーバッグ': 'Lowepro', 'レンズ・ハードケース': 'Lowepro',
   };
   // 素材（アルミ等）指定によるGitzo除外は、三脚・雲台・一脚系のビジネスルールなので、
   // バッグ系カテゴリには適用しない
   const tripodFamilyCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット', '三脚バッグ'];
   const matchedMultiCategory = catList.find(c => CATEGORY_SECOND_BRAND[c]);
+
+  // カメラバッグ集約カテゴリ（バックパック・ショルダー・ローラー・三脚バッグ等の合算）は
+  // Manfrotto・Lowepro・Gitzoの3ブランドにまたがるため、CATEGORY_SECOND_BRANDの
+  // 「Manfrotto+相手ブランド1つ」の枠組みでは対応できない。専用に3ブランド個別取得を行う。
+  if (!brandFilter && catList.includes('カメラバッグ')) {
+    const [mResults, lResults, gResults] = await Promise.all([
+      fetchOneBrand('Manfrotto', 15),
+      fetchOneBrand('Lowepro', 15),
+      fetchOneBrand('Gitzo', 10),
+    ]);
+    console.log(`[BRAND BALANCE v3 カメラバッグ] Manfrotto:${mResults.length}件 Lowepro:${lResults.length}件 Gitzo:${gResults.length}件`);
+    const lCount = Math.min(4, lResults.length);
+    const gCount = Math.min(4, gResults.length);
+    const mCount = Math.max(12 - lCount - gCount, 0);
+    const balanced = [
+      ...[...mResults].sort(sortByPriorityThenSimilarity).slice(0, mCount),
+      ...[...lResults].sort(sortByPriorityThenSimilarity).slice(0, lCount),
+      ...[...gResults].sort(sortByPriorityThenSimilarity).slice(0, gCount),
+    ];
+    balanced.sort(sortByPriorityThenSimilarity);
+    return balanced.slice(0, 12);
+  }
 
   if (!brandFilter && matchedMultiCategory) {
     const secondBrand = CATEGORY_SECOND_BRAND[matchedMultiCategory];
@@ -1029,7 +1052,11 @@ export default async function handler(req, res) {
       const categoryFilter = categorySheetMap[detectedCategory];
 
       // 全ブランド選択時のブランド自動絞り込み
-      const loweproCategories = ['バックパック','ショルダーバッグ','レンズ・ハードケース','TLZ・トップローディング','スリング','アクセサリーケース','ハードケース（コンパクト機材用）','ポーチ・収納整理用','ギアアップ・アクセサリー','アクセサリー（Lowepro）','Backpack','Shoulder Bag','GearUp & Accessories','TLZ / Top Loading','Sling','Accessory Case','Hard Case (Compact Gear)','Pouch/Organizer','Lens & Hard Case','Accessories (Lowepro)'];
+      // 2026/07再確認：バックパック・ショルダーバッグ・レンズ・ハードケースは当初Lowepro専用ラインと
+      // 想定していたが、実際にはManfrotto商品も含まれる共用カテゴリだったため、ここから除外する
+      // （このリストに入れたままだと、全ブランド検索時にブランドがLoweproに強制的に絞られてしまい、
+      //   CATEGORY_SECOND_BRANDによる分品牌均等検索が一切機能しなくなる）
+      const loweproCategories = ['TLZ・トップローディング','スリング','アクセサリーケース','ハードケース（コンパクト機材用）','ポーチ・収納整理用','ギアアップ・アクセサリー','アクセサリー（Lowepro）','GearUp & Accessories','TLZ / Top Loading','Sling','Accessory Case','Hard Case (Compact Gear)','Pouch/Organizer','Accessories (Lowepro)'];
       const gitzoCategories   = ['三脚（Gitzo）','一脚（Gitzo）','雲台（Gitzo）','三脚バッグ（Gitzo）','アクセサリー（Gitzo）','Tripod (Gitzo)','Monopod (Gitzo)','Head (Gitzo)','Tripod Bag (Gitzo)','Accessories (Gitzo)'];
       // 「アクセサリー」は2026/07/15の再分類でLowepro商品も含まれるようになったため、
       // Manfrotto専用カテゴリから除外（ブランド未指定時は全ブランド対象のまま）
@@ -1040,14 +1067,16 @@ export default async function handler(req, res) {
       // categorySheetMapでしか対応関係を持たないため、新規追加時はこの配列にも手動で足すこと。
       const manfrottoOnlyCategories = [
         ...CATEGORY_GROUPS['ライティング'],
-        // 'アクセサリー'自体はGitzo/Loweproと共用のDBカテゴリなので除外し、
-        // Manfrotto専用の細分カテゴリだけを展開する
-        ...CATEGORY_GROUPS['Manfrottoアクセサリー'].filter(c => c !== 'アクセサリー'),
+        // 'アクセサリー'と'三脚雲台アクセサリー'はGitzo商品（アクセサリーはLowepro商品も）を含むため除外し、
+        // 純粋にManfrotto専用の細分カテゴリだけを展開する
+        // （三脚雲台アクセサリーは2026/07にGitzoレッグウォーマー3点を統合したため、もはやManfrotto専用ではない）
+        ...CATEGORY_GROUPS['Manfrottoアクセサリー'].filter(c => c !== 'アクセサリー' && c !== '三脚雲台アクセサリー'),
         // 集約キー・英語キー（自動導出不可、手動維持）
         'ライティング','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background',
         '商品撮影ライティング','人物撮影ライティング','動画制作ライティング','ライブ配信ライティング',
         'Product Photography Lighting','Portrait Lighting','Video Production Lighting','Live Streaming Lighting',
-        'Tripod/Head Accessories','Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Strap/Grip',
+        // 'Tripod/Head Accessories'（三脚雲台アクセサリーの英語キー）も同様の理由で除外
+        'Quick Release Plate','Monitor/PC Mount','Clamps & Arms','Remote Control','VR & 360°','Strap/Grip',
       ];
       // 三脚バッグはManfrotto+Gitzo両方含む → brand絞り込みなし
 
