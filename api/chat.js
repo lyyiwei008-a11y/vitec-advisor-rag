@@ -255,12 +255,12 @@ const FLOWS = {
 3. サイズ → options:["〜1.6m","1.6〜2.2m","2.2m以上"]`,
 
     'アクセサリー': `【アクセサリーの質問フロー】1つだけ質問：
-※実商品はストラップ・レインカバー・ディバイダーキット・ユーティリティーベルト等の残余カテゴリ
-1. 用途 → options:["ストラップ・グリップ","レインカバー・保護","収納・整理","その他"]`,
+※実商品はストラップ・ディバイダーキット・ユーティリティーベルト・Gitzoレッグウォーマー・Lブラケット等の残余カテゴリ。レインカバーは全ブランドpriority4のため実質選択対象外
+1. 用途 → options:["ストラップ・グリップ","収納・整理","三脚脚部保護カバー","その他"]`,
 
     '三脚雲台アクセサリー': `【三脚・雲台アクセサリーの質問フロー】1つだけ質問：
-※水平調整・ローアングル・スパイク等（055LC/190LC/BFRLVLC/338/438/055XSCC/190XSCC/スパイク類など）
-1. どのような機能が必要か → options:["水平調整（レベリング）","ローアングル撮影","安定性向上（スパイク）","その他"]`,
+※水平調整=055LC/190LC/BFRLVLC/553/338/438、ローアングル=055XSCC/190XSCC、安定性向上=116SPK3/12SPK3/166(エプロンサポート)、測量機器用=273/324/358（サーベイアダプター系）
+1. どのような機能が必要か → options:["水平調整（レベリング）","ローアングル撮影","安定性向上（スパイク）","測量機器用アダプター"]`,
 
     'クイックリリースプレート': `【クイックリリースプレートの質問フロー】1つだけ質問：
 ※実商品は200PL系・501PL系・Xchangeシステム・六角プレート・Lブラケット等。Arca-Swissタイプは取り扱いなし
@@ -362,12 +362,12 @@ const FLOWS = {
 1. 収納したい機材の量 → options:["カメラ+レンズ1本","カメラ+レンズ2〜3本","カメラ+レンズ複数+アクセサリー"]`,
 
     'アクセサリーケース': `【Loweproアクセサリーケースの質問フロー】1つだけ質問：
-※カメラ・レンズのサイズはギアアップ側で扱うため、ここでは聞かない
-1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","その他"]`,
+※CS系(タホCS20/ハードサイドCS20-80/プロタクティックCS120・60)=ハードケース7点、ギアアップ系(ポーチミニ/ミディアム/ラップ/ケースラージ)=ポーチ・収納整理用4点、ボトルポーチのみその他
+1. 何を収納したいか → options:["メモリーカード・小物","スマートフォン","ハードケース（カメラ・レンズ用）","ポーチ・収納整理用","その他"]`,
 
     'アクセサリー（Lowepro）': `【Loweproアクセサリーの質問フロー】1つだけ質問：
-※レインカバー3点・ディバイダーキット2点は全てpriority4のため実質選択対象外
-1. どのような用途か → options:["ストラップ・グリップ","その他"]`,
+※実商品はクイックストラップ(携帯用)・ユーティリティーベルト(装着用)の2点のみ
+1. どのような用途か → options:["ストラップ（携帯用）","ベルト（アクセサリー装着用）"]`,
 
     'ローラーバッグ': `【ローラーバッグの質問フロー】1つずつ質問：
 1. 収納したい機材量 → options:["ミラーレス+レンズ数本","一眼+レンズ複数+アクセサリー","スタジオ機材一式"]
@@ -447,12 +447,12 @@ Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mountin
 5. Arm needed? → options:["Needed","Not needed","Not sure"]`,
 
     'Accessories': `[Accessories Flow] Ask ONLY ONE question:
-Note: residual category — straps, rain covers, divider kits, utility belts
-1. Main use → options:["Strap/grip","Rain cover/protection","Organization/storage","Other"]`,
+Note: residual category — straps, divider kits, utility belts, Gitzo leg warmers, L-bracket. Rain covers are priority=4 across all brands, effectively unavailable
+1. Main use → options:["Strap/grip","Organization/storage","Tripod leg protective cover","Other"]`,
 
     'Tripod/Head Accessories': `[Tripod/Head Accessories Flow] Ask ONLY ONE question:
-Note: leveling, low-angle, spikes (055LC/190LC/BFRLVLC/338/438/055XSCC/190XSCC/spike feet)
-1. What feature is needed → options:["Leveling","Low-angle shooting","Stability (spikes)","Other"]`,
+Note: Leveling=055LC/190LC/BFRLVLC/553/338/438, Low-angle=055XSCC/190XSCC, Stability=116SPK3/12SPK3/166(apron support), Survey adapter=273/324/358
+1. What feature is needed → options:["Leveling","Low-angle shooting","Stability (spikes)","Survey equipment adapter"]`,
 
     'Quick Release Plate': `[Quick Release Plate Flow] Ask ONLY ONE question:
 Note: 200PL series, 501PL series, Xchange system, hex plates, L-brackets. No Arca-Swiss compatible plates in this catalog
@@ -554,12 +554,12 @@ Note: only 5 real SKUs exist (camera box L/XL, creator box M/L/XL — insert cas
 1. Gear volume → options:["Camera + 1 lens","Camera + 2-3 lenses","Camera + multiple lenses + accessories"]`,
 
     'Accessory Case': `[Lowepro Accessory Case Flow] Ask ONLY ONE question:
-Note: camera/lens sizing is handled by GearUp, don't ask about that here
-1. What to store → options:["Memory cards/small items","Smartphone","Other"]`,
+Note: CS series (Tahoe CS20/HardSide CS20-80/ProTactic CS120,60)=7 hard cases, GearUp series (pouch mini/medium/wrap/case large)=4 pouches, only bottle pouch is genuinely "Other"
+1. What to store → options:["Memory cards/small items","Smartphone","Hard case (camera/lens)","Pouch/organizer","Other"]`,
 
     'Accessories (Lowepro)': `[Lowepro Accessories Flow] Ask ONLY ONE question:
-Note: rain covers (3 SKUs) and divider kits (2 SKUs) are all priority=4, effectively unavailable
-1. What's it for → options:["Strap/grip","Other"]`,
+Note: only 2 real SKUs exist — quick strap (carry) and utility belt (mounting)
+1. What's it for → options:["Strap (for carrying)","Belt (for mounting accessories)"]`,
 
     'Roller Bag': `[Roller Bag Flow] Ask ONE question at a time:
 1. Amount of gear → options:["Mirrorless + a few lenses","DSLR + multiple lenses + accessories","Full studio kit"]
