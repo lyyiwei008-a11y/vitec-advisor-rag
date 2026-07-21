@@ -70,6 +70,19 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   } else if (catList.includes('一脚') && /雲台セットが欲しい|With head set/i.test(allMessagesForKit)) {
     catList = catList.map(c => c === '一脚' ? '一脚+雲台キット' : c);
   }
+  // VR・360°撮影も同様に、選択肢の文言だけでなく実際に検索するDBカテゴリを切り替える
+  // （11件中「セットで探したい」に本当に合致するのは3件のみで、残り8件は単体ベース/単体ブーム。
+  //   母数11件は「7件以下なら無理に数を揃えない」ルールの対象外だったため、実際には無関係な
+  //   単体ベース商品が「セット」の推薦に混ざってしまっていた）
+  if (catList.includes('VR・360°撮影')) {
+    if (/VR撮影用ベース・スタンド|VR shooting base\/stand/i.test(allMessagesForKit)) {
+      catList = catList.map(c => c === 'VR・360°撮影' ? 'VR撮影用ベース' : c);
+    } else if (/エクステンションブーム|Extension boom/i.test(allMessagesForKit)) {
+      catList = catList.map(c => c === 'VR・360°撮影' ? 'VRブーム・エクステンション' : c);
+    } else if (/セットで探したい|Looking for a full set/i.test(allMessagesForKit)) {
+      catList = catList.map(c => c === 'VR・360°撮影' ? 'VR撮影セット' : c);
+    }
+  }
 
   const sortByPriorityThenSimilarity = (a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
@@ -92,52 +105,58 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     return r;
   };
 
-  // ── 三脚・雲台・一脚は元々Manfrotto/Gitzoが混在する統合カテゴリのため、
-  //    全ブランド検索時は「全ブランド共有の類似度上位プール」に頼らず、
-  //    ブランドごとに個別のRPCで候補を取得する。
-  //    （共有プールだと、Manfrotto側の新製品が他の大量の商品に埋もれて
-  //      候補にすら入らないことがあった。ブランドを絞って検索すれば、
-  //      そのブランド内での相対的な関連性で正しく浮上できる ——
-  //      「無関係な商品を無理に混ぜる」のではなく「検索範囲を広げて
-  //      本来当てはまるはずの商品を正しく拾えるようにする」という考え方）
-  const multiCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット'];
-  const needsGitzoCategory = catList.some(c => multiCategories.includes(c));
+  // ── Manfrotto以外の1ブランドと混在するカテゴリ（三脚・雲台・一脚・バッグ類等）は元々、
+  //    全ブランド検索時に「全ブランド共有の類似度上位プール」に頼ると、Manfrotto側の商品数が
+  //    圧倒的に多いため、もう一方のブランドの商品が候補にすら入らないことがあった。
+  //    ブランドごとに個別のRPCで候補を取得すれば、そのブランド内での相対的な関連性で
+  //    正しく浮上できる。以前はManfrotto/Gitzoの組み合わせだけをハードコードしていたが、
+  //    バックパック等のManfrotto/Lowepro組み合わせでは何の保護も効いていなかったため、
+  //    カテゴリごとに「相手ブランド」を定義する汎用的な仕組みに変更する。
+  const CATEGORY_SECOND_BRAND = {
+    '三脚': 'Gitzo', '雲台': 'Gitzo', '一脚': 'Gitzo', '三脚+雲台キット': 'Gitzo', '三脚バッグ': 'Gitzo',
+    'バックパック': 'Lowepro', 'ショルダーバッグ': 'Lowepro', 'レンズ・ハードケース': 'Lowepro',
+  };
+  // 素材（アルミ等）指定によるGitzo除外は、三脚・雲台・一脚系のビジネスルールなので、
+  // バッグ系カテゴリには適用しない
+  const tripodFamilyCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット', '三脚バッグ'];
+  const matchedMultiCategory = catList.find(c => CATEGORY_SECOND_BRAND[c]);
 
-  if (!brandFilter && needsGitzoCategory) {
+  if (!brandFilter && matchedMultiCategory) {
+    const secondBrand = CATEGORY_SECOND_BRAND[matchedMultiCategory];
     const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
     // 「Manfrotto三脚と合わせたい」はManfrotto専用に絞る。
     // 「他社三脚を持っている」は逆に「手持ちの三脚のブランドを問わず対応できる雲台を探している」という意味なので、
-    // ブランドを絞ってはいけない（以前はここも誤ってexcludeGitzoに含まれ、Gitzoの雲台が除外されてしまっていた）
-    const excludeGitzo = (
+    // ブランドを絞ってはいけない（以前はここも誤ってexcludeに含まれ、Gitzoの雲台が除外されてしまっていた）
+    const excludeSecondBrand = tripodFamilyCategories.includes(matchedMultiCategory) && (
       /アルミ|aluminum/i.test(allMessages) ||
       /Manfrotto三脚と合わせたい/i.test(allMessages) ||
       /With Manfrotto tripod/i.test(allMessages)
     );
 
-    // Manfrottoは候補母数が大きいので広めに、Gitzoは最終採用上限(4)より少し余裕を持たせて取得
+    // Manfrottoは候補母数が大きいので広めに、相手ブランドは最終採用上限(4)より少し余裕を持たせて取得
     const manfrottoResults = await fetchOneBrand('Manfrotto', 20);
-    console.log(`[BRAND BALANCE v2] Manfrotto候補: ${manfrottoResults.length}件 excludeGitzo:${excludeGitzo}`);
+    console.log(`[BRAND BALANCE v2] Manfrotto候補: ${manfrottoResults.length}件 相手ブランド:${secondBrand} exclude:${excludeSecondBrand}`);
 
-    if (excludeGitzo) {
+    if (excludeSecondBrand) {
       const sorted = [...manfrottoResults].sort(sortByPriorityThenSimilarity);
       return sorted.slice(0, 12);
     }
 
-    const gitzoResults = await fetchOneBrand('Gitzo', 15);
-    console.log(`[BRAND BALANCE v2] Gitzo候補: ${gitzoResults.length}件`);
+    const secondResults = await fetchOneBrand(secondBrand, 15);
+    console.log(`[BRAND BALANCE v2] ${secondBrand}候補: ${secondResults.length}件`);
 
-    const gitzoCount = Math.min(4, gitzoResults.length);
-    const manfrottoCount = 12 - gitzoCount;
+    const secondCount = Math.min(4, secondResults.length);
+    const manfrottoCount = 12 - secondCount;
     const balanced = [
       ...[...manfrottoResults].sort(sortByPriorityThenSimilarity).slice(0, manfrottoCount),
-      ...[...gitzoResults].sort(sortByPriorityThenSimilarity).slice(0, gitzoCount),
+      ...[...secondResults].sort(sortByPriorityThenSimilarity).slice(0, secondCount),
     ];
     balanced.sort(sortByPriorityThenSimilarity);
-    console.log(`[BRAND BALANCE v2] 最終候補: Manfrotto${Math.min(manfrottoResults.length, manfrottoCount)}件 + Gitzo${gitzoCount}件`);
+    console.log(`[BRAND BALANCE v2] 最終候補: Manfrotto${Math.min(manfrottoResults.length, manfrottoCount)}件 + ${secondBrand}${secondCount}件`);
     return balanced.slice(0, 12);
   }
 
-  // ── それ以外（単一ブランド指定、またはカメラバッグ等の複数ブランド混在カテゴリ）は従来通り ──
+  // ── それ以外（単一ブランド指定、またはカメラバッグ等の3ブランド以上混在するカテゴリ）は従来通り ──
   // ブランド指定時も、そのブランド内でカテゴリの偏りなく候補が拾えるよう
   // 十分な件数を取得する（品目数が少ないと目的のカテゴリが候補に入らないことがあるため）
   const fetchLimit = brandFilter ? Math.max(limit * 3, 45) : limit * 3;
@@ -178,17 +197,29 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     console.log(`[BRAND BALANCE] brands found: ${brands.join(',')} total:${results.length}`);
 
     if (brands.length > 1) {
-      const gitzoCount = Math.min(4, brandGroups['Gitzo']?.length || 0);
-      const manfrottoCount = 12 - gitzoCount;
+      // 以前は'Manfrotto'と'Gitzo'という名前を直接ハードコードしていたため、
+      // Lowepro等の別ブランドが混在するカテゴリ（バックパック等）では
+      // Loweproの商品がbalancedに一切含まれず、事実上除外されてしまうバグがあった。
+      // ここを任意のブランドの組み合わせで動く汎用ロジックに修正する：
+      // Manfrotto以外の各ブランドに最大4枠を確保し、残りをManfrottoに割り当てる。
+      const otherBrands = brands.filter(b => b !== 'Manfrotto');
+      const otherAllocations = {};
+      let reservedForOthers = 0;
+      for (const b of otherBrands) {
+        const count = Math.min(4, brandGroups[b].length);
+        otherAllocations[b] = count;
+        reservedForOthers += count;
+      }
+      const manfrottoCount = Math.max(12 - reservedForOthers, 0);
       let balanced = [];
 
       if (brandGroups['Manfrotto']) {
         const sorted = [...brandGroups['Manfrotto']].sort(sortByPriorityThenSimilarity);
         balanced.push(...sorted.slice(0, manfrottoCount));
       }
-      if (brandGroups['Gitzo']) {
-        const sorted = [...brandGroups['Gitzo']].sort(sortByPriorityThenSimilarity);
-        balanced.push(...sorted.slice(0, gitzoCount));
+      for (const b of otherBrands) {
+        const sorted = [...brandGroups[b]].sort(sortByPriorityThenSimilarity);
+        balanced.push(...sorted.slice(0, otherAllocations[b]));
       }
 
       balanced.sort(sortByPriorityThenSimilarity);
