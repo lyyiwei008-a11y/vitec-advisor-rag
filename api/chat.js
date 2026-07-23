@@ -1352,33 +1352,36 @@ export default async function handler(req, res) {
       }
 
       // ── 日本仕様(Jタイプ)存在通知の機械的な保証 ──
-      // 確認済みペアのリストを使って機械的にチェックし、該当すれば理由文に一文追加する。
-      // （注：以前は「日本仕様SKUも候補プールに存在する場合のみ」という条件を付けていたが、
-      //   候補プールは類似度検索で偶然決まるため、1051BAC/1051JBACのように同一製品の2バリアントが
-      //   両方とも候補プールに入る保証は無く、実測でこの条件のせいで通知が出ないケースが確認された。
-      //   KNOWN_JP_PAIRSは既に人手で確認済みの実在ペアなので、候補プールに日本仕様側が
-      //   入っているかどうかに関わらず通知して良い）
+      // 確認済みペアのリストを使って機械的にチェックし、該当すれば通知する。
+      // 以前はitem.reason（商品カードを展開しないと見えない箇所）に追記していたが、
+      // それだと客が気づけないため、チャット上に直接表示されるparsed.message（推薦の冒頭文）
+      // に一文追加する形に変更する。item.reasonへの追記も補足として残す。
       const KNOWN_JP_PAIRS = {
         '1004BAC': '1004JBAC', '1051BAC': '1051JBAC', '1052BAC': '1052JBAC',
         'A2018L': 'A2018LJ', 'A2025L': 'A2025LJ', 'A2033L': 'A2033LJ', 'A2018F': 'A2018FJCB',
         '1314B': '1314JB',
       };
-      console.log(`[JP VARIANT DEBUG] チェック対象items: ${parsed.items.map(it => it.sku).join(', ')}`);
+      const jpNoticeParts = [];
       for (const item of parsed.items) {
         const skuKey = String(item.sku || '').trim().toUpperCase();
         const matchedNonJ = Object.keys(KNOWN_JP_PAIRS).find(k => k.toUpperCase() === skuKey);
-        console.log(`[JP VARIANT DEBUG] sku="${item.sku}" skuKey="${skuKey}" matchedNonJ=${matchedNonJ || 'なし'} reasonあり=${!!item.reason}`);
         if (matchedNonJ) {
           const jSku = KNOWN_JP_PAIRS[matchedNonJ];
           if (item.reason && !item.reason.includes('Jタイプ') && !/Japan-spec/i.test(item.reason)) {
             item.reason += lang === 'ja'
-              ? ` なお、日本仕様（Jタイプ、品番${jSku}）も選べます。ご希望の場合はお申し付けください。`
-              : ` Note: a Japan-spec version (SKU ${jSku}) is also available if you need the domestic connector standard.`;
-            console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
-          } else {
-            console.log(`[JP VARIANT DEBUG] マッチしたが追加条件を満たさなかった: reason="${item.reason}"`);
+              ? ` なお、日本仕様（Jタイプ、品番${jSku}）も選べます。`
+              : ` Note: a Japan-spec version (SKU ${jSku}) is also available.`;
           }
+          jpNoticeParts.push(lang === 'ja'
+            ? `${item.name}（${matchedNonJ}）には日本仕様版（品番${jSku}）もございます`
+            : `${item.name} (${matchedNonJ}) is also available in a Japan-spec version (SKU ${jSku})`);
+          console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
         }
+      }
+      if (jpNoticeParts.length > 0 && parsed.message) {
+        parsed.message += lang === 'ja'
+          ? `\n\n※${jpNoticeParts.join('、')}。日本仕様をご希望の場合はお申し付けください。`
+          : `\n\nNote: ${jpNoticeParts.join('; ')}. Let us know if you'd prefer the Japan-spec version.`;
       }
 
       // ── ブランド多様性の機械的な保証 ──
