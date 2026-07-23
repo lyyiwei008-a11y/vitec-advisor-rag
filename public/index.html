@@ -232,7 +232,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   display: flex; align-items: center; justify-content: center;
-  min-height: 72px; position: relative;
+  height: 88px; position: relative; box-sizing: border-box;
 }
 .brand-card:hover { border-color: var(--black); box-shadow: 0 2px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
 .brand-card.all-brands {
@@ -257,12 +257,10 @@ body {
 .brand-logo.vitec-small {  max-height: 20px; max-width: 80px; }
 .all-brands-text {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight: 600; letter-spacing: 0.15em;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--gray-500);
-  display: flex; align-items: center; gap: 8px;
+  text-align: center; line-height: 1.4;
 }
-.all-brands-text::before { content: ''; width: 20px; height: 1px; background: var(--gray-400); }
-.all-brands-text::after { content: ''; width: 20px; height: 1px; background: var(--gray-400); }
 
 /* ── CATEGORY SELECTOR ── */
 .category-header {
@@ -398,10 +396,21 @@ const FLOW_OPTIONS = {
       ['旅行・登山','街撮り・日常','プロ撮影','ドローン運搬'],
     ],
     'ライティング_スタンド': [
+      // 2026/07: Cスタンド・ブーム・オートポールは別分類に分離済みのため「スタンドの種類」問題を削除
       ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
-      ['ライトスタンド','ブームスタンド','ベイビースタンド','オートポール'],
       ['スタジオ固定','自宅・小スペース','屋外移動'],
       ['〜150cm','150〜305cm','305cm以上'],
+    ],
+    'ライティング_Cスタンド': [
+      ['スタンド本体のみ（グリップヘッド別売）','スタンド+グリップヘッドのキット','グリップヘッド・延長アームのみ（既存スタンド用）'],
+      ['〜200cm','200〜260cm','260cm以上'],
+    ],
+    'ライティング_ブーム': [
+      ['小型（〜120cm）','中型（120〜220cm）','大型（220cm以上）'],
+      ['ブームのみ（既存スタンドに取付）','スタンド込みのセットが欲しい'],
+    ],
+    'ライティング_オートポール': [
+      ['オートポール本体','ウエイト・サンドバッグ','アクセサリー（ベース・延長チューブ等）'],
     ],
     'ライティング_ソフトボックス': [
       ['ポートレート','商品・物撮り','動画・YouTube'],
@@ -595,9 +604,19 @@ const FLOW_OPTIONS = {
     ],
     'Lighting_Stand': [
       ['Portrait','Video/YouTube','Product photography','Outdoor location'],
-      ['Light stand','Boom stand','Baby stand','Auto pole'],
       ['Studio fixed','Home/small space','Outdoor mobile'],
       ['Up to 150cm','150-305cm','305cm+'],
+    ],
+    'Lighting_CStand': [
+      ['Stand only (grip head sold separately)','Stand + grip head kit','Grip head/extension arm only (for existing stand)'],
+      ['Up to 200cm','200-260cm','260cm+'],
+    ],
+    'Lighting_Boom': [
+      ['Compact (~120cm)','Medium (120-220cm)','Large (220cm+)'],
+      ['Boom only (attach to existing stand)','Want a stand+boom set'],
+    ],
+    'Lighting_AutoPole': [
+      ['Auto pole itself','Weight/sandbag','Accessories (base, extension tube, etc.)'],
     ],
     'Lighting_Softbox': [
       ['Portrait','Product photography','Video/YouTube'],
@@ -950,19 +969,23 @@ function selectCategory(cat) {
     // 在庫が復活した場合は下記2行を元に戻すこと：
     // ja: ['ライティング_スタンド','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
     // en: ['Lighting_Stand','Lighting_Softbox','Lighting_Reflector','Lighting_Background','Lighting_Accessories']
+    // 2026/07: 「ライトを設置したい」はB列サブカテゴリの精査により
+    // スタンド／Cスタンド／ブーム／オートポールの4系統に分かれることが判明したため、
+    // 直接ライティング_スタンドへ進まず、専用のサブ選択画面（selectLightingStandScreen）を挟む
     const lightCats = lang === 'ja'
-      ? ['ライティング_スタンド','ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
-      : ['Lighting_Stand','Lighting_Reflector','Lighting_Background','Lighting_Accessories'];
+      ? ['ライティング_リフレクター','ライティング_背景','ライティング_アクセサリー']
+      : ['Lighting_Reflector','Lighting_Background','Lighting_Accessories'];
 
     const lightLabels = lang === 'ja'
-      ? ['ライトを設置したい','反射光で補助したい','背景を作りたい','機材を固定したい']
-      : ['Set up a light','Fill with reflected light','Create a background','Mount my gear'];
+      ? ['反射光で補助したい','背景を作りたい','機材を固定したい']
+      : ['Fill with reflected light','Create a background','Mount my gear'];
 
     const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
 
-    const chips = lightCats.map((c, i) =>
-      `<button class="category-chip" onclick="selectLightingCategory('${c}')">${lightLabels[i]}</button>`
-    ).join('') + `<button class="category-chip" onclick="selectLightingUseCaseScreen()">${lang === 'ja' ? 'わからないので撮影内容から探したい' : "Not sure — help me by shooting type"}</button>`;
+    const chips = `<button class="category-chip" onclick="selectLightingStandScreen()">${lang === 'ja' ? 'ライトを設置したい' : 'Set up a light'}</button>` +
+      lightCats.map((c, i) =>
+        `<button class="category-chip" onclick="selectLightingCategory('${c}')">${lightLabels[i]}</button>`
+      ).join('') + `<button class="category-chip" onclick="selectLightingUseCaseScreen()">${lang === 'ja' ? 'わからないので撮影内容から探したい' : "Not sure — help me by shooting type"}</button>`;
 
     w.innerHTML = `
       <div class="category-header">
@@ -1210,6 +1233,43 @@ function selectLightingCategory(cat) {
   startChat(selectedBrand, cat);
 }
 
+// 「ライトを設置したい」のサブ選択画面
+// 2026/07確認：元の「ライティング_スタンド」143件はB列サブカテゴリを精査した結果、
+// 一般的な照明スタンド／Cスタンド（映像・グリップ用、Avenger製）／ブーム／オートポールの
+// 4系統に明確に分かれることが判明し、DBカテゴリとして正式に分離した
+function selectLightingStandScreen() {
+  const w = document.getElementById('welcome');
+  if (!w) return;
+
+  const subCats = lang === 'ja'
+    ? [
+        { key: 'ライティング_スタンド', label: '一般的な照明用スタンド' },
+        { key: 'ライティング_Cスタンド', label: 'Cスタンド（映像・グリップ用）' },
+        { key: 'ライティング_ブーム', label: 'ブーム（水平に張り出して設置）' },
+        { key: 'ライティング_オートポール', label: 'オートポール（天井〜床で固定）' },
+      ]
+    : [
+        { key: 'Lighting_Stand', label: 'General light stand' },
+        { key: 'Lighting_CStand', label: 'C-Stand (video / grip)' },
+        { key: 'Lighting_Boom', label: 'Boom (horizontal extension)' },
+        { key: 'Lighting_AutoPole', label: 'Auto pole (ceiling-to-floor)' },
+      ];
+
+  const chips = subCats.map(({key,label}) =>
+    `<button class="category-chip" onclick="selectLightingCategory('${key}')">${label}</button>`
+  ).join('');
+
+  const logoSrc = (selectedBrand && selectedBrand !== 'all') ? LOGOS[selectedBrand.toLowerCase()] : LOGOS.vitec;
+
+  w.innerHTML = `
+    <div class="category-header">
+      <img class="selected-brand-logo" src="${logoSrc}" alt="${selectedBrand || 'Vitec'}" style="height:28px;width:auto;object-fit:contain;">
+      <span class="category-label">${lang === 'ja' ? 'どのタイプのスタンドをお探しですか？' : 'What type of stand do you need?'}</span>
+    </div>
+    <div class="category-grid">${chips}</div>
+    <button class="back-link" onclick="selectCategory(${lang === 'ja' ? "'ライティング'" : "'Lighting'"})">${lang === 'ja' ? 'ライティング選択に戻る' : 'Back to lighting options'}</button>`;
+}
+
 // 「わからないので撮影内容から探したい」の4択画面
 // 各撮影内容は複数のライティングサブカテゴリを横断する集約カテゴリにマッピングされる
 function selectLightingUseCaseScreen() {
@@ -1324,7 +1384,10 @@ function startChat(brand, category) {
       'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
       'ハードケース（コンパクト機材用）': { msg: `${brandLabel ? brandLabel + 'の' : ''}ハードケースをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['小型（コンパクト機材用）','中型','大型（一眼レフ・複数機材用）'] },
       'ポーチ・収納整理用':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ポーチ・収納整理用アイテムをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'] },
-      'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ライトスタンド・ブームをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
+      'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}照明用スタンドをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
+      'ライティング_Cスタンド':     { msg: `${brandLabel ? brandLabel + 'の' : ''}Cスタンドをお探しですね！何をお探しですか？`, opts: ['スタンド本体のみ（グリップヘッド別売）','スタンド+グリップヘッドのキット','グリップヘッド・延長アームのみ（既存スタンド用）'] },
+      'ライティング_ブーム':        { msg: `${brandLabel ? brandLabel + 'の' : ''}ブームをお探しですね！必要な長さを教えてください。`, opts: ['小型（〜120cm）','中型（120〜220cm）','大型（220cm以上）'] },
+      'ライティング_オートポール':  { msg: `${brandLabel ? brandLabel + 'の' : ''}オートポールをお探しですね！何をお探しですか？`, opts: ['オートポール本体','ウエイト・サンドバッグ','アクセサリー（ベース・延長チューブ等）'] },
       'ライティング_ソフトボックス': { msg: `${brandLabel ? brandLabel + 'の' : ''}ソフトボックスをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','動画・YouTube'] },
       'ライティング_アクセサリー':  { msg: `${brandLabel ? brandLabel + 'の' : ''}ライティングアクセサリーをお探しですね！どこに取り付けたいですか？`, opts: ['ストロボに取り付けたい','ライトスタンドに固定したい','カメラに取り付けたい'] },
       'ライティング_リフレクター':  { msg: `${brandLabel ? brandLabel + 'の' : ''}リフレクターをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','商品・物撮り','屋外ロケ'] },
@@ -1354,7 +1417,10 @@ function startChat(brand, category) {
       'Head':         { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       'Monopod':      { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}monopod! What's the main use?`, opts: ['Sports & news','Video & vlog','Hiking & travel','Wildlife & telephoto'] },
       'Camera Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}camera bag! What style are you looking for?`, opts: ['Backpack','Shoulder bag','Top loading','Any style'] },
-      'Lighting_Stand':       { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}light stands/booms! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
+      'Lighting_Stand':       { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}light stands! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
+      'Lighting_CStand':      { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a C-stand! What are you looking for?`, opts: ['Stand only (grip head sold separately)','Stand + grip head kit','Grip head/extension arm only (for existing stand)'] },
+      'Lighting_Boom':        { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a boom! What length do you need?`, opts: ['Compact (~120cm)','Medium (120-220cm)','Large (220cm+)'] },
+      'Lighting_AutoPole':    { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}an auto pole! What are you looking for?`, opts: ['Auto pole itself','Weight/sandbag','Accessories (base, extension tube, etc.)'] },
       'Lighting_Softbox':     { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}softboxes! What's the main purpose?`, opts: ['Portrait','Product photography','Video/YouTube'] },
       'Lighting_Accessories': { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}lighting accessories! Where would you like to attach it?`, opts: ['Attach to strobe','Attach to light stand','Attach to camera'] },
       'Lighting_Reflector':   { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}reflectors! What's the main purpose?`, opts: ['Portrait','Product photography','Outdoor location'] },
