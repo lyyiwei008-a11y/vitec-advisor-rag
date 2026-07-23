@@ -861,7 +861,13 @@ Do NOT invent or hallucinate any product. Return an empty items array exactly as
   const maxAvail = products.length;
   const recommendCountRule = maxAvail <= 7
     ? `- Recommend ONLY the genuinely relevant products from the list (up to ${maxAvail} available) — do NOT pad the recommendations with unrelated items just to reach a target count. If only 1-2 products truly match what the customer asked for, recommend only those.`
-    : `- Recommend 5-7 of the MOST relevant products from the list — do not include items that are a poor match just to fill the count.`;
+    : `- REQUIRED: recommend AT LEAST 5 products (up to 7) from the list below. This is a hard minimum,
+  not a suggestion — the list has ${maxAvail} candidates, which is enough to find 5+ reasonably relevant
+  ones. Returning fewer than 5 items when ${maxAvail} candidates are available is an error, even if some
+  of the 5-7 are a somewhat looser match than your top picks — a slightly-less-perfect-but-still-relevant
+  product is preferable to giving the customer too few options. Only fall below 5 if you can clearly
+  justify, item by item, why every remaining candidate is a genuinely bad fit (e.g. wrong size/type
+  entirely) — not merely "less ideal than the top choices".`;
 
   // 候補プール自体は searchProducts 側で Manfrotto/Gitzo の比率をコントロール済み（例: 最大8:4）。
   // しかしその比率が最終推薦に反映されるかはGPTの関連性判断まかせになっており、
@@ -1265,6 +1271,108 @@ export default async function handler(req, res) {
         ...item,
         image_url: imageBySku.get(String(item.sku || '').trim().toUpperCase()) || null
       }));
+
+      // ── priority=1（新製品）が候補プールにあるのに最終結果から漏れていないかの機械的な保証 ──
+      // 候補プール構築時点（fetchOneBrand→sortByPriorityThenSimilarity→slice）で既にpriority=1は
+      // 優先的にプールへ入る仕組みになっているが、そこから先「GPTが実際にitemsとして書き出すか」は
+      // 別問題であり、ブランド多様性・推薦数と同様にソフトな指示だけでは信頼できないことが実測で
+      // 確認されたため、ここでも機械的にチェックする。
+      // 対象はragProducts（ブランド均衡・カテゴリ絞り込み済みの候補プール）に実在するpriority=1のみ。
+      // 候補プールに無いのにpriority=1のはずだと期待するのは筋違い（それは検索段階の話であり、
+      // ここではあくまで「候補プールに入っているのに選ばれなかった」ケースのみを救済する）。
+      const poolP1Skus = new Set(
+        ragProducts.filter(p => p.priority === 1).map(p => String(p.sku).trim().toUpperCase())
+      );
+      if (poolP1Skus.size > 0) {
+        const itemSkus = new Set(parsed.items.map(it => String(it.sku || '').trim().toUpperCase()));
+        const missingP1 = ragProducts.filter(p =>
+          p.priority === 1 && !itemSkus.has(String(p.sku).trim().toUpperCase())
+        );
+        for (const p1 of missingP1) {
+          if (parsed.items.length < 7) {
+            // 7件未満ならそのまま追加
+            const priceMatch = (p1.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+            const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+            parsed.items.push({
+              name: p1.name, sku: p1.sku, brand: p1.brand,
+              reason: lang === 'ja' ? '新製品のため、こちらもおすすめです。' : 'This is a new product and also recommended.',
+              price, image_url: p1.image_url || null,
+            });
+          } else {
+            // 既に7件ある場合は、priority=2以下で最も類似度が低いものと入れ替える
+            let worstIdx = -1, worstScore = Infinity;
+            parsed.items.forEach((it, idx) => {
+              const match = ragProducts.find(p => String(p.sku).trim().toUpperCase() === String(it.sku || '').trim().toUpperCase());
+              if (match && match.priority > 1 && match.similarity < worstScore) {
+                worstScore = match.similarity; worstIdx = idx;
+              }
+            });
+            if (worstIdx >= 0) {
+              const priceMatch = (p1.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+              const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+              parsed.items[worstIdx] = {
+                name: p1.name, sku: p1.sku, brand: p1.brand,
+                reason: lang === 'ja' ? '新製品のため、こちらもおすすめです。' : 'This is a new product and also recommended.',
+                price, image_url: p1.image_url || null,
+              };
+            }
+          }
+        }
+        if (missingP1.length > 0) {
+          console.log(`[PRIORITY1 FIX] 候補プールにあったpriority=1が最終結果から漏れていたため追加: ${missingP1.map(p => p.sku).join(', ')}`);
+        }
+      }
+
+      // ── 推薦数（5-7件）の機械的な補完 ──
+      // buildRecommendPromptの"REQUIRED: recommend AT LEAST 5"指示だけではGPTが従わないケースが
+      // 実測で確認された（候補プール12件でも3件しか返さない等）。候補プールが7件を超えるのに
+      // 実際の推薦が5件未満だった場合、候補プールから不足分を機械的に補う。
+      if (ragProducts.length > 7 && parsed.items.length < 5) {
+        const beforeCount = parsed.items.length;
+        const usedSkus = new Set(parsed.items.map(it => String(it.sku || '').trim().toUpperCase()));
+        const needed = 5 - parsed.items.length;
+        const fillCandidates = ragProducts
+          .filter(p => !usedSkus.has(String(p.sku).trim().toUpperCase()))
+          .sort((a, b) => (a.priority - b.priority) || (b.similarity - a.similarity))
+          .slice(0, needed);
+        for (const c of fillCandidates) {
+          const priceMatch = (c.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+          const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+          parsed.items.push({
+            name: c.name,
+            sku: c.sku,
+            brand: c.brand,
+            reason: lang === 'ja' ? 'こちらもご条件に近い製品です。' : 'This is also a close match for your requirements.',
+            price,
+            image_url: c.image_url || null,
+          });
+          usedSkus.add(String(c.sku).trim().toUpperCase());
+        }
+        console.log(`[COUNT FIX] GPT returned only ${beforeCount}件 (pool=${ragProducts.length}件); padded ${fillCandidates.length}件 to reach ${parsed.items.length}件`);
+      }
+
+      // ── 日本仕様(Jタイプ)存在通知の機械的な保証 ──
+      // buildRecommendPromptの"JAPAN-SPEC VARIANT NOTICE"指示もソフトな指示のみでは信頼できないため、
+      // 確認済みペアのリストを使って機械的にチェックし、該当すれば理由文に一文追加する
+      const KNOWN_JP_PAIRS = {
+        '1004BAC': '1004JBAC', '1051BAC': '1051JBAC', '1052BAC': '1052JBAC',
+        'A2018L': 'A2018LJ', 'A2025L': 'A2025LJ', 'A2033L': 'A2033LJ', 'A2018F': 'A2018FJCB',
+        '1314B': '1314JB',
+      };
+      const poolSkus = new Set(ragProducts.map(p => String(p.sku).trim().toUpperCase()));
+      for (const item of parsed.items) {
+        const skuKey = String(item.sku || '').trim().toUpperCase();
+        const matchedNonJ = Object.keys(KNOWN_JP_PAIRS).find(k => k.toUpperCase() === skuKey);
+        if (matchedNonJ) {
+          const jSku = KNOWN_JP_PAIRS[matchedNonJ];
+          if (poolSkus.has(jSku.toUpperCase()) && item.reason && !item.reason.includes('Jタイプ') && !/Japan-spec/i.test(item.reason)) {
+            item.reason += lang === 'ja'
+              ? ` なお、日本仕様（Jタイプ、品番${jSku}）も選べます。ご希望の場合はお申し付けください。`
+              : ` Note: a Japan-spec version (SKU ${jSku}) is also available if you need the domestic connector standard.`;
+            console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
+          }
+        }
+      }
 
       // ── ブランド多様性の機械的な保証 ──
       // buildRecommendPromptの"BRAND DIVERSITY"指示だけではGPTが従わないケースが実測で確認された
