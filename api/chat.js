@@ -124,11 +124,22 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     'バックパック': { brand: 'Lowepro', secondCap: 4 },
     'ショルダーバッグ': { brand: 'Lowepro', secondCap: 4 },
     'レンズ・ハードケース': { brand: 'Lowepro', secondCap: 4 },
-    // 2026/07追加：ライティング_Cスタンド・ライティング_ブーム・ライティング_オートポールは
-    // 実際には単一ブランドのみのため対象外（Cスタンド=Avenger単独、ブーム/オートポール=Manfrotto単独）
+    // 2026/07追加：ライティング_ブーム・ライティング_オートポールは単一ブランド（Manfrotto）のみのため対象外。
+    // ライティング_Cスタンドは全件Avengerのため、Manfrotto側は常に0件になる想定
     'ライティング_スタンド': { brand: 'Avenger', secondCap: 8 },
     'ライティング_アクセサリー': { brand: 'Avenger', secondCap: 8 },
+    'ライティング_Cスタンド': { brand: 'Avenger', secondCap: 12 },
   };
+  // AvengerはVitec社内ではManfrottoファミリーの一部だが、サイト上でAvenger専用のブランド
+  // 入口ボタンが存在しない（Manfrotto経由でしか辿り着けない）。そのため「Manfrotto」を選んで
+  // いる状態でこれらのカテゴリに来た場合も、ブランドを厳密にManfrottoだけに絞らず、
+  // Avengerも含めて検索する（そうしないとCスタンド等、実質Avenger専用の商品群が
+  // 「Manfrottoを選んだ客には一切出せない」という状態になってしまう）。
+  const avengerInclusiveCategories = ['ライティング_スタンド', 'ライティング_アクセサリー', 'ライティング_Cスタンド'];
+  const treatAsAllBrands = !brandFilter || (
+    brandFilter === 'Manfrotto' &&
+    catList.some(c => avengerInclusiveCategories.includes(c))
+  );
   // 素材（アルミ等）指定によるGitzo除外は、三脚・雲台・一脚系のビジネスルールなので、
   // バッグ系・ライティング系カテゴリには適用しない
   const tripodFamilyCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット', '三脚バッグ'];
@@ -156,7 +167,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     return balanced.slice(0, 12);
   }
 
-  if (!brandFilter && matchedMultiCategory) {
+  if (treatAsAllBrands && matchedMultiCategory) {
     const { brand: secondBrand, secondCap } = CATEGORY_SECOND_BRAND[matchedMultiCategory];
     const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
     // 「Manfrotto三脚と合わせたい」はManfrotto専用に絞る。
