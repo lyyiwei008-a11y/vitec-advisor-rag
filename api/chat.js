@@ -318,12 +318,12 @@ const FLOWS = {
 2. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
 3. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
 
-    'ライティング_Cスタンド': `【Cスタンドの質問フロー】1つずつ質問：
+    'ライティング_Cスタンド': `【Cスタンドの質問フロー】1つだけ質問：
 ※実商品39件はAvenger製。デタッチャブル型(6)／スライディング型(11)／
 キット(グリップヘッド付き、6)／コラム単体(4)／グリップヘッド・延長アーム単体(10)／
-トリプルCスタンドセット(1)に分かれる
-1. 何をお探しか → options:["スタンド本体のみ（グリップヘッド別売）","スタンド+グリップヘッドのキット","グリップヘッド・延長アームのみ（既存スタンド用）"]
-2. 必要な高さ（本体をお探しの場合） → options:["〜200cm","200〜260cm","260cm以上"]`,
+トリプルCスタンドセット(1)に分かれる。キットは6件のみで高さは175cm/300cm/328cmの3種類しか無いため、
+高さの追加質問はしない（種類ごとに件数が少なく、高さで絞ると0件になりうるため）
+1. 何をお探しか → options:["スタンド本体のみ（グリップヘッド別売）","スタンド+グリップヘッドのキット","グリップヘッド・延長アームのみ（既存スタンド用）"]`,
 
     'ライティング_ブーム': `【ブームの質問フロー】1つずつ質問：
 ※実商品11件。長さは78cm〜320cmまで幅広い。一部（025BS/085BS）はスタンド付き、他は別売
@@ -535,11 +535,11 @@ This covers baby stand / combo stand / roller stand / wind-up stand / stratosafe
 2. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
 3. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
 
-    'Lighting_CStand': `[C-Stand Flow] Ask ONE question at a time:
+    'Lighting_CStand': `[C-Stand Flow] Ask ONLY ONE question:
 Note: 39 real SKUs, all Avenger brand. Detachable base (6) / sliding leg (11) / kit with grip head (6) /
-column only (4) / grip head & extension arm only (10) / triple C-stand set (1)
-1. What are you looking for → options:["Stand only (grip head sold separately)","Stand + grip head kit","Grip head/extension arm only (for an existing stand)"]
-2. Height needed (if looking for a stand) → options:["Up to 200cm","200-260cm","260cm+"]`,
+column only (4) / grip head & extension arm only (10) / triple C-stand set (1). Kits only come in
+175cm/300cm/328cm, so don't add a height follow-up (could return 0 results for some ranges)
+1. What are you looking for → options:["Stand only (grip head sold separately)","Stand + grip head kit","Grip head/extension arm only (for an existing stand)"]`,
 
     'Lighting_Boom': `[Boom Flow] Ask ONE question at a time:
 Note: 11 real SKUs, lengths range 78cm-320cm. Some (025BS/085BS) include a stand, others don't
