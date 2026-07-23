@@ -1787,6 +1787,11 @@ function handleSupplementFollowupAnswer(text) {
 
 // ── 推薦リクエストを送信（GATE「補足なし」／補足判定「もう十分」の両方から呼ばれる） ──
 async function triggerRecommend() {
+  // sendMessage()と同様に、既にリクエスト中なら何もしない。
+  // 以前はこのガードが無く、handleGateChoice等から短時間に2回呼ばれると
+  // 並行して2件のリクエストが発生し、先に返ってきた（古い/不完全な）方の結果が
+  // 画面に残ってしまうことがあった（メッセージやおすすめ商品が重複表示される不具合の原因）
+  if (isLoading) return;
   chatMode = 'RECOMMEND';
   setInputEnabled(false);
   showOptions([]);
