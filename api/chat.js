@@ -1363,9 +1363,11 @@ export default async function handler(req, res) {
         'A2018L': 'A2018LJ', 'A2025L': 'A2025LJ', 'A2033L': 'A2033LJ', 'A2018F': 'A2018FJCB',
         '1314B': '1314JB',
       };
+      console.log(`[JP VARIANT DEBUG] チェック対象items: ${parsed.items.map(it => it.sku).join(', ')}`);
       for (const item of parsed.items) {
         const skuKey = String(item.sku || '').trim().toUpperCase();
         const matchedNonJ = Object.keys(KNOWN_JP_PAIRS).find(k => k.toUpperCase() === skuKey);
+        console.log(`[JP VARIANT DEBUG] sku="${item.sku}" skuKey="${skuKey}" matchedNonJ=${matchedNonJ || 'なし'} reasonあり=${!!item.reason}`);
         if (matchedNonJ) {
           const jSku = KNOWN_JP_PAIRS[matchedNonJ];
           if (item.reason && !item.reason.includes('Jタイプ') && !/Japan-spec/i.test(item.reason)) {
@@ -1373,6 +1375,8 @@ export default async function handler(req, res) {
               ? ` なお、日本仕様（Jタイプ、品番${jSku}）も選べます。ご希望の場合はお申し付けください。`
               : ` Note: a Japan-spec version (SKU ${jSku}) is also available if you need the domestic connector standard.`;
             console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
+          } else {
+            console.log(`[JP VARIANT DEBUG] マッチしたが追加条件を満たさなかった: reason="${item.reason}"`);
           }
         }
       }
