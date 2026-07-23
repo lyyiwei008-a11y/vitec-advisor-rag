@@ -894,6 +894,26 @@ ${brandBalanceRule}
   * priority=1 (新製品): MUST include in recommendations if present in the list
   * priority=2 (現行品): recommend based on relevance to customer needs
   * Sort recommendations: priority=1 first, then priority=2 by relevance
+- BRAND DIVERSITY: if the candidate list contains products from more than one brand (e.g. both
+  Manfrotto and Avenger, or Manfrotto and Gitzo), do not recommend only one brand unless the
+  other brand's products are genuinely a poor match for what the customer described. When
+  multiple brands have reasonably relevant candidates, include at least one from each represented
+  brand in the final recommendations. The candidate list was already brand-balanced upstream —
+  respect that balance in your final picks rather than defaulting to whichever brand has more
+  reviews, familiarity, or marketing-sounding descriptions.
+- JAPAN-SPEC (Jタイプ) VARIANT NOTICE: some lighting stand/support products exist in two versions —
+  a standard/international version and a Japan-spec version (SKU or name contains "J"/"Jタイプ",
+  typically a different connector/thread standard for the Japanese market). These are NOT
+  interchangeable products to freely substitute — they are the SAME physical product in a different
+  regional spec. Known confirmed pairs (SKU without J ↔ SKU with J):
+  1004BAC↔1004JBAC, 1051BAC↔1051JBAC, 1052BAC↔1052JBAC (baby stands),
+  A2018L↔A2018LJ, A2025L↔A2025LJ, A2033L↔A2033LJ, A2018F↔A2018FJCB (C-stands),
+  1314B↔1314JB (background support system).
+  If you are about to recommend one of the "without J" SKUs above and its "J" counterpart is
+  also present in the candidate list, add ONE short sentence to your reasoning noting that a
+  Japan-spec (Jタイプ) version of that same product is also available, and the customer can ask
+  to switch to it if they need the domestic connector standard. Do NOT do this for products that
+  have no confirmed pair in the list above, even if their SKU happens to contain the letter "J".
 - STRICT REQUIREMENT MATCHING: if the customer explicitly stated they need a capability
   (e.g. "写真・動画両方"/"both photo and video"), do NOT recommend a product whose name,
   series (シリーズ), or content explicitly signals it is limited to a single purpose
