@@ -322,12 +322,14 @@ const FLOWS = {
 5. アームも必要か → options:["必要","不要","わからない"]`,
 
     'ライティング_スタンド': `【一般照明スタンドの質問フロー】1つずつ質問：
-※2026/07: Cスタンド・ブーム・オートポールは別カテゴリに分離済みのため、ここは
-ベイビースタンド／コンボスタンド／ローラースタンド／ワインドアップスタンド／
-ストラトセーフスタンド等の一般的な照明用スタンドのみ（計66件）
-1. 主な用途 → options:["ポートレート","動画・YouTube","商品・物撮り","屋外ロケ"]
-2. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
-3. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
+※2026/07: Cスタンド・ブーム・オートポールは別カテゴリに分離済み。ここは一般的な照明用
+スタンドのみ（計66件）で、B列サブカテゴリはベイビースタンド(27)／重量級スタジオ系
+（コンボ+ローラー+ワインドアップ+ストラトセーフ+オーバーヘッド、計26）／
+アクセサリー・パーツ（スタンドアクセサリー+ホイール、計13）の3系統に分かれる
+1. どのタイプをお探しか → options:["ベイビースタンド（軽量・汎用タイプ）","重量級スタジオスタンド（コンボ・ローラー・ワインドアップ等）","アクセサリー・パーツ（ホイール等）"]
+2. 主な用途 → options:["ポートレート","動画・YouTube","商品・物撮り","屋外ロケ"]
+3. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
+4. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
 
     'ライティング_Cスタンド': `【Cスタンドの質問フロー】1つだけ質問：
 ※実商品39件はAvenger製。デタッチャブル型(6)／スライディング型(11)／
@@ -540,11 +542,13 @@ GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「
 5. Main scene → options:["Travel/hiking","Street/daily","Professional","Drone transport"]`,
 
     'Lighting_Stand': `[General Light Stand Flow] Ask ONE question at a time:
-Note: 2026/07: C-Stand, Boom, and Auto Pole are now separate categories.
-This covers baby stand / combo stand / roller stand / wind-up stand / stratosafe stand only (66 SKUs)
-1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
-2. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
-3. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
+Note: 2026/07: C-Stand, Boom, and Auto Pole are now separate categories. This covers general light
+stands only (66 SKUs): Baby Stand (27) / heavy-duty studio stands (combo+roller+wind-up+stratosafe+
+overhead, 26) / accessories & parts (stand accessories+wheels, 13)
+1. What type are you looking for → options:["Baby Stand (lightweight, general purpose)","Heavy-duty studio stand (combo/roller/wind-up etc.)","Accessories & parts (wheels etc.)"]
+2. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
+3. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
+4. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
 
     'Lighting_CStand': `[C-Stand Flow] Ask ONLY ONE question:
 Note: 39 real SKUs, all Avenger brand. Detachable base (6) / sliding leg (11) / kit with grip head (6) /
