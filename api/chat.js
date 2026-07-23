@@ -17,7 +17,7 @@ const supabase = createClient(
 // （過去に何度も「新カテゴリを追加したのに集約用の配列に足し忘れる」バグが起きたための対策）。
 const CATEGORY_GROUPS = {
   'バッグ': ['バックパック','ショルダーバッグ','ローラーバッグ','三脚バッグ','レンズ・ハードケース','ギアアップ・アクセサリー','TLZ・トップローディング','スリング','アクセサリーケース'],
-  'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景'],
+  'ライティング': ['ライティング_スタンド','ライティング_アクセサリー','ライティング_ソフトボックス','ライティング_リフレクター','ライティング_背景','ライティング_Cスタンド','ライティング_ブーム','ライティング_オートポール'],
   // Manfrotto専用のアクセサリー群（2026/07/17、旧「アクセサリー」単一カテゴリを目的別に分割）
   'Manfrottoアクセサリー': ['アクセサリー','ストラップ・グリップ','三脚雲台アクセサリー','クイックリリースプレート','モニター・PC設置','固定クランプ・アーム','リモートコントロール','VR・360°撮影'],
 };
@@ -105,20 +105,32 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     return r;
   };
 
-  // ── Manfrotto以外の1ブランドと混在するカテゴリ（三脚・雲台・一脚・バッグ類等）は元々、
+  // ── Manfrotto以外の1ブランドと混在するカテゴリ（三脚・雲台・一脚・バッグ類・ライティング等）は元々、
   //    全ブランド検索時に「全ブランド共有の類似度上位プール」に頼ると、Manfrotto側の商品数が
   //    圧倒的に多いため、もう一方のブランドの商品が候補にすら入らないことがあった。
   //    ブランドごとに個別のRPCで候補を取得すれば、そのブランド内での相対的な関連性で
-  //    正しく浮上できる。以前はManfrotto/Gitzoの組み合わせだけをハードコードしていたが、
-  //    バックパック等のManfrotto/Lowepro組み合わせでは何の保護も効いていなかったため、
-  //    カテゴリごとに「相手ブランド」を定義する汎用的な仕組みに変更する。
+  //    正しく浮上できる。カテゴリごとに「相手ブランド」と「配分比率」を定義する汎用的な仕組み。
+  //    secondCap: 12枠のうち相手ブランドに割り当てる最大数（残りをManfrottoに割り当てる）。
+  //    通常はManfrotto優先（secondCap:4で概ね2:1）だが、ライティング_スタンド／
+  //    ライティング_アクセサリーはAvenger側の商品数が実際に多い（またはAvenger優先の
+  //    ビジネス判断）ため、secondCap:8（概ね1:2、Avenger優先）にしている。
   const CATEGORY_SECOND_BRAND = {
-    '三脚': 'Gitzo', '雲台': 'Gitzo', '一脚': 'Gitzo', '三脚+雲台キット': 'Gitzo', '三脚バッグ': 'Gitzo',
-    '三脚雲台アクセサリー': 'Gitzo',
-    'バックパック': 'Lowepro', 'ショルダーバッグ': 'Lowepro', 'レンズ・ハードケース': 'Lowepro',
+    '三脚': { brand: 'Gitzo', secondCap: 4 },
+    '雲台': { brand: 'Gitzo', secondCap: 4 },
+    '一脚': { brand: 'Gitzo', secondCap: 4 },
+    '三脚+雲台キット': { brand: 'Gitzo', secondCap: 4 },
+    '三脚バッグ': { brand: 'Gitzo', secondCap: 4 },
+    '三脚雲台アクセサリー': { brand: 'Gitzo', secondCap: 4 },
+    'バックパック': { brand: 'Lowepro', secondCap: 4 },
+    'ショルダーバッグ': { brand: 'Lowepro', secondCap: 4 },
+    'レンズ・ハードケース': { brand: 'Lowepro', secondCap: 4 },
+    // 2026/07追加：ライティング_Cスタンド・ライティング_ブーム・ライティング_オートポールは
+    // 実際には単一ブランドのみのため対象外（Cスタンド=Avenger単独、ブーム/オートポール=Manfrotto単独）
+    'ライティング_スタンド': { brand: 'Avenger', secondCap: 8 },
+    'ライティング_アクセサリー': { brand: 'Avenger', secondCap: 8 },
   };
   // 素材（アルミ等）指定によるGitzo除外は、三脚・雲台・一脚系のビジネスルールなので、
-  // バッグ系カテゴリには適用しない
+  // バッグ系・ライティング系カテゴリには適用しない
   const tripodFamilyCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット', '三脚バッグ'];
   const matchedMultiCategory = catList.find(c => CATEGORY_SECOND_BRAND[c]);
 
@@ -145,7 +157,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   }
 
   if (!brandFilter && matchedMultiCategory) {
-    const secondBrand = CATEGORY_SECOND_BRAND[matchedMultiCategory];
+    const { brand: secondBrand, secondCap } = CATEGORY_SECOND_BRAND[matchedMultiCategory];
     const allMessages = messages ? messages.map(m => m.content || '').join(' ') : '';
     // 「Manfrotto三脚と合わせたい」はManfrotto専用に絞る。
     // 「他社三脚を持っている」は逆に「手持ちの三脚のブランドを問わず対応できる雲台を探している」という意味なので、
@@ -156,19 +168,19 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
       /With Manfrotto tripod/i.test(allMessages)
     );
 
-    // Manfrottoは候補母数が大きいので広めに、相手ブランドは最終採用上限(4)より少し余裕を持たせて取得
+    // Manfrottoは候補母数が大きいので広めに、相手ブランドは最終採用上限より少し余裕を持たせて取得
     const manfrottoResults = await fetchOneBrand('Manfrotto', 20);
-    console.log(`[BRAND BALANCE v2] Manfrotto候補: ${manfrottoResults.length}件 相手ブランド:${secondBrand} exclude:${excludeSecondBrand}`);
+    console.log(`[BRAND BALANCE v2] Manfrotto候補: ${manfrottoResults.length}件 相手ブランド:${secondBrand}(上限${secondCap}) exclude:${excludeSecondBrand}`);
 
     if (excludeSecondBrand) {
       const sorted = [...manfrottoResults].sort(sortByPriorityThenSimilarity);
       return sorted.slice(0, 12);
     }
 
-    const secondResults = await fetchOneBrand(secondBrand, 15);
+    const secondResults = await fetchOneBrand(secondBrand, Math.max(secondCap + 5, 15));
     console.log(`[BRAND BALANCE v2] ${secondBrand}候補: ${secondResults.length}件`);
 
-    const secondCount = Math.min(4, secondResults.length);
+    const secondCount = Math.min(secondCap, secondResults.length);
     const manfrottoCount = 12 - secondCount;
     const balanced = [
       ...[...manfrottoResults].sort(sortByPriorityThenSimilarity).slice(0, manfrottoCount),
@@ -298,11 +310,30 @@ const FLOWS = {
 4. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動","卓上"]
 5. アームも必要か → options:["必要","不要","わからない"]`,
 
-    'ライティング_スタンド': `【ライトスタンド・ブームの質問フロー】1つずつ質問：
+    'ライティング_スタンド': `【一般照明スタンドの質問フロー】1つずつ質問：
+※2026/07: Cスタンド・ブーム・オートポールは別カテゴリに分離済みのため、ここは
+ベイビースタンド／コンボスタンド／ローラースタンド／ワインドアップスタンド／
+ストラトセーフスタンド等の一般的な照明用スタンドのみ（計66件）
 1. 主な用途 → options:["ポートレート","動画・YouTube","商品・物撮り","屋外ロケ"]
-2. スタンドの種類 → options:["ライトスタンド","ブームスタンド","ベイビースタンド","オートポール"]
-3. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
-4. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
+2. 設置場所 → options:["スタジオ固定","自宅・小スペース","屋外移動"]
+3. 必要な高さ → options:["〜150cm","150〜305cm","305cm以上"]`,
+
+    'ライティング_Cスタンド': `【Cスタンドの質問フロー】1つずつ質問：
+※実商品39件はAvenger製。デタッチャブル型(6)／スライディング型(11)／
+キット(グリップヘッド付き、6)／コラム単体(4)／グリップヘッド・延長アーム単体(10)／
+トリプルCスタンドセット(1)に分かれる
+1. 何をお探しか → options:["スタンド本体のみ（グリップヘッド別売）","スタンド+グリップヘッドのキット","グリップヘッド・延長アームのみ（既存スタンド用）"]
+2. 必要な高さ（本体をお探しの場合） → options:["〜200cm","200〜260cm","260cm以上"]`,
+
+    'ライティング_ブーム': `【ブームの質問フロー】1つずつ質問：
+※実商品11件。長さは78cm〜320cmまで幅広い。一部（025BS/085BS）はスタンド付き、他は別売
+1. 必要な長さ → options:["小型（〜120cm）","中型（120〜220cm）","大型（220cm以上）"]
+2. スタンドの有無 → options:["ブームのみ（既存スタンドに取付）","スタンド込みのセットが欲しい"]`,
+
+    'ライティング_オートポール': `【オートポールの質問フロー】1つだけ質問：
+※実商品24件：オートポール本体(14、長さ100〜370cm)／ウエイト・サンドバッグ(5)／
+アクセサリー(ベース・延長チューブ・プロテクションキャップ等、5)
+1. 何をお探しか → options:["オートポール本体","ウエイト・サンドバッグ","アクセサリー（ベース・延長チューブ等）"]`,
 
     'ライティング_ソフトボックス': `【ソフトボックスの質問フロー】1つずつ質問：
 ※実商品はスクエア型S/M/L・オクタ型M/L・マイクロ型、計6形状（+スピードリング等の取付アクセサリー3点）のみ
@@ -497,11 +528,28 @@ GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「
 4. Laptop/tablet → options:["Up to 13\"","15\"","Not needed"]
 5. Main scene → options:["Travel/hiking","Street/daily","Professional","Drone transport"]`,
 
-    'Lighting_Stand': `[Light Stand/Boom Flow] Ask ONE question at a time:
+    'Lighting_Stand': `[General Light Stand Flow] Ask ONE question at a time:
+Note: 2026/07: C-Stand, Boom, and Auto Pole are now separate categories.
+This covers baby stand / combo stand / roller stand / wind-up stand / stratosafe stand only (66 SKUs)
 1. Main purpose → options:["Portrait","Video/YouTube","Product photography","Outdoor location"]
-2. Stand type → options:["Light stand","Boom stand","Baby stand","Auto pole"]
-3. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
-4. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
+2. Location → options:["Studio fixed","Home/small space","Outdoor mobile"]
+3. Height needed → options:["Up to 150cm","150-305cm","305cm+"]`,
+
+    'Lighting_CStand': `[C-Stand Flow] Ask ONE question at a time:
+Note: 39 real SKUs, all Avenger brand. Detachable base (6) / sliding leg (11) / kit with grip head (6) /
+column only (4) / grip head & extension arm only (10) / triple C-stand set (1)
+1. What are you looking for → options:["Stand only (grip head sold separately)","Stand + grip head kit","Grip head/extension arm only (for an existing stand)"]
+2. Height needed (if looking for a stand) → options:["Up to 200cm","200-260cm","260cm+"]`,
+
+    'Lighting_Boom': `[Boom Flow] Ask ONE question at a time:
+Note: 11 real SKUs, lengths range 78cm-320cm. Some (025BS/085BS) include a stand, others don't
+1. Length needed → options:["Compact (~120cm)","Medium (120-220cm)","Large (220cm+)"]
+2. Stand included? → options:["Boom only (attach to existing stand)","Want a stand+boom set"]`,
+
+    'Lighting_AutoPole': `[Auto Pole Flow] Ask ONLY ONE question:
+Note: 24 real SKUs — auto pole itself (14, lengths 100-370cm) / weights & sandbags (5) /
+accessories (base, extension tube, protection cap, etc., 5)
+1. What are you looking for → options:["Auto pole itself","Weight/sandbag","Accessories (base, extension tube, etc.)"]`,
 
     'Lighting_Softbox': `[Softbox Flow] Ask ONE question at a time:
 Note: only 6 real shapes exist (Square S/M/L, Octabox M/L, Micro) plus 3 mounting accessories (speed ring etc.)
@@ -995,6 +1043,9 @@ export default async function handler(req, res) {
         'ライティング_ソフトボックス': 'ライティング_ソフトボックス',
         'ライティング_リフレクター':  'ライティング_リフレクター',
         'ライティング_背景':          'ライティング_背景',
+        'ライティング_Cスタンド':     'ライティング_Cスタンド',
+        'ライティング_ブーム':        'ライティング_ブーム',
+        'ライティング_オートポール':  'ライティング_オートポール',
         // 撮影内容から探す（Copilot提案の「わからない」導線、複数サブカテゴリを横断）
         '商品撮影ライティング':   ['ライティング_背景','ライティング_リフレクター'],
         '人物撮影ライティング':   ['ライティング_リフレクター','ライティング_スタンド'],
@@ -1032,6 +1083,9 @@ export default async function handler(req, res) {
         'Lighting_Softbox':    'ライティング_ソフトボックス',
         'Lighting_Reflector':  'ライティング_リフレクター',
         'Lighting_Background': 'ライティング_背景',
+        'Lighting_CStand':     'ライティング_Cスタンド',
+        'Lighting_Boom':       'ライティング_ブーム',
+        'Lighting_AutoPole':   'ライティング_オートポール',
         'Product Photography Lighting': ['ライティング_背景','ライティング_リフレクター'],
         'Portrait Lighting':            ['ライティング_リフレクター','ライティング_スタンド'],
         'Video Production Lighting':    ['ライティング_スタンド','ライティング_背景'],
@@ -1066,13 +1120,18 @@ export default async function handler(req, res) {
       // ここは自動的に更新される。ただし英語キーや「〇〇から探す」系の集約キーは
       // categorySheetMapでしか対応関係を持たないため、新規追加時はこの配列にも手動で足すこと。
       const manfrottoOnlyCategories = [
-        ...CATEGORY_GROUPS['ライティング'],
+        // 2026/07: ライティング_スタンド・ライティング_アクセサリーはAvenger商品が混在（generate_csv.pyの
+        // ブランド列読み取り修正により判明）するため除外。ライティング_Cスタンドは全件Avengerのため、
+        // Manfrotto専用扱いにすると全滅してしまうためこちらも除外。
+        // ライティング_ブーム・ライティング_オートポールは全件Manfrottoのため含める。
+        ...CATEGORY_GROUPS['ライティング'].filter(c => !['ライティング_スタンド','ライティング_アクセサリー','ライティング_Cスタンド'].includes(c)),
         // 'アクセサリー'と'三脚雲台アクセサリー'はGitzo商品（アクセサリーはLowepro商品も）を含むため除外し、
         // 純粋にManfrotto専用の細分カテゴリだけを展開する
         // （三脚雲台アクセサリーは2026/07にGitzoレッグウォーマー3点を統合したため、もはやManfrotto専用ではない）
         ...CATEGORY_GROUPS['Manfrottoアクセサリー'].filter(c => c !== 'アクセサリー' && c !== '三脚雲台アクセサリー'),
         // 集約キー・英語キー（自動導出不可、手動維持）
-        'ライティング','Lighting','Lighting_Stand','Lighting_Accessories','Lighting_Softbox','Lighting_Reflector','Lighting_Background',
+        // 'ライティング'集約自体もAvengerを含むためManfrotto専用扱いにはできない（除外）
+        'Lighting_Softbox','Lighting_Reflector','Lighting_Background',
         '商品撮影ライティング','人物撮影ライティング','動画制作ライティング','ライブ配信ライティング',
         'Product Photography Lighting','Portrait Lighting','Video Production Lighting','Live Streaming Lighting',
         // 'Tripod/Head Accessories'（三脚雲台アクセサリーの英語キー）も同様の理由で除外
