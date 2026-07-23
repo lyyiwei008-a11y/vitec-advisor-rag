@@ -1265,6 +1265,44 @@ export default async function handler(req, res) {
         ...item,
         image_url: imageBySku.get(String(item.sku || '').trim().toUpperCase()) || null
       }));
+
+      // ── ブランド多様性の機械的な保証 ──
+      // buildRecommendPromptの"BRAND DIVERSITY"指示だけではGPTが従わないケースが実測で確認された
+      // （候補プールにAvengerが8件あってもManfrottoのみを選んでしまう等）。ソフトな指示に頼るのではなく、
+      // 「候補プールに複数ブランドが存在するのに最終結果が単一ブランドだった場合、機械的に1件を
+      // 別ブランドの最良候補と入れ替える」というハードな保証をコード側に追加する。
+      const candidateBrands = new Set(ragProducts.map(p => p.brand));
+      if (candidateBrands.size > 1 && parsed.items.length >= 2) {
+        const skuToBrand = new Map(ragProducts.map(p => [String(p.sku).trim().toUpperCase(), p.brand]));
+        const itemBrands = new Set(parsed.items.map(it =>
+          skuToBrand.get(String(it.sku || '').trim().toUpperCase()) || it.brand
+        ));
+        if (itemBrands.size === 1) {
+          const currentBrand = [...itemBrands][0];
+          const missingBrand = [...candidateBrands].find(b => b !== currentBrand);
+          if (missingBrand) {
+            const usedSkus = new Set(parsed.items.map(it => String(it.sku || '').trim().toUpperCase()));
+            const bestMissing = ragProducts
+              .filter(p => p.brand === missingBrand && !usedSkus.has(String(p.sku).trim().toUpperCase()))
+              .sort((a, b) => (a.priority - b.priority) || (b.similarity - a.similarity))[0];
+            if (bestMissing) {
+              const priceMatch = (bestMissing.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+              const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+              parsed.items[parsed.items.length - 1] = {
+                name: bestMissing.name,
+                sku: bestMissing.sku,
+                brand: bestMissing.brand,
+                reason: lang === 'ja'
+                  ? `${bestMissing.brand}の選択肢として、こちらもご条件に合う製品です。`
+                  : `As a ${bestMissing.brand} option, this also matches your requirements.`,
+                price,
+                image_url: bestMissing.image_url || null,
+              };
+              console.log(`[BRAND DIVERSITY FIX] GPT picked only ${currentBrand}; swapped last item for ${missingBrand} candidate: ${bestMissing.sku}`);
+            }
+          }
+        }
+      }
     }
 
     res.status(200).json({
