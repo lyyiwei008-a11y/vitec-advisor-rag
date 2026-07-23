@@ -396,7 +396,7 @@ const FLOW_OPTIONS = {
       ['旅行・登山','街撮り・日常','プロ撮影','ドローン運搬'],
     ],
     'ライティング_スタンド': [
-      // 2026/07: Cスタンド・ブーム・オートポールは別分類に分離済みのため「スタンドの種類」問題を削除
+      ['ベイビースタンド（軽量・汎用タイプ）','重量級スタジオスタンド（コンボ・ローラー・ワインドアップ等）','アクセサリー・パーツ（ホイール等）'],
       ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'],
       ['スタジオ固定','自宅・小スペース','屋外移動'],
       ['〜150cm','150〜305cm','305cm以上'],
@@ -602,6 +602,7 @@ const FLOW_OPTIONS = {
       ['Travel/hiking','Street/daily','Professional','Drone transport'],
     ],
     'Lighting_Stand': [
+      ['Baby Stand (lightweight, general purpose)','Heavy-duty studio stand (combo/roller/wind-up etc.)','Accessories & parts (wheels etc.)'],
       ['Portrait','Video/YouTube','Product photography','Outdoor location'],
       ['Studio fixed','Home/small space','Outdoor mobile'],
       ['Up to 150cm','150-305cm','305cm+'],
@@ -1382,7 +1383,7 @@ function startChat(brand, category) {
       'アクセサリーケース':      { msg: `${brandLabel ? brandLabel + 'の' : ''}アクセサリーケースをお探しですね！何を収納したいですか？`, opts: ['メモリーカード・小物','スマートフォン','その他'] },
       'ハードケース（コンパクト機材用）': { msg: `${brandLabel ? brandLabel + 'の' : ''}ハードケースをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['小型（コンパクト機材用）','中型','大型（一眼レフ・複数機材用）'] },
       'ポーチ・収納整理用':      { msg: `${brandLabel ? brandLabel + 'の' : ''}ポーチ・収納整理用アイテムをお探しですね！どのくらいのサイズが必要ですか？`, opts: ['ミニ（小物のみ）','ミディアム','ラージ（複数アイテム）'] },
-      'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}照明用スタンドをお探しですね！主な用途を教えてください。`, opts: ['ポートレート','動画・YouTube','商品・物撮り','屋外ロケ'] },
+      'ライティング_スタンド':      { msg: `${brandLabel ? brandLabel + 'の' : ''}照明用スタンドをお探しですね！どのタイプをお探しですか？`, opts: ['ベイビースタンド（軽量・汎用タイプ）','重量級スタジオスタンド（コンボ・ローラー・ワインドアップ等）','アクセサリー・パーツ（ホイール等）'] },
       'ライティング_Cスタンド':     { msg: `${brandLabel ? brandLabel + 'の' : ''}Cスタンドをお探しですね！何をお探しですか？`, opts: ['スタンド本体のみ（グリップヘッド別売）','スタンド+グリップヘッドのキット','グリップヘッド・延長アームのみ（既存スタンド用）'] },
       'ライティング_ブーム':        { msg: `${brandLabel ? brandLabel + 'の' : ''}ブームをお探しですね！必要な長さを教えてください。`, opts: ['小型（〜120cm）','中型（120〜220cm）','大型（220cm以上）'] },
       'ライティング_オートポール':  { msg: `${brandLabel ? brandLabel + 'の' : ''}オートポールをお探しですね！何をお探しですか？`, opts: ['オートポール本体','ウエイト・サンドバッグ','アクセサリー（ベース・延長チューブ等）'] },
@@ -1415,7 +1416,7 @@ function startChat(brand, category) {
       'Head':         { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}head! What's the main purpose?`, opts: ['Photography','Video','Both photo & video'] },
       'Monopod':      { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}monopod! What's the main use?`, opts: ['Sports & news','Video & vlog','Hiking & travel','Wildlife & telephoto'] },
       'Camera Bag':   { msg: `Looking for a ${brandLabel ? brandLabel + ' ' : ''}camera bag! What style are you looking for?`, opts: ['Backpack','Shoulder bag','Top loading','Any style'] },
-      'Lighting_Stand':       { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}light stands! What's the main purpose?`, opts: ['Portrait','Video/YouTube','Product photography','Outdoor location'] },
+      'Lighting_Stand':       { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}light stands! What type do you need?`, opts: ['Baby Stand (lightweight, general purpose)','Heavy-duty studio stand (combo/roller/wind-up etc.)','Accessories & parts (wheels etc.)'] },
       'Lighting_CStand':      { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a C-stand! What are you looking for?`, opts: ['Stand only (grip head sold separately)','Stand + grip head kit','Grip head/extension arm only (for existing stand)'] },
       'Lighting_Boom':        { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}a boom! What length do you need?`, opts: ['Compact (~120cm)','Medium (120-220cm)','Large (220cm+)'] },
       'Lighting_AutoPole':    { msg: `Looking for ${brandLabel ? brandLabel + ' ' : ''}an auto pole! What are you looking for?`, opts: ['Auto pole itself','Weight/sandbag','Accessories (base, extension tube, etc.)'] },
