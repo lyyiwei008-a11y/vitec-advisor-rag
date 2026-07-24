@@ -315,11 +315,12 @@ body {
 
 <header class="header">
   <div class="header-left">
-    <img class="header-logo" src="/images/logo-vitec.jpg" alt="Vitec">
+    <img class="header-logo" src="/images/logo-vitec.jpg" alt="Vitec" onclick="resetChat()" style="cursor:pointer;" title="トップに戻る">
     <div class="header-divider"></div>
     <span class="header-title">Product Advisor</span>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button class="reset-btn" id="back-btn" onclick="goBackOneStep()" style="margin-right:8px;">← 一つ前に戻る</button>
     <button class="reset-btn" id="reset-btn" onclick="resetChat()">← やり直す</button>
     <div>
       <button class="lang-btn active" onclick="setLang('ja')">日本語</button>
@@ -1509,12 +1510,43 @@ function showOptions(options) {
   bar.classList.add('visible');
 }
 
+// 直前の1ステップだけ取り消して、一つ前の質問の選択肢を再表示する。
+// 「質問Nの選択肢」自体（bot発言）は残し、「その回答」（user発言）と
+// 「回答を受けて生成された次の質問」（bot発言）の2件だけをhistory・画面から取り除く。
+// 既に推薦結果が出た後（GUIDEモード以外）は状態が複雑になるため対象外とする。
+function goBackOneStep() {
+  if (isLoading) return;
+  if (chatMode !== 'GUIDE' || currentStep < 1) return;
+
+  const chat = document.getElementById('chat');
+  // 直近の2件（bot発言＝直前に生成された次の質問、user発言＝取り消したい回答）を画面から削除
+  for (let i = 0; i < 2; i++) {
+    if (chat.lastElementChild) chat.removeChild(chat.lastElementChild);
+  }
+  // historyも同様に2件分（assistant, user）取り除く
+  history.pop();
+  history.pop();
+
+  currentStep--;
+  showOptions([]);
+  document.getElementById('input-field').value = '';
+
+  const flowOpts = FLOW_OPTIONS[lang]?.[selectedCategory];
+  if (flowOpts && flowOpts[currentStep]) {
+    showOptions(flowOpts[currentStep]);
+  }
+  if (currentStep < 1) {
+    document.getElementById('back-btn').classList.remove('visible');
+  }
+}
+
 function resetChat() {
   history = []; isLoading = false; selectedBrand = null; selectedCategory = null; currentStep = 0;
   chatMode = 'GUIDE'; supplementRounds = 0;
   setInputEnabled(false);
   document.getElementById('send-btn').disabled = false;
   document.getElementById('reset-btn').classList.remove('visible');
+  document.getElementById('back-btn').classList.remove('visible');
   showOptions([]);
   const chat = document.getElementById('chat');
   chat.innerHTML = '<div class="welcome" id="welcome"></div>';
@@ -1710,6 +1742,7 @@ async function sendMessage() {
       history.push({ role: 'assistant', content: reply.message });
       appendMsg('bot', reply.message);
       currentStep++;
+      if (currentStep >= 1) document.getElementById('back-btn').classList.add('visible');
 
       const flowOpts = FLOW_OPTIONS[lang]?.[selectedCategory];
       const totalSteps = flowOpts ? flowOpts.length : 0;
@@ -1741,6 +1774,7 @@ async function sendMessage() {
 function showSupplementGate() {
   chatMode = 'GATE';
   setInputEnabled(false);
+  document.getElementById('back-btn').classList.remove('visible');
   const t = SUPPLEMENT_TEXT[lang];
   appendMsg('bot', t.gateMsg);
   history.push({ role: 'assistant', content: t.gateMsg });
