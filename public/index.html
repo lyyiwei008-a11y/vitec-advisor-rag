@@ -1608,12 +1608,6 @@ function appendMsg(role, content) {
         list.appendChild(li);
       });
       jpNote.appendChild(list);
-      const hint = document.createElement('div');
-      hint.className = 'jp-variant-note-hint';
-      hint.textContent = lang === 'ja'
-        ? '日本仕様をご希望の場合はお申し付けください。'
-        : "Let us know if you'd prefer the Japan-spec version.";
-      jpNote.appendChild(hint);
       bubble.appendChild(jpNote);
     }
   } else {
