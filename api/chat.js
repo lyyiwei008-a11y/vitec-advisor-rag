@@ -73,7 +73,12 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 候補プールにすら入らないことがあったための対策。「主な用途」の回答で絞り込む。
   const getTripodKitCategories = () => {
     if (/写真・動画両方|Both photo & video/i.test(allMessagesForKit)) {
-      return ['フォト三脚+雲台キット', 'ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
+      // 「両方」は"フォト用途にもビデオ用途にも使える商品"を求めているので、
+      // 3カテゴリ全部をunionすると分割前の79件プールに逆戻りしてしまう
+      // （実際、Manfrottoの三脚/雲台/一脚系シートにはAI用途説明列が無く、
+      //  スペック羅列だけのテキストになっているため、フォト専用/ビデオ専用の
+      //  実力商品に対して埋もれやすい）。専用の両用カテゴリだけに絞り込む。
+      return ['フォト・ビデオ三脚+雲台キット'];
     } else if (/動画撮影メイン|\bVideo\b/i.test(allMessagesForKit)) {
       return ['ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
     } else if (/写真撮影メイン|\bPhotography\b/i.test(allMessagesForKit)) {
