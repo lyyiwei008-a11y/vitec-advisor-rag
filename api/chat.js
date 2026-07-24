@@ -1354,7 +1354,11 @@ export default async function handler(req, res) {
       // ── 日本仕様(Jタイプ)存在通知の機械的な保証 ──
       // 確認済みペアのリストを使って機械的にチェックし、該当すれば通知する。
       // 商品カードの下に独立したセクションとして表示するため、専用フィールド
-      // parsed.jpVariantNote に構造化データとして格納する（フロント側で描画）
+      // parsed.jpVariantNote に構造化データとして格納する（フロント側で描画）。
+      // 単なるテキストではなく、通常の商品カードと同じ見た目（画像・価格・購入リンク）で
+      // 表示できるよう、J版SKUの実データをSupabaseから直接取得する（ragProductsには
+      // 含まれているとは限らないため、確認済みペアが分かっている以上、確実性重視で
+      // 個別に問い合わせる）
       const KNOWN_JP_PAIRS = {
         '1004BAC': '1004JBAC', '1051BAC': '1051JBAC', '1052BAC': '1052JBAC',
         'A2018L': 'A2018LJ', 'A2025L': 'A2025LJ', 'A2033L': 'A2033LJ', 'A2018F': 'A2018FJCB',
@@ -1366,8 +1370,29 @@ export default async function handler(req, res) {
         const matchedNonJ = Object.keys(KNOWN_JP_PAIRS).find(k => k.toUpperCase() === skuKey);
         if (matchedNonJ) {
           const jSku = KNOWN_JP_PAIRS[matchedNonJ];
-          jpVariantMatches.push({ name: item.name, sku: item.sku, jSku });
-          console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
+          try {
+            const { data: jData, error: jError } = await supabase
+              .from('products')
+              .select('sku, name, brand, content, image_url')
+              .ilike('sku', jSku)
+              .limit(1)
+              .maybeSingle();
+            if (jError) throw jError;
+            if (jData) {
+              const priceMatch = (jData.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+              const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+              jpVariantMatches.push({
+                name: jData.name, sku: jData.sku, brand: jData.brand,
+                price, image_url: jData.image_url || null,
+                originalName: item.name, originalSku: item.sku,
+              });
+              console.log(`[JP VARIANT FIX] Added Japan-spec card for ${matchedNonJ} (J version: ${jSku})`);
+            } else {
+              console.log(`[JP VARIANT FIX] J版SKU ${jSku} がDBに見つからなかった（スキップ）`);
+            }
+          } catch (e) {
+            console.log(`[JP VARIANT FIX] J版SKU ${jSku} の取得エラー: ${e.message}`);
+          }
         }
       }
       if (jpVariantMatches.length > 0) {
