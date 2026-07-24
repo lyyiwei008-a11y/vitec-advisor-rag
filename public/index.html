@@ -90,6 +90,14 @@ body {
 .msg-bubble { max-width: 75%; padding: 12px 16px; font-size: 14px; line-height: 1.7; }
 .msg.bot .msg-bubble { background: var(--gray-100); border-radius: 0 12px 12px 12px; color: var(--black); }
 .msg.user .msg-bubble { background: var(--black); border-radius: 12px 0 12px 12px; color: var(--white); }
+.inline-undo-btn {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--white); border: 1.5px solid var(--gray-300); color: var(--gray-600);
+  font-size: 15px; cursor: pointer; padding: 0;
+  transition: all 0.15s;
+}
+.inline-undo-btn:hover { border-color: var(--black); color: var(--black); background: var(--gray-100); }
 
 /* ── PRODUCT CARDS ── */
 .products-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%; }
@@ -320,7 +328,6 @@ body {
     <span class="header-title">Product Advisor</span>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button class="reset-btn" id="back-btn" onclick="goBackOneStep()" style="margin-right:8px;">← 一つ前に戻る</button>
     <button class="reset-btn" id="reset-btn" onclick="resetChat()">← やり直す</button>
     <div>
       <button class="lang-btn active" onclick="setLang('ja')">日本語</button>
@@ -1526,6 +1533,9 @@ function goBackOneStep() {
   // historyも同様に2件分（assistant, user）取り除く
   history.pop();
   history.pop();
+  // インライン「戻る」アイコンは消えたuser発言の中にあったため、参照もクリアする
+  // （直近1ステップのみ対応の設計のため、ここで再表示はしない）
+  currentUndoIconEl = null;
 
   currentStep--;
   showOptions([]);
@@ -1535,25 +1545,24 @@ function goBackOneStep() {
   if (flowOpts && flowOpts[currentStep]) {
     showOptions(flowOpts[currentStep]);
   }
-  if (currentStep < 1) {
-    document.getElementById('back-btn').classList.remove('visible');
-  }
 }
 
 function resetChat() {
   history = []; isLoading = false; selectedBrand = null; selectedCategory = null; currentStep = 0;
   chatMode = 'GUIDE'; supplementRounds = 0;
+  currentUndoIconEl = null;
   setInputEnabled(false);
   document.getElementById('send-btn').disabled = false;
   document.getElementById('reset-btn').classList.remove('visible');
-  document.getElementById('back-btn').classList.remove('visible');
   showOptions([]);
   const chat = document.getElementById('chat');
   chat.innerHTML = '<div class="welcome" id="welcome"></div>';
   renderWelcome();
 }
 
-function appendMsg(role, content) {
+let currentUndoIconEl = null; // 現在表示中の「戻る」インラインアイコン（直近1件のuser発言にのみ付く）
+
+function appendMsg(role, content, showUndo) {
   const chat = document.getElementById('chat');
   const t = i18n[lang];
   const div = document.createElement('div');
@@ -1651,6 +1660,22 @@ function appendMsg(role, content) {
   }
   div.appendChild(avatar);
   div.appendChild(bubble);
+  // 直近のuser発言にだけ、頭アイコンのすぐ横（row-reverseのため一番手前に挿入）に
+  // 小さな「戻る」アイコンを付ける。次の発言が来た時点で古いものは自動的に消す。
+  if (role === 'user' && showUndo) {
+    if (currentUndoIconEl) currentUndoIconEl.remove();
+    const undoIcon = document.createElement('button');
+    undoIcon.className = 'inline-undo-btn';
+    undoIcon.title = lang === 'ja' ? 'この回答を取り消してやり直す' : 'Undo this answer';
+    undoIcon.innerHTML = '↩';
+    undoIcon.onclick = () => goBackOneStep();
+    div.insertBefore(undoIcon, div.firstChild);
+    currentUndoIconEl = undoIcon;
+  } else if (role === 'user' && currentUndoIconEl) {
+    // 補足入力等、戻る対象外のuser発言が来た場合も、古いアイコンは無効化しておく
+    currentUndoIconEl.remove();
+    currentUndoIconEl = null;
+  }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -1697,7 +1722,7 @@ async function sendMessage() {
   field.value = ''; field.style.height = 'auto';
   isLoading = true;
   document.getElementById('send-btn').disabled = true;
-  appendMsg('user', text);
+  appendMsg('user', text, chatMode === 'GUIDE');
   history.push({ role: 'user', content: text });
   showOptions([]);
   showTyping();
@@ -1742,7 +1767,6 @@ async function sendMessage() {
       history.push({ role: 'assistant', content: reply.message });
       appendMsg('bot', reply.message);
       currentStep++;
-      if (currentStep >= 1) document.getElementById('back-btn').classList.add('visible');
 
       const flowOpts = FLOW_OPTIONS[lang]?.[selectedCategory];
       const totalSteps = flowOpts ? flowOpts.length : 0;
@@ -1774,7 +1798,7 @@ async function sendMessage() {
 function showSupplementGate() {
   chatMode = 'GATE';
   setInputEnabled(false);
-  document.getElementById('back-btn').classList.remove('visible');
+  if (currentUndoIconEl) { currentUndoIconEl.remove(); currentUndoIconEl = null; }
   const t = SUPPLEMENT_TEXT[lang];
   appendMsg('bot', t.gateMsg);
   history.push({ role: 'assistant', content: t.gateMsg });
