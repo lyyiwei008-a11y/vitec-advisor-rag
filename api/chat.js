@@ -288,7 +288,7 @@ const FLOWS = {
 1. 主な用途 → options:["写真撮影メイン","動画撮影メイン","写真・動画両方"]
 2. 使用機材の重さ → options:["〜2kg","2〜5kg","5〜10kg","10kg以上"]
 3. 撮影シーン → options:["旅行・登山","街撮り・日常","スタジオ・室内","スポーツ・野鳥","放送・シネマ"]
-4. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい","既に雲台を持っている"]
+4. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい"]
 5. 素材のこだわり → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
 6. 高さのこだわり → options:["自分の目線まで伸ばしたい（全伸高160cm以上）","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
 7. 予算感 → options:["〜3万円","3〜8万円","8〜15万円","15万円以上"]`,
@@ -303,7 +303,7 @@ const FLOWS = {
     '一脚': `【一脚の質問フロー】1つずつ質問：
 1. 主な用途 → options:["スポーツ・報道","動画・Vlog","登山・旅行","野鳥・超望遠"]
 2. 機材の重さ → options:["〜1.5kg","〜2.5kg","〜5kg","5kg以上"]
-3. 雲台は必要か → options:["一脚のみでよい","雲台セットが欲しい","既に雲台を持っている"]
+3. 雲台は必要か → options:["一脚のみでよい","雲台セットが欲しい"]
 4. 素材 → options:["カーボン（軽量優先）","アルミ（コスパ優先）","こだわらない"]
 5. 高さのこだわり → options:["できるだけ高く伸ばしたい（全伸高180cm以上）","標準的な高さで十分","コンパクトに収納したい（携帯性重視）","特にこだわらない"]`,
 
@@ -426,7 +426,7 @@ GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「
     '三脚（Gitzo）': `【Gitzo三脚の質問フロー】1つずつ質問：
 1. 撮影シーン → options:["旅行・登山","風景・長時間露光","野鳥・超望遠","動画・映像制作"]
 2. カメラ＋レンズの合計重量 → options:["〜3kg","3〜6kg","6〜10kg","10kg以上"]
-3. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい","既に雲台を持っている"]
+3. 雲台も必要か → options:["三脚のみ","雲台もセットで欲しい"]
 4. 携帯性のこだわり → options:["できるだけ軽く小さく","安定性重視","バランス重視"]
 5. 高さのこだわり → options:["自分の目線まで伸ばしたい","標準的な高さで十分","ローアングル撮影も重視（最低高が低い）","特にこだわらない"]
 6. 予算感 → options:["〜5万円","5〜10万円","10〜20万円","20万円以上"]`,
@@ -515,7 +515,7 @@ GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「
 1. Main purpose → options:["Photography","Video","Both photo & video"]
 2. Gear weight (camera + lens) → options:["Up to 2kg","2-5kg","5-10kg","10kg+"]
 3. Shooting scene → options:["Travel/hiking","Street/daily","Studio","Sports/wildlife","Cinema/broadcast"]
-4. Head needed? → options:["Tripod only","Need head too","Already have a head"]
+4. Head needed? → options:["Tripod only","Need head too"]
 5. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
 6. Height preference → options:["Reach eye level (max height 160cm+)","Standard height is fine","Also want low-angle capability","No preference"]
 7. Budget → options:["Under ¥30,000","¥30,000-80,000","¥80,000-150,000","¥150,000+"]`,
@@ -530,7 +530,7 @@ GimBoom(2件・ジンバル用ブーム)の4系列に明確に分かれる。「
     'Monopod': `[Monopod Flow] Ask ONE question at a time:
 1. Main use → options:["Sports & news","Video & vlog","Hiking & travel","Wildlife & telephoto"]
 2. Gear weight → options:["Up to 1.5kg","Up to 2.5kg","Up to 5kg","5kg+"]
-3. Head needed? → options:["Monopod only","With head set","Already have a head"]
+3. Head needed? → options:["Monopod only","With head set"]
 4. Material → options:["Carbon (lightweight)","Aluminum (value)","No preference"]
 5. Height preference → options:["As tall as possible (max height 180cm+)","Standard height is fine","Compact for travel","No preference"]`,
 
@@ -652,7 +652,7 @@ Note: recommends across Stand and Accessories (clamps) categories
     'Tripod (Gitzo)': `[Gitzo Tripod Flow] Ask ONE question at a time:
 1. Shooting scene → options:["Travel/hiking","Landscape/long exposure","Wildlife/telephoto","Video/cinema"]
 2. Gear weight → options:["Up to 3kg","3-6kg","6-10kg","10kg+"]
-3. Head needed? → options:["Tripod only","Need head too","Already have a head"]
+3. Head needed? → options:["Tripod only","Need head too"]
 4. Portability → options:["As light as possible","Stability over weight","Balanced"]
 5. Height preference → options:["Reach eye level","Standard height is fine","Also want low-angle capability","No preference"]
 6. Budget → options:["Under ¥50,000","¥50,000-100,000","¥100,000-200,000","¥200,000+"]`,
