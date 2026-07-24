@@ -63,10 +63,31 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   // 別カテゴリ「三脚+雲台キット」に分離済みのため、これでは検索されなかった）。
   // ここで回答内容を検出し、実際に検索するカテゴリを動的に切り替える。
   const allMessagesForKit = messages ? messages.map(m => m.content || '').join(' ') : '';
+
+  // 「三脚+雲台キット」は2026/07/24に3カテゴリへ分離した：
+  // フォト三脚+雲台キット（ボール/3ウェイ/ギア雲台=写真専用）、
+  // ビデオ三脚+雲台キット（MVHフルード雲台=動画専用）、
+  // フォト・ビデオ三脚+雲台キット（ONE HYBRID 500Xのみ=写真動画両対応）。
+  // 旧単一カテゴリ（79件、Manfrotto/Gitzo混在）だと、Top20相似度カットの時点で
+  // 動画向けキットと写真向けキットが互いを押しのけてしまい、本来最適な商品が
+  // 候補プールにすら入らないことがあったための対策。「主な用途」の回答で絞り込む。
+  const getTripodKitCategories = () => {
+    if (/写真・動画両方|Both photo & video/i.test(allMessagesForKit)) {
+      return ['フォト三脚+雲台キット', 'ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
+    } else if (/動画撮影メイン|\bVideo\b/i.test(allMessagesForKit)) {
+      return ['ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
+    } else if (/写真撮影メイン|\bPhotography\b/i.test(allMessagesForKit)) {
+      return ['フォト三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
+    }
+    // 用途が判定できない場合は全カテゴリを対象にフォールバック
+    return ['フォト三脚+雲台キット', 'ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット'];
+  };
+
   if (catList.includes('三脚') && /雲台もセットで欲しい|Need head too/i.test(allMessagesForKit)) {
-    catList = catList.map(c => c === '三脚' ? '三脚+雲台キット' : c);
+    const kitCats = getTripodKitCategories();
+    catList = catList.flatMap(c => c === '三脚' ? kitCats : [c]);
   } else if (catList.includes('雲台') && /三脚もこれから購入|Need tripod too/i.test(allMessagesForKit)) {
-    catList = [...catList, '三脚+雲台キット'];
+    catList = [...catList, ...getTripodKitCategories()];
   } else if (catList.includes('一脚') && /雲台セットが欲しい|With head set/i.test(allMessagesForKit)) {
     catList = catList.map(c => c === '一脚' ? '一脚+雲台キット' : c);
   }
@@ -118,7 +139,9 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
     '三脚': { brand: 'Gitzo', secondCap: 4 },
     '雲台': { brand: 'Gitzo', secondCap: 4 },
     '一脚': { brand: 'Gitzo', secondCap: 4 },
-    '三脚+雲台キット': { brand: 'Gitzo', secondCap: 4 },
+    'フォト三脚+雲台キット': { brand: 'Gitzo', secondCap: 4 },
+    'ビデオ三脚+雲台キット': { brand: 'Gitzo', secondCap: 4 },
+    'フォト・ビデオ三脚+雲台キット': { brand: 'Gitzo', secondCap: 4 },
     '三脚バッグ': { brand: 'Gitzo', secondCap: 4 },
     '三脚雲台アクセサリー': { brand: 'Gitzo', secondCap: 4 },
     'バックパック': { brand: 'Lowepro', secondCap: 4 },
@@ -142,7 +165,7 @@ async function searchProducts(query, brandFilter = null, categoryFilter = null, 
   );
   // 素材（アルミ等）指定によるGitzo除外は、三脚・雲台・一脚系のビジネスルールなので、
   // バッグ系・ライティング系カテゴリには適用しない
-  const tripodFamilyCategories = ['三脚', '雲台', '一脚', '三脚+雲台キット', '三脚バッグ'];
+  const tripodFamilyCategories = ['三脚', '雲台', '一脚', 'フォト三脚+雲台キット', 'ビデオ三脚+雲台キット', 'フォト・ビデオ三脚+雲台キット', '三脚バッグ'];
   const matchedMultiCategory = catList.find(c => CATEGORY_SECOND_BRAND[c]);
 
   // カメラバッグ集約カテゴリ（バックパック・ショルダー・ローラー・三脚バッグ等の合算）は
