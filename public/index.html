@@ -97,10 +97,8 @@ body {
   margin-top: 12px; padding: 12px 14px; background: #FFF8E1; border: 1px solid #F5DEA0;
   border-radius: 8px; width: 100%; box-sizing: border-box;
 }
-.jp-variant-note-title { font-weight: 600; font-size: 13px; color: #7A5C00; margin-bottom: 6px; }
-.jp-variant-note-list { margin: 0; padding-left: 18px; font-size: 12.5px; color: #5C4600; }
-.jp-variant-note-list li { margin-bottom: 3px; }
-.jp-variant-note-hint { font-size: 12px; color: #7A5C00; margin-top: 6px; }
+.jp-variant-note-title { font-weight: 600; font-size: 13px; color: #7A5C00; margin-bottom: 8px; }
+.jp-variant-note .products-wrap { margin-top: 0; }
 .product-intro { font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
 .product-card {
   border: 1px solid var(--gray-200); background: var(--white); transition: border-color 0.15s; cursor: pointer;
@@ -1547,7 +1545,9 @@ function appendMsg(role, content) {
     bubble.appendChild(intro);
     const wrap = document.createElement('div');
     wrap.className = 'products-wrap';
-    content.items.forEach((p, i) => {
+
+    // 商品カードのDOM要素を組み立てる共通関数（通常のおすすめ商品・日本仕様バリアントの両方で使う）
+    function buildProductCard(p, numLabel, reasonText) {
       const sku = (p.sku || '').toString().trim();
       const brand = (p.brand || '').toString().trim();
       // 外部ショップの検索キーワードはSKU単体だと型番が短すぎて無関係な商品がヒットすることがあるため、
@@ -1561,7 +1561,7 @@ function appendMsg(role, content) {
       card.innerHTML = `
         <div class="product-card-header" onclick="toggleCard(this.parentElement)">
           <div class="product-card-info">
-            <div class="product-card-num">0${i+1}</div>
+            <div class="product-card-num">${numLabel}</div>
             <div class="product-card-name">${p.name}</div>
             <div class="product-card-sku">${sku}</div>
             ${p.price && !isNaN(Number(p.price)) ? `<div class="product-card-price">¥${Math.floor(Number(p.price)).toLocaleString()}</div>` : ''}
@@ -1570,7 +1570,7 @@ function appendMsg(role, content) {
           <div class="product-card-chevron">▼</div>
         </div>
         <div class="product-card-body">
-          <div class="product-reason">${p.reason}</div>
+          <div class="product-reason">${reasonText}</div>
           <div class="store-links">
             <a class="store-link" href="https://www.biccamera.com/bc/category/?q=${encodeURIComponent(shopQuery)}" target="_blank" rel="noopener">
               <div class="store-link-left"><div class="store-icon bic">B</div><span class="store-name">${t.bic}</span></div>
@@ -1586,11 +1586,16 @@ function appendMsg(role, content) {
             </a>
           </div>
         </div>`;
-      wrap.appendChild(card);
+      return card;
+    }
+
+    content.items.forEach((p, i) => {
+      wrap.appendChild(buildProductCard(p, `0${i+1}`, p.reason));
     });
     bubble.appendChild(wrap);
 
     // 商品カード一覧の下に、日本仕様(Jタイプ)が別途存在する商品があれば独立したセクションで表示する
+    // （通常のおすすめ商品と同じカード形式：画像・価格・購入リンク付き）
     if (Array.isArray(content.jpVariantNote) && content.jpVariantNote.length > 0) {
       const jpNote = document.createElement('div');
       jpNote.className = 'jp-variant-note';
@@ -1598,16 +1603,15 @@ function appendMsg(role, content) {
       title.className = 'jp-variant-note-title';
       title.textContent = lang === 'ja' ? '日本仕様（Jタイプ）もございます' : 'Japan-spec versions also available';
       jpNote.appendChild(title);
-      const list = document.createElement('ul');
-      list.className = 'jp-variant-note-list';
+      const jpWrap = document.createElement('div');
+      jpWrap.className = 'products-wrap';
       content.jpVariantNote.forEach(v => {
-        const li = document.createElement('li');
-        li.textContent = lang === 'ja'
-          ? `${v.name}（${v.sku}） → 日本仕様版：品番 ${v.jSku}`
-          : `${v.name} (${v.sku}) → Japan-spec version: SKU ${v.jSku}`;
-        list.appendChild(li);
+        const reasonText = lang === 'ja'
+          ? `${v.originalName}（${v.originalSku}）の日本仕様版です。`
+          : `This is the Japan-spec version of ${v.originalName} (${v.originalSku}).`;
+        jpWrap.appendChild(buildProductCard(v, 'JP', reasonText));
       });
-      jpNote.appendChild(list);
+      jpNote.appendChild(jpWrap);
       bubble.appendChild(jpNote);
     }
   } else {
