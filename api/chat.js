@@ -1323,6 +1323,30 @@ export default async function handler(req, res) {
         }
       }
 
+      // ── 候補プールが極小（3件以下）の場合の機械的な全件表示保証 ──
+      // 候補が3件以下しかない状況で、GPTが独自の判断で一部だけを返してしまうケースが
+      // 実測で確認された（例：一脚+雲台キット2件中、耐荷重が条件に近い方を含む1件しか
+      // 返さなかった）。候補が少ない場合は、GPTの取捨選択に頼らず全件を機械的に含める方が、
+      // 「本来もっと選択肢があったのに気づかれない」リスクを避けられる。
+      if (ragProducts.length <= 3 && parsed.items.length < ragProducts.length) {
+        const beforeCount = parsed.items.length;
+        const usedSkus = new Set(parsed.items.map(it => String(it.sku || '').trim().toUpperCase()));
+        const missing = ragProducts.filter(p => !usedSkus.has(String(p.sku).trim().toUpperCase()));
+        for (const c of missing) {
+          const priceMatch = (c.content || '').match(/(?:販売価格|メーカ希望小売価格)[:：]\s*¥?([\d,]+)/);
+          const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : null;
+          parsed.items.push({
+            name: c.name,
+            sku: c.sku,
+            brand: c.brand,
+            reason: lang === 'ja' ? 'こちらも候補として当てはまる製品です。' : 'This is also a matching option worth considering.',
+            price,
+            image_url: c.image_url || null,
+          });
+        }
+        console.log(`[SMALL POOL FIX] 候補プールが${ragProducts.length}件のみのため、GPTが${beforeCount}件しか返さなかった分を全件表示に補完（+${missing.length}件）`);
+      }
+
       // ── 推薦数（5-7件）の機械的な補完 ──
       // buildRecommendPromptの"REQUIRED: recommend AT LEAST 5"指示だけではGPTが従わないケースが
       // 実測で確認された（候補プール12件でも3件しか返さない等）。候補プールが7件を超えるのに
