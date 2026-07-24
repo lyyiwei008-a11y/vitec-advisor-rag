@@ -1353,35 +1353,25 @@ export default async function handler(req, res) {
 
       // ── 日本仕様(Jタイプ)存在通知の機械的な保証 ──
       // 確認済みペアのリストを使って機械的にチェックし、該当すれば通知する。
-      // 以前はitem.reason（商品カードを展開しないと見えない箇所）に追記していたが、
-      // それだと客が気づけないため、チャット上に直接表示されるparsed.message（推薦の冒頭文）
-      // に一文追加する形に変更する。item.reasonへの追記も補足として残す。
+      // 商品カードの下に独立したセクションとして表示するため、専用フィールド
+      // parsed.jpVariantNote に構造化データとして格納する（フロント側で描画）
       const KNOWN_JP_PAIRS = {
         '1004BAC': '1004JBAC', '1051BAC': '1051JBAC', '1052BAC': '1052JBAC',
         'A2018L': 'A2018LJ', 'A2025L': 'A2025LJ', 'A2033L': 'A2033LJ', 'A2018F': 'A2018FJCB',
         '1314B': '1314JB',
       };
-      const jpNoticeParts = [];
+      const jpVariantMatches = [];
       for (const item of parsed.items) {
         const skuKey = String(item.sku || '').trim().toUpperCase();
         const matchedNonJ = Object.keys(KNOWN_JP_PAIRS).find(k => k.toUpperCase() === skuKey);
         if (matchedNonJ) {
           const jSku = KNOWN_JP_PAIRS[matchedNonJ];
-          if (item.reason && !item.reason.includes('Jタイプ') && !/Japan-spec/i.test(item.reason)) {
-            item.reason += lang === 'ja'
-              ? ` なお、日本仕様（Jタイプ、品番${jSku}）も選べます。`
-              : ` Note: a Japan-spec version (SKU ${jSku}) is also available.`;
-          }
-          jpNoticeParts.push(lang === 'ja'
-            ? `${item.name}（${matchedNonJ}）には日本仕様版（品番${jSku}）もございます`
-            : `${item.name} (${matchedNonJ}) is also available in a Japan-spec version (SKU ${jSku})`);
+          jpVariantMatches.push({ name: item.name, sku: item.sku, jSku });
           console.log(`[JP VARIANT FIX] Added Japan-spec notice for ${matchedNonJ} (J version: ${jSku})`);
         }
       }
-      if (jpNoticeParts.length > 0 && parsed.message) {
-        parsed.message += lang === 'ja'
-          ? `\n\n※${jpNoticeParts.join('、')}。日本仕様をご希望の場合はお申し付けください。`
-          : `\n\nNote: ${jpNoticeParts.join('; ')}. Let us know if you'd prefer the Japan-spec version.`;
+      if (jpVariantMatches.length > 0) {
+        parsed.jpVariantNote = jpVariantMatches;
       }
 
       // ── ブランド多様性の機械的な保証 ──
