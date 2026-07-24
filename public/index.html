@@ -93,6 +93,14 @@ body {
 
 /* ── PRODUCT CARDS ── */
 .products-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; width: 100%; }
+.jp-variant-note {
+  margin-top: 12px; padding: 12px 14px; background: #FFF8E1; border: 1px solid #F5DEA0;
+  border-radius: 8px; width: 100%; box-sizing: border-box;
+}
+.jp-variant-note-title { font-weight: 600; font-size: 13px; color: #7A5C00; margin-bottom: 6px; }
+.jp-variant-note-list { margin: 0; padding-left: 18px; font-size: 12.5px; color: #5C4600; }
+.jp-variant-note-list li { margin-bottom: 3px; }
+.jp-variant-note-hint { font-size: 12px; color: #7A5C00; margin-top: 6px; }
 .product-intro { font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
 .product-card {
   border: 1px solid var(--gray-200); background: var(--white); transition: border-color 0.15s; cursor: pointer;
@@ -1581,6 +1589,33 @@ function appendMsg(role, content) {
       wrap.appendChild(card);
     });
     bubble.appendChild(wrap);
+
+    // 商品カード一覧の下に、日本仕様(Jタイプ)が別途存在する商品があれば独立したセクションで表示する
+    if (Array.isArray(content.jpVariantNote) && content.jpVariantNote.length > 0) {
+      const jpNote = document.createElement('div');
+      jpNote.className = 'jp-variant-note';
+      const title = document.createElement('div');
+      title.className = 'jp-variant-note-title';
+      title.textContent = lang === 'ja' ? '日本仕様（Jタイプ）もございます' : 'Japan-spec versions also available';
+      jpNote.appendChild(title);
+      const list = document.createElement('ul');
+      list.className = 'jp-variant-note-list';
+      content.jpVariantNote.forEach(v => {
+        const li = document.createElement('li');
+        li.textContent = lang === 'ja'
+          ? `${v.name}（${v.sku}） → 日本仕様版：品番 ${v.jSku}`
+          : `${v.name} (${v.sku}) → Japan-spec version: SKU ${v.jSku}`;
+        list.appendChild(li);
+      });
+      jpNote.appendChild(list);
+      const hint = document.createElement('div');
+      hint.className = 'jp-variant-note-hint';
+      hint.textContent = lang === 'ja'
+        ? '日本仕様をご希望の場合はお申し付けください。'
+        : "Let us know if you'd prefer the Japan-spec version.";
+      jpNote.appendChild(hint);
+      bubble.appendChild(jpNote);
+    }
   } else {
     bubble.innerHTML = (typeof content === 'string' ? content : '').replace(/\n/g, '<br>');
   }
